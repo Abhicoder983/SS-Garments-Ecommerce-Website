@@ -18,7 +18,7 @@ class JWTMiddleware:
 
 
     def __call__(self, request): 
-        if request.path in ["/login/", "/signup/","/verify/"]:
+        if request.path in ["/login/", "/signup/","/verify/","/admin/"]:
             return self.get_response(request)
         auth_header = request.headers.get("Authorization")
         print(1)
