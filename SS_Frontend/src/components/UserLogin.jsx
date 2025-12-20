@@ -4,10 +4,12 @@ import { useContext, useState } from "react"
 import { AuthContext } from "../Context/AuthContext"
 
 export default function UserLogin(){
-    const {login, setLogin}=useContext(AuthContext)
+    const {login, setLogin,token, setToken}=useContext(AuthContext)
     const[loginOpen, setLoginOpen]=useState(false)
     const [mobile, setMobile]=useState()
-   
+    const loginFunction = async() => {
+      
+    }
     return(
 <>
 
@@ -44,7 +46,7 @@ export default function UserLogin(){
          border-b-white
          focus:outline-none focus:border-b-emerald-300 focus:ring-0" required  />
              
-  <button class="ml-auto block bg-emerald-300 text-white p-2 rounded-2xl" onClick={()=>setLogin(true)}>
+  <button class="ml-auto block bg-emerald-300 text-white p-2 rounded-2xl" onClick={loginFunction}>
     SEND OTP!
   </button>
 

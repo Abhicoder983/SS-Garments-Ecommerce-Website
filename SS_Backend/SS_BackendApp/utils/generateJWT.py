@@ -12,7 +12,7 @@ def generate_RefreshJwt(user,ipAddress,jti,expiry_at,created_at):
         
     }
 
-    token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+    token = jwt.encode(payload, settings.SECRET_KEYS, algorithm="HS256")
     return token
 
 def generate_AccessToken(user):
@@ -26,5 +26,5 @@ def generate_AccessToken(user):
         "iat":datetime.utcnow()
     }
 
-    token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+    token = jwt.encode(payload, settings.SECRET_KEYS, algorithm="HS256")
     return token

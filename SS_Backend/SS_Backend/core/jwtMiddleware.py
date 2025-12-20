@@ -18,7 +18,8 @@ class JWTMiddleware:
 
 
     def __call__(self, request): 
-        if request.path in ["/login/", "/signup/","/verify/","/admin/"]:
+
+        if (request.path in ["/login/", "/signup/","/verify/"] or request.path.startswith("/admin/")):
             return self.get_response(request)
         auth_header = request.headers.get("Authorization")
         print(1)
@@ -37,7 +38,7 @@ class JWTMiddleware:
             print('enter in try')
             payload = jwt.decode(
                 token,
-                settings.SECRET_KEY,
+                settings.SECRET_KEYS,
                 algorithms=["HS256"]
             )
 
@@ -57,7 +58,7 @@ class JWTMiddleware:
         except:
             print(2)
             try:
-                payload = jwt.decode(refreshToken,settings.SECRET_KEY,algorithms=["HS256"])
+                payload = jwt.decode(refreshToken,settings.SECRET_KEYS,algorithms=["HS256"])
                 print(3)
                 ipAddress=get_client_ip(request)
                 print(type(ObjectId(payload.get('user_id'))))

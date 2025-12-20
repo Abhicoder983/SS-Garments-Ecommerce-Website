@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { AuthContext } from "../Context/AuthContext";
 import Footer from "./Footer";
 import NavBar from "./NavBar";
@@ -9,6 +9,10 @@ import UserLogin from "./UserLogin";
 
 export default function Account() {
   const { login } = useContext(AuthContext);
+  
+  useEffect(()=>{
+    
+  },[])
 
   return (
     <>

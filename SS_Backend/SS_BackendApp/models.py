@@ -57,9 +57,8 @@ class Order(models.Model):
     customerID = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="orders")
     productID = models.JSONField()   
     statusID = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.PENDING)
-    address=models.CharField(max_length=300, null=False)
     order_date = models.DateTimeField(auto_now_add=True)
-    Total_price=models.PositiveIntegerField()
+    Total_price=models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"Order #{self.id} - {self.customerID.name}-{self.customerID.mobile_no}"
