@@ -7,6 +7,9 @@ import uuid
 from datetime import datetime, timedelta
 from bson import ObjectId
 from SS_BackendApp.utils.getIPAddress import get_client_ip
+from jwt.exceptions import (
+    ExpiredSignatureError
+)
 
 
 class JWTMiddleware:
@@ -17,12 +20,17 @@ class JWTMiddleware:
 
 
 
-    def __call__(self, request): 
+    def __call__(self, request):
+        if(request.path not in ["/login/","/signup/","/verify/","/logout/","/orderdetails/","/account/","/cart/","/"]):
+             print('1')
+             return self.get_response(request)
 
-        if (request.path in ["/login/", "/signup/","/verify/"] or request.path.startswith("/admin/")):
+        elif (request.path in ["/login/", "/signup/","/verify/"] or request.path.startswith("/admin/")):
             return self.get_response(request)
+        
         auth_header = request.headers.get("Authorization")
         print(1)
+        print(auth_header)
 
         token = None
         
@@ -66,7 +74,7 @@ class JWTMiddleware:
                 jti=payload.get('user_jti')
                 print(ipAddress)
                 print(list(refreshTokenStore.objects.values_list("jti", flat=True)))
-                user= refreshTokenStore.objects.filter(jti=jti).first()
+                user= refreshTokenStore.objects.filter(jti=jti,user_id=payload.get('user_id')).first()
                 print(4)
                 print(user)
                 if(not user):
@@ -88,12 +96,21 @@ class JWTMiddleware:
                     user=UserModel.objects.filter(id=User.user.id).first()
 
                     request.id=user
+                  
                     request.access_token=accessToken1
                     request.refresh_token=refreshToken1
-                elif refreshToken.token:
-                    request.userData=None
                 else:
                     request.userData=None
+            except ExpiredSignatureError:
+                payload = jwt.decode(
+                    refreshToken,
+                    settings.SECRET_KEYS,
+                    algorithms=["HS256"],
+                    options={"verify_exp": False}
+                    )
+                refreshTokenStore.objects.filter(user_id=ObjectId(payload.get('user_id')),jti=str(payload.get('jti'))).delete()
+                request.userData=None
+                
             except:
                 request.userData=None
             

@@ -2,13 +2,45 @@ import menu from "../assets/homeAssests/navBar/menu.png"
 import close from "../assets/homeAssests/navBar/close.png"
 import discount from "../assets/homeAssests/navBar/discount.png"
 import account from "../assets/homeAssests/navBar/account.png"
-import search from "../assets/homeAssests/navBar/search.png"
+import searchImage from "../assets/homeAssests/navBar/search.png"
 import cart from "../assets/homeAssests/navBar/cart.png"
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { StoreContext } from "../Context/StoreContext.jsx";
-import { useContext } from "react"
+import { useContext, useEffect, useState } from "react"
+import { useSearchParams } from "react-router-dom";
+import { toast } from "react-toastify"
 export default function NavBar(){
     const {openMenu,setOpenMenu}=useContext(StoreContext)
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [search, setSearch] = useState(searchParams.get("search") || "");
+    const navigate = useNavigate()
+
+   
+
+    const handleSearch = async(e) => {
+      if (e.key==='Enter'){
+        const params = new URLSearchParams()
+        if(search) {
+          params.set('search', search)
+            setSearchParams(params);
+        navigate(`/products?${params.toString()}`);
+        return 
+       
+        
+        }
+        else toast.warning('Enter something to search')
+        return 
+
+
+      }
+
+
+    }
+
+
+
+    
+  
     return(
         <>
        <nav className="sticky top-0 w-full h-fit bg-gradient-to-r from-black via-gray-900 to-gray-700 text-white p-1.5 flex justify-around items-center z-20">
@@ -22,17 +54,17 @@ export default function NavBar(){
                        <input type="text"
            placeholder="Searching any item"
            className="text-xl text-black border-none outline-none w-full"
-         />
-         <img src={search} className="w-6 h-6" alt="search" />
+        onChange={(e)=>setSearch(e.target.value)} onKeyDown={handleSearch} value={search}/>
+         <img src={searchImage} className="w-6 h-6" alt="search" />
        </div>
                    <div>
                        <img src={discount} className="sm:w-10 w-5 md:h-8 h-7"alt="" />
                    </div>
                    <div>
-                       <img src={cart} className="sm:w-10 w-5 md:h-8 h-7"alt="" />
+                       <Link to="/cart"><img src={cart} className="sm:w-10 w-5 md:h-8 h-7"alt="" /></Link>
                    </div>
                    <div>
-                       <Link to="/login"><img src={account} className="sm:w-10 w-5 md:h-8 h-7"alt="" /></Link>
+                       <Link to="/account"><img src={account} className="sm:w-10 w-5 md:h-8 h-7"alt="" /></Link>
                    </div>
                    
                    
@@ -50,6 +82,7 @@ export default function NavBar(){
           </ul>
         
       </div>
+     
       </>
     ) 
 }

@@ -14,12 +14,13 @@ from decouple import config
 from pathlib import Path
 from decouple import config
 import os 
+from corsheaders.defaults import default_headers
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEYS=config('SECRET_KEY')
+SECRET_KEYS=config('SECRET_KEYS')
 
 
 # Quick-start development settings - unsuitable for production
@@ -29,9 +30,15 @@ SECRET_KEYS=config('SECRET_KEY')
 SECRET_KEY = 'django-insecure-&25lf=o1p9vc9s8twswbylp(prmhfuk6(8@ge4kt()p24jmxor'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['15.207.221.202']
+ALLOWED_HOSTS = ['15.207.221.202',"*"]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173"
+]
+
+CORS_ALLOW_CREDENTIALS = True
 
 
 # Application definition
@@ -45,10 +52,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
      'storages',
     'SS_BackendApp',
-    "rest_framework"
+    "rest_framework",
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -138,6 +147,10 @@ MIGRATION_MODULES = {
 }
 
 MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL="media/"
+SESSION_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = False  
 
 # aws configuration
 
