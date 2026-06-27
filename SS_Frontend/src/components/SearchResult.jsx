@@ -95,7 +95,7 @@ export default function SearchResults() {
 
 {/* ================= FILTER NAVBAR ================= */}
 
-<div className="sticky top-0 z-40 bg-neutral-200 border-b shadow-sm">
+<div className="sticky top-0 z-10 bg-neutral-200 border-b shadow-sm">
   <div className="max-w-7xl mx-auto px-4 py-2 flex flex-wrap gap-3 justify-between items-center">
 
     {/* SORT */}

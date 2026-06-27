@@ -105,8 +105,7 @@ def signup(request):
     accessToken = generateJWT.generate_AccessToken(user)
 
    
-    # eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4YjNjMDM0OTVjZDc0OWU5OTM1MGIzOWYwOTg3MjQ4YyIsInVzZXJfaWQiOiI2OTQ0MGRmMjY5ZDU1ZjQzYjdlMTJmZGIiLCJpcF9BZGRyZXNzIjoiMTI3LjAuMC4xIiwiZXhwIjoxNzY2NTg2MDk4LCJpYXQiOjE3NjYwNjc2OTh9.6SPHHo9DOUTqs5Zx0zCYrptkZwzCWKvKxiFCLxOKXGE
-    # Save refresh token
+  # Save refresh token
     refreshTokenStore.objects.create(
         user=user,
         jti=str(jti),

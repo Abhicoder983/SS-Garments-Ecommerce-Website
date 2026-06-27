@@ -29,8 +29,6 @@ class JWTMiddleware:
             return self.get_response(request)
         
         auth_header = request.headers.get("Authorization")
-        print(1)
-        print(auth_header)
 
         token = None
         
@@ -115,7 +113,7 @@ class JWTMiddleware:
                 request.userData=None
             
             
-        
+              
     
 
 

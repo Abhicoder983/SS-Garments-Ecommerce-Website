@@ -6,7 +6,7 @@ import searchImage from "../assets/homeAssests/navBar/search.png"
 import cart from "../assets/homeAssests/navBar/cart.png"
 import { Link, useNavigate } from "react-router-dom";
 import { StoreContext } from "../Context/StoreContext.jsx";
-import { useContext, useEffect, useState } from "react"
+import { useContext, useState } from "react"
 import { useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify"
 export default function NavBar(){
@@ -43,7 +43,7 @@ export default function NavBar(){
   
     return(
         <>
-       <nav className="sticky top-0 w-full h-fit bg-gradient-to-r from-black via-gray-900 to-gray-700 text-white p-1.5 flex justify-around items-center z-20">
+       <nav className="sticky top-0 w-full h-fit bg-linear-to-r from-black via-gray-900 to-gray-700 text-white p-1.5 flex justify-around items-center z-20">
                     <div>
                        <img src={openMenu?close:menu} className='sm:w-10 w-5 sm:h-8 h-7 ' onClick={()=>setOpenMenu((prevMenu)=>!prevMenu)} />
                    </div>
@@ -70,7 +70,7 @@ export default function NavBar(){
                    
                </nav>
                 <div
-        className={`fixed top-10  overflow-scroll left-0 inset-0 bg-black/70 backdrop-blur-sm h-full w-full text-white z-10 p-5 transform transition-transform duration-300 ${
+        className={`fixed top-10  overflow-scroll left-0 inset-0 bg-black/70 backdrop-blur-sm h-full w-full text-white z-40 p-5 transform transition-transform duration-300 ${
           openMenu ? "translate-x-0" : "-translate-x-full"
         }`}
         onClick={()=>setOpenMenu(prev=>!prev)}>

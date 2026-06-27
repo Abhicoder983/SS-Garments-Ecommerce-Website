@@ -2,10 +2,8 @@ import Home from "./components/Home";
 import UserLogin from "./components/UserLogin";
 import Account from "./components/Account";
 import { Routes, Route } from "react-router-dom";
-import { useEffect } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
 import CartPage from "./components/Cart";
 import ProductDetail from "./components/ProductDetail";
 import SearchResults from "./components/SearchResult"

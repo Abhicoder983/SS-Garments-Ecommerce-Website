@@ -29,10 +29,7 @@ export default function UserLogin(){
 ).then((response)=>{
       
       setLogin(response.data?.userData)
-      
       setToken(response.data?.access_Token)
-      console.log(token)
-      console.log(login)
       navigate('/account')
 
     })
