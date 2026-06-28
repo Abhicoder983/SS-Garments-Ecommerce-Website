@@ -3,8 +3,8 @@ import './index.css'
 import App from './App.jsx'
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { StoreProvider } from './context/StoreContext.jsx';
-import { AuthProvider } from './context/AuthContext.jsx';
+import { StoreProvider } from './Context/StoreContext.jsx';
+import { AuthProvider } from './Context/AuthContext.jsx';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <BrowserRouter>
