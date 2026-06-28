@@ -11,7 +11,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <AuthProvider>
   <StoreProvider>
     
-    
+  
   <App />
 </StoreProvider>
 </AuthProvider>
