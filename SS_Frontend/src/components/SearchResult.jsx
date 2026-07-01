@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import NavBar from "./NavBar";
 import axios from "axios";
-
+const apiUrl = import.meta.env.VITE_API_URL;
 export default function SearchResults() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -60,7 +60,7 @@ export default function SearchResults() {
       try {
         const qs = searchParams.toString();
         const res = await axios.get(
-          `http://127.0.0.1:8000/products/?${qs}`
+          `${apiUrl}/products/?${qs}`
         );
         setProducts(res.data.products || []);
       } catch (err) {

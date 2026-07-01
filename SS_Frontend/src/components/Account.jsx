@@ -7,7 +7,7 @@ import NavBar from "./NavBar";
 import Footer from "./Footer";
 import AddressPage from "./inPages/AddressPage";
 import userImg from "../assets/AccountAssests/user.png";
-
+const apiUrl = import.meta.env.VITE_API_URL;
 export default function Account() {
   const { login, setLogin, token, setToken, reload } = useContext(AuthContext);
 
@@ -33,7 +33,7 @@ export default function Account() {
 
     const fetchAccount = async () => {
       try {
-        const res = await axios.get("http://localhost:8000/account/", {
+        const res = await axios.get(`${apiUrl}/account/`, {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
         });
@@ -55,7 +55,7 @@ export default function Account() {
   // 🔹 Fetch orders
   const fetchOrder = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/orderdetails/", {
+      const res = await axios.get(`${apiUrl}/orderdetails/`, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });
@@ -76,7 +76,7 @@ export default function Account() {
   const uploadSetAddress = async (updated) => {
     try {
       const res = await axios.patch(
-        "http://localhost:8000/account/",
+        `${apiUrl}/account/`,
         { address: updated },
         { headers:{
           Authorization:`Bearer ${token}`
@@ -104,7 +104,7 @@ export default function Account() {
     if(profileName!="")formData.append("name", profileName)
 
      try { 
-      const res = await axios.patch( "http://localhost:8000/account/", 
+      const res = await axios.patch( `${apiUrl}/account/`, 
         formData,
          { withCredentials: true, headers: { 
            Authorization:`Bearer ${token}`,
@@ -126,7 +126,7 @@ export default function Account() {
     };
 const logout =async()=>{
   
-  await axios.get("http://localhost:8000/logout/",{ 
+  await axios.get(`${apiUrl}/logout/`,{ 
     headers:{
       Authorization:`Bearer ${token}`
     },

@@ -12,7 +12,7 @@ import { useEffect,useState,useContext, useMemo } from "react"
 import { StoreContext } from "../Context/StoreContext.jsx";
 import { AuthContext } from "../Context/AuthContext.jsx"
 import {useNavigate } from "react-router-dom"
-
+const apiUrl = import.meta.env.VITE_API_URL;
 export default function Homes() {
   const {  setLogin, token, setToken } = useContext(AuthContext);
   const { openMenu } = useContext(StoreContext);
@@ -37,10 +37,11 @@ export default function Homes() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await axios.get("http://localhost:8000", {
+        const res = await axios.get(apiUrl, {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true
         });
+        console.log("abhishekapi",apiUrl)
         console.log(res.data?.productData)
         setProduct(res.data?.productData || {});
         setLogin(res.data.userData);

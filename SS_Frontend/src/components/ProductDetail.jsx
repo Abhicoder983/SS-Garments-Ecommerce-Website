@@ -6,8 +6,7 @@ import Footer from "./Footer";
 import { useSearchParams } from "react-router-dom";
 import { AuthContext } from "../Context/AuthContext";
 import { toast } from "react-toastify";
-
-
+const apiUrl = import.meta.env.VITE_API_URL;
 
 
 
@@ -35,7 +34,7 @@ export default function ProductDetail() {
   console.log(token)
     try {
         const res = await axios.post(
-          `http://localhost:8000/cart/`,
+          `${apiUrl}/cart/`,
           { 'product_id': id },
           {
             headers:{
@@ -73,7 +72,7 @@ export default function ProductDetail() {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:8000/productDetail/${variantId}/`
+          `${apiUrl}/productDetail/${variantId}/`
         );
         const data = res.response.data;
         console.log(data)

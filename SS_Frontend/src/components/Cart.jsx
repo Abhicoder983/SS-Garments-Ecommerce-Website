@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import NavBar from "./NavBar";
 import Footer from "./Footer";
-
+const apiUrl = import.meta.env.VITE_API_URL;
 axios.defaults.withCredentials = true;
 
 export default function CartPage() {
@@ -25,7 +25,7 @@ export default function CartPage() {
 
   const fetchCart = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/cart/",
+      const res = await axios.get(`${apiUrl}/cart/`,
         {
           headers:{
             Authorization:`Bearer ${token}`
@@ -52,7 +52,7 @@ export default function CartPage() {
     if (qty < 1) return;
 
     await axios.patch (
-      "http://localhost:8000/cart/",
+      "/cart/",
       { product_id, qty },
       {headers:{
         Authorization:`Bearer ${token}`
@@ -75,7 +75,7 @@ export default function CartPage() {
   /* 🔹 Remove item */
   const removeItem = async (product_id) => {
     await axios.delete(
-      "http://localhost:8000/cart/",
+      `${apiUrl}/cart/`,
       
       { data: { product_id },
         headers:{

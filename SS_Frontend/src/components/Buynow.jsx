@@ -8,6 +8,7 @@ import axios from "axios"
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import AddressPage from "./inPages/AddressPage"
+const apiUrl = import.meta.env.VITE_API_URL;
 const Buynow=()=>{
     const {login, setLogin, token , setToken }=useContext(AuthContext)
     const [editProfile,setEditProfile]=useState(false)
@@ -42,7 +43,7 @@ useEffect(() => {
         if(profileName!="")formData.append("name", profileName)
     
          try { 
-          const res = await axios.patch( "http://localhost:8000/account/", 
+          const res = await axios.patch( `${apiUrl}/account/`, 
             formData,
              { withCredentials: true, headers: { 
                Authorization:`Bearer ${token}`,
@@ -65,7 +66,7 @@ useEffect(() => {
      const uploadSetAddress = async (updated) => {
     try {
       const res = await axios.patch(
-        "http://localhost:8000/account/",
+        `${apiUrl}/account/`,
         { address: updated },
         { headers:{
           Authorization:`Bearer ${token}`

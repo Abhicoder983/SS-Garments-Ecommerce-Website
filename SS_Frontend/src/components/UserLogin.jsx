@@ -5,7 +5,7 @@ import { AuthContext } from "../Context/AuthContext"
 import axios from "axios"
 import {toast } from "react-toastify";
 import {  useNavigate } from "react-router-dom"
-
+const apiUrl = import.meta.env.VITE_API_URL;
 export default function UserLogin(){
     const { login,token,setLogin, setToken}=useContext(AuthContext)
     const[loginOpen, setLoginOpen]=useState(false)
@@ -19,7 +19,7 @@ export default function UserLogin(){
          if(!token || !login){
       const fetchAccount=async()=>{
   await axios.get(
-  'http://localhost:8000/account/',
+  '${apiUrl}/account/',
   {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -27,13 +27,14 @@ export default function UserLogin(){
     withCredentials: true,
   }
 ).then((response)=>{
-      
+      console.log(apiUrl)
       setLogin(response.data?.userData)
       setToken(response.data?.access_Token)
       navigate('/account')
 
     })
     .catch((err)=>{
+      console.log(apiUrl)
       console.log(err)
       console.log('abhishek')
       console.log(err?.response?.data?.error)
