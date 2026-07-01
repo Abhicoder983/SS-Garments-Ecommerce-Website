@@ -41,7 +41,7 @@ export default function Homes() {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true
         });
-        console.log("abhishekapi",apiUrl)
+        console.log("abhishekapi")
         console.log(res.data?.productData)
         setProduct(res.data?.productData || {});
         setLogin(res.data.userData);

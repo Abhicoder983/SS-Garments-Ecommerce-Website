@@ -19,7 +19,7 @@ export default function UserLogin(){
          if(!token || !login){
       const fetchAccount=async()=>{
   await axios.get(
-  '${apiUrl}/account/',
+  `${apiUrl}/account/`,
   {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -73,7 +73,7 @@ fetchAccount()
       if(!(mobile && otp)){
         return toast.warn('Enter Mobile number and OTP')
       }
-     await axios.post('http://localhost:8000/signup/',
+     await axios.post(`${apiUrl}/signup/`,
 
       {mobile,otp},{ withCredentials: true })
       .then((response)=>{
@@ -105,7 +105,7 @@ fetchAccount()
         return toast.warn('Please Enter number')
       }
       setotpEnable(false)
-      await axios.post('http://localhost:8000/verify/',{
+      await axios.post(`${apiUrl}/verify/`,{
         mobile
       }
     , { withCredentials: true })

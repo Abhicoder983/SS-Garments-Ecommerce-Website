@@ -52,7 +52,7 @@ export default function CartPage() {
     if (qty < 1) return;
 
     await axios.patch (
-      "/cart/",
+      `${apiUrl}/cart/`,
       { product_id, qty },
       {headers:{
         Authorization:`Bearer ${token}`
