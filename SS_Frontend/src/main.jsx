@@ -5,8 +5,11 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { StoreProvider } from './Context/StoreContext.jsx';
 import { AuthProvider } from './Context/AuthContext.jsx';
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
 
 ReactDOM.createRoot(document.getElementById('root')).render(
+  <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
   <BrowserRouter>
   <AuthProvider>
   <StoreProvider>
@@ -16,4 +19,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 </StoreProvider>
 </AuthProvider>
   </BrowserRouter>
+  </GoogleOAuthProvider>
 );

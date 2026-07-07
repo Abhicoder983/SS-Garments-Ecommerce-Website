@@ -8,13 +8,12 @@ class UserModel(models.Model):
     id = ObjectIdAutoField(primary_key=True)
     name = models.CharField(max_length=100, null=True,blank=True)
     email = models.EmailField(unique=True, null=True,blank=True)
-    mobile_no = models.CharField(null=False,max_length=10,unique=True)
     profile_image=models.ImageField(upload_to='profile_image/', null=True, blank=True)
-    address=models.JSONField(blank=True)
+    address=models.JSONField(blank=True,null=False,default=list)
     total_order= models.IntegerField(null=True,blank=True)
     is_active = models.BooleanField(default=True)
     def __str__(self):
-        return self.mobile_no
+        return self.email
 
 
 # ============================

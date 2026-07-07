@@ -35,9 +35,10 @@ DEBUG = True
 CORS_ALLOWED_ORIGINS = [
     "https://ssgarment.in",
     "https://www.ssgarment.in",
+    "http://localhost:5173"
 ]
 
-ALLOWED_HOSTS = ['ssgarment.in', 'www.ssgarment.in', 'api.ssgarment.in', '13.126.138.14']
+ALLOWED_HOSTS = ['ssgarment.in', 'www.ssgarment.in', 'api.ssgarment.in', '13.126.138.14',"127.0.0.1", "localhost"]
 
 
 
@@ -173,6 +174,10 @@ AWS_S3_OBJECT_PARAMETERS = {
     "CacheControl": "max-age=86400",
 }
 
+GOOGLE_OAUTH_CLIENT_ID = config('VITE_GOOGLE_CLIENT_ID')
+GOOGLE_OAUTH_CLIENT_SECRET = config('GOOGLE_CLIENT_SECRET')
+GOOGLE_OAUTH_REDIRECT_URI = config('REDIRECT_URI')
+
 STORAGES = {
     "default": {
         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
@@ -181,3 +186,14 @@ STORAGES = {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587 # Use 587 for TLS or 465 for SSL
+EMAIL_USE_TLS = True # Enable TLS (STARTTLS)
+EMAIL_USE_SSL=False
+  # Ensure SSL is False
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')  # Use an App Password, NOT your real password
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

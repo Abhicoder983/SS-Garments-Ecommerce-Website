@@ -48,7 +48,6 @@ export default function Account() {
         navigate("/login");
       }
     };
-
     fetchAccount();
   }, []);
 
@@ -151,8 +150,8 @@ const logout =async()=>{
         <div className="flex flex-col md:flex-row items-center gap-6 mb-6">
           <div className="w-full md:w-2/3 text-center md:text-left">
             <h3 className="text-xl font-semibold my-3  ">
-              Name | {login?.name || "Not provided"} <br />
-              Mobile | {login?.mobile_no || "Not provided"}
+              Name | {login?.name?.toUpperCase() || "Not provided"} <br />
+              Email | {login?.email || "Not provided"}
             </h3>
            
           </div>

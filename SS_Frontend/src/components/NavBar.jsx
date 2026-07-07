@@ -9,12 +9,14 @@ import { StoreContext } from "../Context/StoreContext.jsx";
 import { useContext, useState } from "react"
 import { useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify"
+import GoogleSignInDropdown from "./auth/GoogleSignInButton.jsx"
 export default function NavBar(){
     const {openMenu,setOpenMenu}=useContext(StoreContext)
     const [searchParams, setSearchParams] = useSearchParams();
     const [search, setSearch] = useState(searchParams.get("search") || "");
     const navigate = useNavigate()
-
+  
+    
    
 
     const handleSearch = async(e) => {
@@ -43,7 +45,7 @@ export default function NavBar(){
   
     return(
         <>
-       <nav className="sticky top-0 w-full h-fit bg-linear-to-r from-black via-gray-900 to-gray-700 text-white p-1.5 flex justify-around items-center z-20">
+       <nav className="sticky top-0 w-full h-fit bg-linear-to-r from-black via-gray-900 to-gray-700 text-white p-1.5 flex justify-around items-center z-50">
                     <div>
                        <img src={openMenu?close:menu} className='sm:w-10 w-5 sm:h-8 h-7 ' onClick={()=>setOpenMenu((prevMenu)=>!prevMenu)} />
                    </div>
@@ -69,6 +71,7 @@ export default function NavBar(){
                    
                    
                </nav>
+              
                 <div
         className={`fixed top-10  overflow-scroll left-0 inset-0 bg-black/70 backdrop-blur-sm h-full w-full text-white z-40 p-5 transform transition-transform duration-300 ${
           openMenu ? "translate-x-0" : "-translate-x-full"

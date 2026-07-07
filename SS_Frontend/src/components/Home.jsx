@@ -4,7 +4,7 @@ import latest1 from "../assets/homeAssests/latest/latest1.jpg"
 import latest2 from "../assets/homeAssests/latest/latest2.jpg"
 import india from "../assets/homeAssests/policy/india.png"
 import returnDelivery from "../assets/homeAssests/policy/returnDelivery.png"
-
+import GoogleSignInButton from "./auth/GoogleSignInButton";
 import axios from "axios";
 import offer1 from "../assets/homeAssests/extraOffer/offer1.jpg"
 import offer2 from "../assets/homeAssests/extraOffer/offer2.jpg"
@@ -79,6 +79,9 @@ const shortText = (text, limit = 120) =>
     return(
     <>
         <NavBar />
+        
+
+  
         {/* home section  */}
         
       <div className={openMenu?'h-[75vh] overflow-y-clip w-auto':''}>

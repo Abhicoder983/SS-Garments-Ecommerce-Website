@@ -53,7 +53,10 @@ class JWTMiddleware:
             # Custom user model se user fetch
 
             user=UserModel.objects.filter(id=user_id).first()
+            print('log1')
+            print(user)
             if(not user):
+                print('log2')
                 return JsonResponse({'error':'user does not exist'},status=401)
             print(1)
             request.id= user

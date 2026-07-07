@@ -8,11 +8,14 @@ import CartPage from "./components/Cart";
 import ProductDetail from "./components/ProductDetail";
 import SearchResults from "./components/SearchResult"
 import Buynow from "./components/Buynow";
+import GoogleSignInDropdown from "./components/auth/GoogleSignInButton.jsx"
 
 function App() {
   return (
     <>
     <ToastContainer />
+    <GoogleSignInDropdown />
+
   <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/account" element={<Account />} />

@@ -3,9 +3,11 @@ from rest_framework.response import Response
 from django.http import JsonResponse
 import random, uuid, time
 from datetime import datetime, timedelta
+from django.core.mail import EmailMessage
 from django.views.decorators.csrf import csrf_exempt
 from .models import UserModel, refreshTokenStore,Products,Order,ProductVariant,VariantSize
 from . import models
+import requests
 from .serializer import userSerializer,productSerializer, orderSerializer,cartSerializer,variantSizeSerializer
 from django.db.models import Q
 from .utils import generateJWT, getIPAddress
@@ -15,30 +17,50 @@ from bson import ObjectId
 import json
 import jwt
 from django.conf import settings
+from django.core.files.base import ContentFile
+from google.oauth2 import id_token as google_id_token
+from google.auth.transport import requests as google_requests
 
 # ===============================
 # 🚀 SEND OTP
 # ===============================
 @api_view(["POST"])
 def verifyUser(request):
-    mobile = request.data.get("mobile")
+    recp_email = request.data.get("email")
 
-    if not mobile:
-        return Response({"error": "Mobile number is required"}, status=400)
+    if not recp_email:
+        return Response({"error": "Email is required"}, status=400)
 
     otp = random.randint(100000, 999999)
 
     # Save OTP for 2 minutes
     print(otp)
-    request.session[str(mobile)] = {
+    print(recp_email)
+
+
+    request.session[str(recp_email)] = {
         "otp": otp,
         "expires": time.time() + 120
     }
     print("VERIFY SESSION KEY:", request.session.session_key)
-    print(request.session.get(str(mobile)))
+    print(request.session.get(str(recp_email)))
+    try:
+        email2=EmailMessage(
+                              'ChatBot registeration OTP',
+                              'To verify your email, your otp is {}'.format(otp),
+                              'kumarabhishekasdf1234@gmail.com',
+                              (recp_email,)
+                         )
+                         
+        email2.send()
+    except Exception as e:
+        print(e)
+        return Response({"error":"email can't be send"}, status=500)
+
+
 
     return Response({
-        "mobile": mobile,
+        "email": recp_email,
         "otp": otp,        # REMOVE IN PRODUCTION
         "message": "OTP sent successfully"
     }, status=200)
@@ -51,17 +73,17 @@ def verifyUser(request):
 @api_view(["POST"])
 def signup(request):
     
-    mobile = request.data.get("mobile")
+    email = request.data.get("email")
     otp = request.data.get("otp")
-    
-    print(otp)
-    print(mobile)
 
-    if not mobile or not otp:
+    print(otp)
+    print(email)
+
+    if not email or not otp:
         return Response({"error": "Mobile & OTP required"}, status=400)
 
     # SESSION OTP CHECK
-    sessionData = request.session.get(str(mobile))
+    sessionData = request.session.get(str(email))
     print(sessionData)
     if not sessionData:
         print(1)
@@ -79,13 +101,13 @@ def signup(request):
     print(3)
     # Create new user
     genRefreshToken=None
-    user = UserModel.objects.filter(mobile_no=mobile).first()
+    user = UserModel.objects.filter(email=email).first()
     ip = getIPAddress.get_client_ip(request)
     jti = uuid.uuid4().hex
     expiry_at = datetime.utcnow() + timedelta(days=6)
     created_at = datetime.utcnow()
     if(not user):
-        user=UserModel.objects.create(mobile_no=mobile)
+        user=UserModel.objects.create(email=email)
         user_data = userSerializer(user).data
         genRefreshToken=generateJWT.generate_RefreshJwt(str(user.id), ip , jti , expiry_at, created_at)
         message='account is created'
@@ -197,6 +219,7 @@ def logout_view(request):
     try:
 
         userid=request.id 
+        print("abhi123")
         print(request.refresh_token)
         if(request.refresh_token==None):
             print('cookies')
@@ -220,7 +243,7 @@ def logout_view(request):
         response.delete_cookie("refresh_token")
         return response
     except Exception as e:
-        response = JsonResponse({"message": "Logged out"},status=401)
+        response = JsonResponse({"message": "error in Logged out"},status=401)
 
         response.delete_cookie("refresh_token")
         return response
@@ -419,6 +442,8 @@ def orders(request):
         userJson= {'error':'token invalid'}
         response= Response(userJson,status=401)
         response.set_cookie( key="refresh_token",        # cookie name
+                            
+                            
             value=None,        # value
             httponly=True,              # JS se access nahi
             secure=False,               # localhost → False, prod → True
@@ -578,9 +603,6 @@ def cart(request):
             # index=int(request.data.get('index'))
             productID=request.data.get('product_id')
             qty=int(request.data.get('qty'))
-            print(qty)
-            print(1)
-            print(cart_item)
             cart_item["cartData"] = [
     {**item, "qty": qty} if item["product_id"] == productID else item
     for item in  cart_item["cartData"]
@@ -921,15 +943,233 @@ def product_list(request):
     return Response({
         "count": len(products_map),
         "products": list(products_map.values())
-    })           
+    })    
+
+def download_google_profile_image(picture_url, email):
+    """
+    Downloads the profile picture from Google's URL and returns a
+    ContentFile ready to be assigned to an ImageField. Because your
+    ImageField's storage backend is already configured for S3, saving
+    the model will automatically upload this file to your S3 bucket
+    under 'profile_image/' (as defined in upload_to).
+    """
+    if not picture_url:
+        return None
+ 
+    response = requests.get(picture_url, timeout=5)
+    if response.status_code != 200:
+        return None
+ 
+    # filename doesn't need to be fancy, Django will handle uniqueness on S3
+    file_name = f"{email.split('@')[0]}_google.jpg"
+    return ContentFile(response.content, name=file_name)
+ 
+ 
+@api_view(["POST"])
+def googleAuthentication(request):
+    print('1234')
+    ID_Token = request.data.get("id_token")
+    print(ID_Token)
+ 
+    if not ID_Token:
+        return Response({"error": "id_token is required."}, status=400)
+ 
+    try:
+        idinfo = google_id_token.verify_oauth2_token(
+            ID_Token, google_requests.Request(), settings.GOOGLE_OAUTH_CLIENT_ID
+        )
+    except ValueError:
+        return Response({"error": "Invalid Google token."}, status=400)
+ 
+    email = idinfo.get("email")
+    name = idinfo.get("name", "")
+    picture_url = idinfo.get("picture", "")
+ 
+    if not email:
+        return Response({"error": "Google account has no email."}, status=status.HTTP_400_BAD_REQUEST)
+
+    genRefreshToken=None
+    ip = getIPAddress.get_client_ip(request)
+    jti = uuid.uuid4().hex
+    expiry_at = datetime.utcnow() + timedelta(days=6)
+    created_at = datetime.utcnow()
+ 
+    try:
+        # user already exists -> just log them in, don't touch image/mobile again
+        user = UserModel.objects.get(email=email)
+    
+        message='login is successful'
+        
+        genRefreshToken = generateJWT.generate_RefreshJwt(str(user.id), ip, jti, expiry_at, created_at)
+
+    except UserModel.DoesNotExist:
+        # new user -> create with placeholder mobile_no, then attach the image
+        user = UserModel(
+            email=email,
+            name=name,
+            is_active=True,
+        )
+ 
+        image_file = download_google_profile_image(picture_url, email)
+        if image_file:
+            # assigning via .save() on the field uploads it to S3 automatically
+            user.profile_image.save(image_file.name, image_file, save=False)
+ 
+        user.save()
+        
+    user_data = userSerializer(user).data
+    if(not genRefreshToken):
+        message='Account created successfully'
+        
+        genRefreshToken = generateJWT.generate_RefreshJwt(str(user.id), ip, jti, expiry_at, created_at)
+
+    print(user_data)
+    # Generate tokens
+    accessToken = generateJWT.generate_AccessToken(user)
+
+   
+  # Save refresh token
+    refreshTokenStore.objects.create(
+        user=user,
+        jti=str(jti),
+        token=str(genRefreshToken),
+        expires_at=expiry_at,
+        ip_address=ip
+    )
+
+    response=Response({
+        "message": message,
+        "user": user_data,
+        "accessToken": accessToken
+    },status=200)
+    print("generaterefresh",genRefreshToken)
+    print(1)
+    response.set_cookie(key="refresh_token",        # cookie name
+        value=genRefreshToken,        # value
+        httponly=True,              # JS se access nahi
+        secure=False,               # localhost → False, prod → True
+        samesite="Lax",             # CSRF protection
+        max_age=6 * 24 * 60 * 60    # seconds (6 days))
+    )
+    return response
 
 
 
-
-            
-
-            
+ 
 
 
+@api_view(["POST"])
+def googleOauth2Authentication(request):
+    print('1234')
+    code = request.data.get("code")
+    print(code)
 
+    if not code:
+        return Response({"error": "code is required."}, status=400)
 
+    # ---------------------------------------------------------
+    # Code ko Google ke token endpoint pe exchange karo
+    # ---------------------------------------------------------
+    token_res = requests.post(
+        "https://oauth2.googleapis.com/token",
+        data={
+            "code": code,
+            "client_id": settings.GOOGLE_OAUTH_CLIENT_ID,
+            "client_secret": settings.GOOGLE_OAUTH_CLIENT_SECRET,
+            "redirect_uri": settings.GOOGLE_OAUTH_REDIRECT_URI,  # frontend se EXACT match
+            "grant_type": "authorization_code",
+        },
+    )
+
+    if token_res.status_code != 200:
+        print("TOKEN EXCHANGE FAILED:", token_res.json())
+        return Response(
+            {"error": "Failed to exchange code with Google.", "details": token_res.json()},
+            status=400,
+        )
+
+    access_token = token_res.json().get("access_token")
+
+    # ---------------------------------------------------------
+    # access_token se Google se user info maango
+    # ---------------------------------------------------------
+    userinfo_res = requests.get(
+        "https://www.googleapis.com/oauth2/v3/userinfo",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+
+    if userinfo_res.status_code != 200:
+        return Response({"error": "Failed to fetch user info from Google."}, status=400)
+
+    idinfo = userinfo_res.json()
+
+    email = idinfo.get("email")
+    name = idinfo.get("name", "")
+    picture_url = idinfo.get("picture", "")
+
+    if not email:
+        return Response({"error": "Google account has no email."}, status=status.HTTP_400_BAD_REQUEST)
+
+    genRefreshToken=None
+    ip = getIPAddress.get_client_ip(request)
+    jti = uuid.uuid4().hex
+    expiry_at = datetime.utcnow() + timedelta(days=6)
+    created_at = datetime.utcnow()
+
+    try:
+        # user already exists -> just log them in, don't touch image/mobile again
+        user = UserModel.objects.get(email=email)
+    
+        message='login is successful'
+        
+        genRefreshToken = generateJWT.generate_RefreshJwt(str(user.id), ip, jti, expiry_at, created_at)
+
+    except UserModel.DoesNotExist:
+        # new user -> create with placeholder mobile_no, then attach the image
+        user = UserModel(
+            email=email,
+            name=name,
+            is_active=True,
+        )
+
+        image_file = download_google_profile_image(picture_url, email)
+        if image_file:
+            # assigning via .save() on the field uploads it to S3 automatically
+            user.profile_image.save(image_file.name, image_file, save=False)
+
+        user.save()
+        
+    user_data = userSerializer(user).data
+    if(not genRefreshToken):
+        message='Account created successfully'
+        
+        genRefreshToken = generateJWT.generate_RefreshJwt(str(user.id), ip, jti, expiry_at, created_at)
+
+    print(user_data)
+    # Generate tokens
+    accessToken = generateJWT.generate_AccessToken(user)
+
+  # Save refresh token
+    refreshTokenStore.objects.create(
+        user=user,
+        jti=str(jti),
+        token=str(genRefreshToken),
+        expires_at=expiry_at,
+        ip_address=ip
+    )
+
+    response=Response({
+        "message": message,
+        "user": user_data,
+        "accessToken": accessToken
+    },status=200)
+    print("generaterefresh",genRefreshToken)
+    print(1)
+    response.set_cookie(key="refresh_token",        # cookie name
+        value=genRefreshToken,        # value
+        httponly=True,              # JS se access nahi
+        secure=False,               # localhost → False, prod → True
+        samesite="Lax",             # CSRF protection
+        max_age=6 * 24 * 60 * 60    # seconds (6 days))
+    )
+    return response
