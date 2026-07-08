@@ -72,20 +72,19 @@ export default function ProductDetail() {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(
-          `${apiUrl}/productDetail/${variantId}/`,{
+          `{apiUrl}/productDetail/${variantId}/`,{
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true
         }
         );
-        const data = res.response.data;
-        console.log(data)
+        const data = res.data;
         setProduct(data?.productData);
-        setSelectedSize(data?.productData?.variants?.[selectedColor]?.sizes?.[0] || null);
+        setSizes(data?.productData?.variants?.[selectedColor]?.sizes || null);
       } catch (err) {
+      
         const data = err.response.data;
         setProduct(data?.productData);
         setSizes(data?.productData?.variants?.[selectedColor]?.sizes || null);
-        console.error(err);
       } finally {
         setLoading(false);
       }
