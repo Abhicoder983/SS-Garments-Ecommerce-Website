@@ -6,8 +6,9 @@ import { useState, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../Context/AuthContext";
 import { toast } from "react-toastify"
+const apiUrl = import.meta.env.VITE_API_URL;
 export default function ContactUs() {
-   const { login, setLogin, token, setToken, reload } = useContext(AuthContext);
+   const { setLogin, token, setToken} = useContext(AuthContext);
   const [formData, setFormData] = useState({
   name: "",
   email: "",
@@ -30,7 +31,7 @@ export default function ContactUs() {
 
   try {
     const response = await axios.post(
-      "http://localhost:8000/contactusEmail/",
+      `${apiUrl}/contactusEmail/`,
       formData,
       { withCredentials: true, headers: { 
            Authorization:`Bearer ${token}`,
@@ -47,8 +48,13 @@ export default function ContactUs() {
       message: "",
     });
     response?.data?.success?toast(response.data.message):toast.error(response.data.message)
+
+
   } catch (error) {
     if (error.response) {
+      setLogin(null)
+      setToken(null)
+
       if(error.response?.data?.success){
       setFormData({
       name: "",
