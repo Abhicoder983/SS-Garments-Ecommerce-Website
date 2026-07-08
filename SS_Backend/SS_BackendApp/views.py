@@ -31,6 +31,11 @@ from django.core.mail import EmailMultiAlternatives
 def verifyUser(request):
     
     recp_email = request.data.get("email")
+
+    if not recp_email:
+        return Response({"error": "Email is required"}, status=400)
+
+    otp = random.randint(100000, 999999)
     html = render_to_string(
     "emails/otpEmailTemp.html",
     {
@@ -39,11 +44,6 @@ def verifyUser(request):
         "year": 2026,
     },
 )
-
-    if not recp_email:
-        return Response({"error": "Email is required"}, status=400)
-
-    otp = random.randint(100000, 999999)
 
     # Save OTP for 2 minutes
     print(otp)
