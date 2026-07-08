@@ -21,7 +21,19 @@ class JWTMiddleware:
 
 
     def __call__(self, request):
-        if(request.path not in ["/login/","/signup/","/verify/","/logout/","/orderdetails/","/account/","/cart/","/"]):
+        if (
+    request.path not in [
+        "/login/",
+        "/signup/",
+        "/verify/",
+        "/logout/",
+        "/orderdetails/",
+        "/account/",
+        "/cart/",
+        "/",
+    ]
+    and not request.path.startswith("/productDetail/")
+):
              print('1')
              return self.get_response(request)
 
