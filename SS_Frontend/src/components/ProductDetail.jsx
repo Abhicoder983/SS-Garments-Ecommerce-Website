@@ -72,7 +72,7 @@ export default function ProductDetail() {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(
-          `{apiUrl}/productDetail/${variantId}/`,{
+          `${apiUrl}/productDetail/${variantId}/`,{
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true
         }
