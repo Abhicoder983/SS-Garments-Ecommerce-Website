@@ -112,13 +112,13 @@ export default function Account() {
         ); 
         setLogin(res.data.userData); 
         setToken(res.data.access_Token)
-        toast("Profile image updated");
+        toast("Profile name or image updated");
         setEditProfile(false)
        } 
        catch{ 
          setLogin(null)
         setToken(null);
-        toast.error("Image upload failed please try to logout and login again"); 
+        toast.error("Updating Image or Profile  failed please try to logout and login again"); 
         setEditProfile(false)
         navigate('/login')
       } 

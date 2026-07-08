@@ -5,6 +5,8 @@ import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import CartPage from "./components/Cart";
+import ContactUs from "./components/ContactUs";
+import AboutUs from "./components/AboutUs"
 import ProductDetail from "./components/ProductDetail";
 import SearchResults from "./components/SearchResult"
 import Buynow from "./components/Buynow";
@@ -24,6 +26,10 @@ function App() {
       <Route path="/buynow" element={<Buynow />} />
       <Route path="/checkout" element={<ProductDetail />} />
       <Route path="/products" element={< SearchResults />}/>
+      <Route path="/contactus" element={< ContactUs />}/>
+      <Route path="/aboutus" element={< AboutUs />}/>
+
+
     </Routes>
     </>
   );

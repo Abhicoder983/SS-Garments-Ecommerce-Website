@@ -78,10 +78,10 @@ export default function NavBar(){
         }`}
         onClick={()=>setOpenMenu(prev=>!prev)}>
          <ul className="space-y-4 text-lg">
-          <li><Link to="/">Home</Link></li>
-          <li>Shop</li>
-          <li>About</li>
-          <li>Contact</li>
+          <li className="pointer"><Link to="/">Home</Link></li>
+          <li className="pointer">Shop</li>
+          <li className="pointer"><Link to="/aboutus">About</Link></li>
+          <li className="pointer"><Link to="/contactus">Contact US</Link></li>
           </ul>
         
       </div>

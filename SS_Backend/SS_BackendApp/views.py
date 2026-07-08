@@ -20,13 +20,25 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
+
 
 # ===============================
 # 🚀 SEND OTP
 # ===============================
 @api_view(["POST"])
 def verifyUser(request):
+    
     recp_email = request.data.get("email")
+    html = render_to_string(
+    "emails/otpEmailTemp.html",
+    {
+        "email": recp_email,
+        "otp": otp,
+        "year": 2026,
+    },
+)
 
     if not recp_email:
         return Response({"error": "Email is required"}, status=400)
@@ -45,14 +57,14 @@ def verifyUser(request):
     print("VERIFY SESSION KEY:", request.session.session_key)
     print(request.session.get(str(recp_email)))
     try:
-        email2=EmailMessage(
-                              'ChatBot registeration OTP',
-                              'To verify your email, your otp is {}'.format(otp),
-                              'kumarabhishekasdf1234@gmail.com',
-                              (recp_email,)
-                         )
-                         
-        email2.send()
+        msg = EmailMultiAlternatives(
+    subject="Your OTP Verification Code",
+    body="Your OTP is {}".format(otp),
+    from_email="kumarabhishekasdf1234@gmail.com",
+    to=[recp_email],
+)
+        msg.attach_alternative(html, "text/html")
+        msg.send()
     except Exception as e:
         print(e)
         return Response({"error":"email can't be send"}, status=500)
@@ -1173,3 +1185,137 @@ def googleOauth2Authentication(request):
         max_age=6 * 24 * 60 * 60    # seconds (6 days))
     )
     return response
+
+@api_view(["POST"])
+def contactUsEmail(request):
+    NoneRefreshToken=False
+    if getattr(request, "id", None):
+        data=userSerializer(request.id).data
+        userData= data
+        refreshToken=request.refresh_token
+        accessToken=request.access_token
+        userJson={
+            'userData':userData,
+            'access_Token':accessToken
+        }
+    elif(getattr(request, "userData", None) is None):
+        NoneRefreshToken=True
+        userJson= {'error':'token invalid'}
+    try:
+        name = request.data.get("name")
+        email = request.data.get("email")
+        phone = request.data.get("phone")
+        subject = request.data.get("subject")
+        message = request.data.get("message")
+
+        # Validation
+        if not all([name, email, phone, subject, message]):
+            response = Response(
+                {
+                    "success": False,
+                    "message": "All fields are required."
+                },
+                status=400
+            )
+
+    
+        else:
+            html = render_to_string(
+                "emails/contact_email.html",
+                {
+                    "name": name,
+                    "email": email,
+                    "phone": phone,
+                    "subject": subject,
+                    "message": message,
+                },
+            )
+
+            email_message = EmailMultiAlternatives(
+                subject=f"New Contact Request - {subject}",
+                body=message,
+                from_email=settings.EMAIL_HOST_USER,
+                to=[settings.EMAIL_HOST_USER],   # Your email
+                reply_to=[email],                # Reply goes to customer
+            )
+
+            email_message.attach_alternative(html, "text/html")
+            email_message.send()
+
+            response=Response(
+                {
+                    "success": True,
+                    "message": "Your message has been sent successfully."
+                },
+                status= 200
+            )
+
+    
+        
+    
+        if(NoneRefreshToken):
+            response=Response({
+                    "success": True,
+                    "message": "Your message has been sent successfully."
+                },status=400)
+            response.set_cookie( key="refresh_token",        # cookie name
+            value=None,                                      # value
+            httponly=True,                                   # JS se access nahi
+            secure=False,                                    # localhost → False, prod → True
+            samesite="Lax",                                  # CSRF protection
+            )
+            return response
+        
+        elif(refreshToken is not None):
+
+            response.set_cookie(
+            key="refresh_token",        # cookie name
+            value=refreshToken,         # value
+            httponly=True,              # JS se access nahi
+            secure=False,               # localhost → False, prod → True
+            samesite="Lax",             # CSRF protection
+            max_age=6 * 24 * 60 * 60    # seconds (6 days)
+            )
+
+            return response
+        
+        else:
+            return response
+        
+        
+    except Exception as e:
+        print(e)
+       
+        response=Response({
+                    "success": True,
+                    "message": "Your message can't be send. Try again later"
+                },status=200)
+        if(NoneRefreshToken):
+            response=Response({
+                    "success": True,
+                    "message": "Your message can't be send. Try again later"
+                },status=400)
+
+            response.set_cookie( key="refresh_token",        # cookie name
+            value=None,        # value
+            httponly=True,              # JS se access nahi
+            secure=False,               # localhost → False, prod → True
+            samesite="Lax",             # CSRF protection
+    
+            )
+            return response
+    
+        elif(refreshToken is not None):
+            response.set_cookie(
+            key="refresh_token",        # cookie name
+            value=refreshToken,        # value
+            httponly=True,              # JS se access nahi
+            secure=False,               # localhost → False, prod → True
+            samesite="Lax",             # CSRF protection
+            max_age=6 * 24 * 60 * 60    # seconds (6 days)
+            )
+            return response
+        
+        else:
+            return response
+    

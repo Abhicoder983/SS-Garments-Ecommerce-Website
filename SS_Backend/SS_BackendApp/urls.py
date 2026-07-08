@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path,include
 from SS_BackendApp import urls
-from .views import login,verifyUser,signup,logout_view,home,orders,account,cart,productDetail,product_list, googleAuthentication,googleOauth2Authentication
+from .views import login,verifyUser,signup,logout_view,home,orders,account,cart,productDetail,product_list, googleAuthentication,googleOauth2Authentication,contactUsEmail
 
 urlpatterns = [
     path("login/", login),
@@ -15,7 +15,8 @@ urlpatterns = [
     path('productDetail/<str:id>/', productDetail),
     path('products/',product_list),
     path('google-login/', googleAuthentication),
-    path('google-oauth2-authentication/',googleOauth2Authentication)
+    path('google-oauth2-authentication/',googleOauth2Authentication),
+    path('contactusEmail/',contactUsEmail)
 
 
 
