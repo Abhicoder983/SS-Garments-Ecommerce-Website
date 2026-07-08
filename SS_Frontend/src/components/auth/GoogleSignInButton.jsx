@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { StoreContext } from "../../Context/StoreContext.jsx";
 import { AuthContext } from "../../Context/AuthContext.jsx"
-const API_BASE_URL = import.meta.env.VITE_API_Local_BASE_URL;
+const apiUrl = import.meta.env.VITE_API_URL;
 import {toast } from "react-toastify";
 
 export default function GoogleSignInDropdown () {
@@ -20,7 +20,7 @@ export default function GoogleSignInDropdown () {
       const idToken = credentialResponse.credential;
       console.log(idToken)
       // ${API_BASE_URL}/google-login/
-      const res = await axios.post("http://localhost:8000/google-login/", {
+      const res = await axios.post(`${apiUrl}/google-login/`, {
         id_token: idToken,
       },{ withCredentials: true } );
       
