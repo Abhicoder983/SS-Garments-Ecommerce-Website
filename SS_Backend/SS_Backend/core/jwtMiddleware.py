@@ -31,6 +31,7 @@ class JWTMiddleware:
         "/account/",
         "/cart/",
         "/",
+        "/contactusEmail/"
     ]
     and not request.path.startswith("/productDetail/")
 ):
