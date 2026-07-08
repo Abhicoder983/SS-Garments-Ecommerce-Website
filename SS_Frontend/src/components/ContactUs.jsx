@@ -27,11 +27,40 @@ export default function ContactUs() {
   const handleSubmit = async (e) => {
   e.preventDefault();
 
+  // Trim whitespace
+  const name = formData.name.trim();
+  const email = formData.email.trim();
+  const phone = formData.phone.trim();
+  const subject = formData.subject.trim();
+  const message = formData.message.trim();
+
+  // Required fields
+  if (!name || !email || !phone || !subject || !message) {
+    toast.error("Please fill all fields.");
+    return;
+  }
+
+  // Email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailRegex.test(email)) {
+    toast.error("Please enter a valid email address.");
+    return;
+  }
+
+  // Phone validation (Indian mobile number)
+  const phoneRegex = /^[6-9]\d{9}$/;
+
+  if (!phoneRegex.test(phone)) {
+    toast.error("Please enter a valid 10-digit mobile number.");
+    return;
+  }
+
   setLoading(true);
 
   try {
     const response = await axios.post(
-      `${apiUrl}/contactusEmail/`,
+      `http://localhost:8000/contactusEmail/`,
       formData,
       { withCredentials: true, headers: { 
            Authorization:`Bearer ${token}`,
@@ -47,7 +76,7 @@ export default function ContactUs() {
       subject: "",
       message: "",
     });
-    response?.data?.success?toast(response.data.message):toast.error(response.data.message)
+    response?.data?.success?toast.success(response.data.message):toast.error(response.data.message)
 
 
   } catch (error) {
@@ -65,7 +94,7 @@ export default function ContactUs() {
     });
   }
       
-      error.response?.data?.success?toast(error.response.data.message):toast.error(error.response.data.message)
+      error.response?.data?.success?toast.success(error.response.data.message):toast.error(error.response.data.message)
       
     } else {
       alert("Something went wrong.");
@@ -125,10 +154,14 @@ export default function ContactUs() {
         </div>
 
         <form className="bg-white rounded-3xl shadow p-8 space-y-5" onSubmit={handleSubmit}>
-          <input className="w-full border rounded-xl p-3" placeholder="Your Name" name="name" onChange={handleChange} value={formData?.name}/>
-          <input className="w-full border rounded-xl p-3" placeholder="Email" name="email" onChange={handleChange} value={formData?.email}/>
-          <input className="w-full border rounded-xl p-3" placeholder="Phone" name="phone" onChange={handleChange} value={formData?.phone}/>
-          <input className="w-full border rounded-xl p-3" placeholder="Subject" name="subject" onChange={handleChange} value={formData?.subject}/>
+          <input type="text" maxLength={50} className="w-full border rounded-xl p-3" placeholder="Your Name" name="name" onChange={handleChange} value={formData?.name}/>
+          <input type="email" className="w-full border rounded-xl p-3" placeholder="Email" name="email" onChange={handleChange} value={formData?.email}/>
+          <input type="tel" maxLength={10} pattern="[6-9]{1}[0-9]{9}" className="w-full border rounded-xl p-3" placeholder="Phone" name="phone" 
+          onChange={(e) => {const value = e.target.value.replace(/\D/g, "");
+    setFormData({ ...formData, phone: value });
+  }} value={formData?.phone}
+  />
+          <input type="text" className="w-full border rounded-xl p-3" placeholder="Subject" name="subject" onChange={handleChange} value={formData?.subject}/>
           <textarea rows="5" className="w-full border rounded-xl p-3" placeholder="Message" name="message" onChange={handleChange} value={formData?.message}/>
           <button className="bg-yellow-400 hover:bg-yellow-500 transition rounded-xl px-8 py-3 font-semibold" disabled={loading}>
             {loading ? "Sending..." : "Send Message"}

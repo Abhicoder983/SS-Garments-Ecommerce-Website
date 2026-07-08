@@ -16,6 +16,7 @@ from django.middleware.csrf import get_token
 from bson import ObjectId
 import json
 import jwt
+import re
 from django.conf import settings
 from django.core.files.base import ContentFile
 from google.oauth2 import id_token as google_id_token
@@ -30,7 +31,14 @@ from django.core.mail import EmailMultiAlternatives
 @api_view(["POST"])
 def verifyUser(request):
     
-    recp_email = request.data.get("email")
+    recp_email = request.data.get("email", "").strip()
+    email_regex = r"^[^\s@]+@[^\s@]+\.[^\s@]+$"
+    if not re.match(email_regex, recp_email):
+        return Response(
+            {"success": False, "error": "Invalid email address."},
+            status=400,
+        )
+
 
     if not recp_email:
         return Response({"error": "Email is required"}, status=400)
@@ -1194,28 +1202,42 @@ def contactUsEmail(request):
         userData= data
         refreshToken=request.refresh_token
         accessToken=request.access_token
-        userJson={
-            'userData':userData,
-            'access_Token':accessToken
-        }
+       
     elif(getattr(request, "userData", None) is None):
         NoneRefreshToken=True
-        userJson= {'error':'token invalid'}
+        
     try:
         name = request.data.get("name")
-        email = request.data.get("email")
-        phone = request.data.get("phone")
+        email = request.data.get("email", "").strip()
+        phone = request.data.get("phone", "").strip()
         subject = request.data.get("subject")
         message = request.data.get("message")
 
+        email_regex = r"^[^\s@]+@[^\s@]+\.[^\s@]+$"
+        phone_regex = r"^[6-9]\d{9}$"
+
         # Validation
         if not all([name, email, phone, subject, message]):
+            print(10)
             response = Response(
                 {
                     "success": False,
                     "message": "All fields are required."
                 },
                 status=400
+            )
+        if not re.match(email_regex, email):
+            print(11)
+            response = Response(
+                {"success": False, "message": "Invalid email address."},
+                status=400,
+            )
+
+        if not re.match(phone_regex, phone):
+            print(12)
+            response = Response(
+                {"success": False, "message": "Invalid mobile number."},
+                status=400,
             )
 
     
