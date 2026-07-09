@@ -68,9 +68,9 @@ export default function UserLogin(){
       .then((response) => {
         // login success, ab dashboard pe navigate kar do
         setLogin(response.data?.userData)
+        setToken(response.data?.accessToken)
         toast.success(response.data?.message)
         console.log(response.data?.accessToken)
-        setToken(response.data?.accessToken)
         setLoading(false)
         navigate('/account')
       }).catch((error)=>{
