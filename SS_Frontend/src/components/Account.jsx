@@ -33,7 +33,7 @@ export default function Account() {
     } 
 
     const fetchAccount = async () => {
-      print('fetchaccount ke andr')
+      console.log('fetchaccount ke andr')
       try {
         const res = await axios.get(`${apiUrl}/account/`, {
           headers: { Authorization: `Bearer ${token}` },
