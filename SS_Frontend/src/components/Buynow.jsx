@@ -29,8 +29,8 @@ useEffect(() => {
     console.log(1)
     console.log(login)
     console.log(token)
-    toast.warning("login is required to book order");
-    navigate("/login");
+    setLogin(null)
+    setToken(null)
   }
 }, [login, token]);
 

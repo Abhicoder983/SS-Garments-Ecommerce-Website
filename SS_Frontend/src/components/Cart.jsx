@@ -20,7 +20,6 @@ export default function CartPage() {
         console.log('if login ke andr')
         setLogin(null)
         setToken(null)
-        navigate('/login')
         }
     fetchCart();
   }, []);
