@@ -60,7 +60,7 @@ export default function ContactUs() {
 
   try {
     const response = await axios.post(
-      `http://localhost:8000/contactusEmail/`,
+      `${apiUrl}/contactusEmail/`,
       formData,
       { withCredentials: true, headers: { 
            Authorization:`Bearer ${token}`,
