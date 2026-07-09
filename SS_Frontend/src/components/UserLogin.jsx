@@ -109,7 +109,7 @@ export default function UserLogin(){
       if(!(email && otp)){
         return toast.warn('Enter your Email and OTP')
       }
-     await axios.post(`http://localhost:8000/signup/`,
+     await axios.post(`${apiUrl}/signup/`,
 
       {email,otp},{ withCredentials: true })
       .then((response)=>{
@@ -142,7 +142,7 @@ export default function UserLogin(){
         return toast.warn('Please Enter your Email')
       }
       setotpEnable(false)
-      await axios.post(`http://localhost:8000/verify/`,{
+      await axios.post(`${apiUrl}/verify/`,{
         email
       }
     , { withCredentials: true })
