@@ -211,7 +211,7 @@ export default function CartPage() {
 
             <button
               className="w-full mt-5 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg"
-              onClick={() => alert("Checkout")}
+              onClick={() => navigate('/buynow')}
             >
               Proceed to Checkout
             </button>

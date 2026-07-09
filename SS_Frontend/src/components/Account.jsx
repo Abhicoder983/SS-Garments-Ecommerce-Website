@@ -27,6 +27,7 @@ export default function Account() {
   // 🔹 Fetch account
   useEffect(() => {
     if (login && token && !reload) {
+      console.log('address')
           setAddresses(login.address)
           return;
     } 

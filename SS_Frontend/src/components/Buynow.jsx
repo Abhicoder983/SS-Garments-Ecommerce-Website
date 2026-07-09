@@ -22,9 +22,6 @@ const Buynow=()=>{
     const selectedSize=location.state?.selectedSize
     const price = product?.variants?.[variant]?.sizes?.[selectedSize].price
     const navigate=useNavigate()
-
-    console.log(location.state)
-    console.log(login)
     
 
 useEffect(() => {
