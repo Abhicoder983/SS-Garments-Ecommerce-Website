@@ -158,7 +158,7 @@ def signup(request):
 
     response=Response({
         "message": message,
-        "user": user_data,
+        "userData": user_data,
         "accessToken": accessToken
     },status=200)
     print(genRefreshToken)
@@ -1059,7 +1059,7 @@ def googleAuthentication(request):
 
     response=Response({
         "message": message,
-        "user": user_data,
+        "userData": user_data,
         "accessToken": accessToken
     },status=200)
     print("generaterefresh",genRefreshToken)
@@ -1180,7 +1180,7 @@ def googleOauth2Authentication(request):
 
     response=Response({
         "message": message,
-        "user": user_data,
+        "userData": user_data,
         "accessToken": accessToken
     },status=200)
     print("generaterefresh",genRefreshToken)

@@ -32,6 +32,7 @@ export default function Account() {
     } 
 
     const fetchAccount = async () => {
+      print('fetchaccount ke andr')
       try {
         const res = await axios.get(`${apiUrl}/account/`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -54,6 +55,7 @@ export default function Account() {
   // 🔹 Fetch orders
   const fetchOrder = async () => {
     try {
+      
       const res = await axios.get(`${apiUrl}/orderdetails/`, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,

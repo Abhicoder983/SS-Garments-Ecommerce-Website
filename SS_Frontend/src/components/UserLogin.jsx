@@ -67,7 +67,7 @@ export default function UserLogin(){
       await axios.post(`${apiUrl}/google-oauth2-authentication/`, { code: code }, { withCredentials: true })
       .then((response) => {
         // login success, ab dashboard pe navigate kar do
-        setLogin(response.data?.user)
+        setLogin(response.data?.userData)
         toast.success(response.data?.message)
         console.log(response.data?.accessToken)
         setToken(response.data?.accessToken)
@@ -109,14 +109,15 @@ export default function UserLogin(){
       if(!(email && otp)){
         return toast.warn('Enter your Email and OTP')
       }
-     await axios.post(`${apiUrl}/signup/`,
+     await axios.post(`http://localhost:8000/signup/`,
 
       {email,otp},{ withCredentials: true })
       .then((response)=>{
+        console.log(response.data)
         setLogin(response.data?.userData)
+        setToken(response.data?.accessToken)
         toast.success(response.data?.message)
         console.log(response.data?.accessToken)
-        setToken(response.data?.accessToken)
         setEmail(null)
         setotpEnable(false)
         setTimeLeft(120)
@@ -141,7 +142,7 @@ export default function UserLogin(){
         return toast.warn('Please Enter your Email')
       }
       setotpEnable(false)
-      await axios.post(`${apiUrl}/verify/`,{
+      await axios.post(`http://localhost:8000/verify/`,{
         email
       }
     , { withCredentials: true })

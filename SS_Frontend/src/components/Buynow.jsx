@@ -29,6 +29,9 @@ const Buynow=()=>{
 
 useEffect(() => {
   if (!login && !token) {
+    console.log(1)
+    console.log(login)
+    console.log(token)
     toast.warning("login is required to book order");
     navigate("/login");
   }

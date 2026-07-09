@@ -17,8 +17,10 @@ export default function CartPage() {
   /* 🔹 Fetch cart from backend (cookie based) */
   useEffect(() => {
     if(!login || !token) {
+        console.log('if login ke andr')
         setLogin(null)
         setToken(null)
+        navigate('/login')
         }
     fetchCart();
   }, []);

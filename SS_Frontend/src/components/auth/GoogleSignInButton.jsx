@@ -24,7 +24,7 @@ export default function GoogleSignInDropdown () {
         id_token: idToken,
       },{ withCredentials: true } );
       
-      setLogin(res.data.user);
+      setLogin(res.data.userData);
       setToken(res.data.accessToken);
       toast.success(res.data?.message)
 

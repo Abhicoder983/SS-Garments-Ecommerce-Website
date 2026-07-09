@@ -78,11 +78,15 @@ export default function ProductDetail() {
         }
         );
         const data = res.data;
+        setlogin(data.userData)
+        setToken(data.access_Token)
         setProduct(data?.productData);
         setSizes(data?.productData?.variants?.[selectedColor]?.sizes || null);
       } catch (err) {
       
         const data = err.response.data;
+        setlogin(data.userData)
+        setToken(data.access_Token)
         setProduct(data?.productData);
         setSizes(data?.productData?.variants?.[selectedColor]?.sizes || null);
       } finally {

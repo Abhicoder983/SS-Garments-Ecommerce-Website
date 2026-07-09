@@ -59,9 +59,7 @@ export default function Homes() {
     fetchProduct();
   }, []);
 
-const addToCart=()=>{
-  return 
-}
+
 const shortText = (text, limit = 120) =>
    text?.length > limit ? text.slice(0, limit) + "..." : text;
   // ✅ Auto slider
@@ -76,7 +74,7 @@ const shortText = (text, limit = 120) =>
 
     return () => clearInterval(interval);
   }, [imgArray]);
-    return(
+    return (
     <>
         <NavBar />
         
@@ -177,9 +175,7 @@ const shortText = (text, limit = 120) =>
     </div>
 
     <div className="flex mt-2 grow flex-col md:flex-row gap-2 md:items-end justify-end">
-      <button className="bg-yellow-400 text-white px-2 py-1  rounded-lg" onClick={addToCart}>
-        Add to Cart
-      </button>
+     
       <button className="bg-green-400 text-white px-2 py-1  rounded-lg " onClick={()=>Navigate(`/checkout?id=${item?.variant_id}`)}>
        Checkout
       </button>
@@ -226,9 +222,7 @@ const shortText = (text, limit = 120) =>
     </div>
 
     <div className="flex justify-between mt-2">
-      <button className="bg-yellow-400 text-white px-2 py-1 rounded-lg" onClick={addToCart}>
-        Add to Cart
-      </button>
+    
       <button className="bg-green-400 text-white px-2 py-1 rounded-lg " onClick={()=>Navigate(`checkout?id=${item?.variant_id}`)}>
         Checkout
       </button>
@@ -303,9 +297,7 @@ const shortText = (text, limit = 120) =>
     </div>
 
     <div className="flex  mt-2 grow flex-col md:flex-row gap-2 md:items-end justify-end">
-      <button className="bg-yellow-400 text-white px-2 py-1  rounded-lg" onClick={addToCart}>
-        Add to Cart
-      </button>
+      
       <button className="bg-green-400 text-white px-2 py-1  rounded-lg " onClick={()=>Navigate(`checkout?id=${item?.variant_id}`)}>
           Checkout
       </button>
@@ -353,9 +345,7 @@ const shortText = (text, limit = 120) =>
     </div>
 
     <div className="flex justify-between mt-2">
-      <button className="bg-yellow-400 text-white px-2 py-1 rounded-lg" onClick={addToCart}>
-        Add to Cart
-      </button>
+      
       <button className="bg-green-400 text-white px-2 py-1 rounded-lg " onClick={()=>Navigate(`checkout?id=${item?.variant_id}`)}>
         Checkout
       </button>
@@ -432,9 +422,7 @@ const shortText = (text, limit = 120) =>
     </div>
 
     <div className="flex  mt-2 grow flex-col md:flex-row gap-2 md:items-end">
-      <button className="bg-yellow-400 text-white px-2 py-1  rounded-lg" onClick={addToCart}>
-        Add to Cart
-      </button>
+     
       <button className="bg-green-400 text-white px-2 py-1  rounded-lg " onClick={()=>Navigate(`checkout?id=${item?.variant_id}`)}>
         Checkout
       </button>
@@ -491,9 +479,7 @@ const shortText = (text, limit = 120) =>
     </div>
 
     <div className="flex justify-between mt-2">
-      <button className="bg-yellow-400 text-white px-2 py-1 rounded-lg" onClick={addToCart}>
-        Add to Cart
-      </button>
+      
       <button className="bg-green-400 text-white px-2 py-1 rounded-lg " onClick={()=>Navigate(`checkout?id=${item?.variant_id}`)}>
         Checkout
       </button>
@@ -547,9 +533,7 @@ const shortText = (text, limit = 120) =>
     </div>
 
     <div className="flex  mt-2 grow flex-col md:flex-row gap-2 md:items-end">
-      <button className="bg-yellow-400 text-white px-2 py-1  rounded-lg" onClick={addToCart}>
-        Add to Cart
-      </button>
+      
       <button className="bg-green-400 text-white px-2 py-1  rounded-lg " onClick={()=>Navigate(`/checkout?id=${item?.variant_id}`)}>
         Checkout
       </button>
