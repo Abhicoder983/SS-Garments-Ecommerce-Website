@@ -24,7 +24,7 @@ export default function ProductDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState(0);
   const [sizes,setSizes]=useState(null)
-  const {login ,setlogin,token , setToken}= useContext(AuthContext)
+  const {login ,setLogin,token , setToken}= useContext(AuthContext)
 
   const addToCart=async(id)=>{
     if( !login && !token){
@@ -46,7 +46,7 @@ export default function ProductDetail() {
         const data = res.response?.data;
         console.log(data)
         toast.success("Saved to Cart ")
-        setlogin(res.response.data.userData)
+        setLogin(res.response.data.userData)
         setToken(res.response.data.access_Token)
         
         
@@ -54,7 +54,7 @@ export default function ProductDetail() {
         const data = err.response?.data;
         toast.warning(data?.error)
         
-        setlogin(null)
+        setLogin(null)
         setToken(null)
         
         
@@ -72,20 +72,20 @@ export default function ProductDetail() {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(
-          `${apiUrl}/productDetail/${variantId}/`,{
+          `http://localhost:8000/productDetail/${variantId}/`,{
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true
         }
         );
         const data = res.data;
-        setlogin(data.userData)
+        setLogin(data.userData)
         setToken(data.access_Token)
         setProduct(data?.productData);
         setSizes(data?.productData?.variants?.[selectedColor]?.sizes || null);
       } catch (err) {
-      
+        console.log(err)
         const data = err.response.data;
-        setlogin(data.userData)
+        setLogin(data.userData)
         setToken(data.access_Token)
         setProduct(data?.productData);
         setSizes(data?.productData?.variants?.[selectedColor]?.sizes || null);
