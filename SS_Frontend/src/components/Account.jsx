@@ -7,7 +7,17 @@ import NavBar from "./NavBar";
 import Footer from "./Footer";
 import AddressPage from "./inPages/AddressPage";
 import userImg from "../assets/AccountAssests/user.png";
+import {
+  Pencil,
+  LogOut,
+  Plus,
+  Trash2,
+  MapPin,
+  Package,
+  X,
+} from "lucide-react";
 const apiUrl = import.meta.env.VITE_API_URL;
+
 export default function Account() {
   const { login, setLogin, token, setToken, reload } = useContext(AuthContext);
 
@@ -23,6 +33,15 @@ export default function Account() {
   
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.href =
+      "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap";
+    link.rel = "stylesheet";
+    document.head.appendChild(link);
+    return () => document.head.removeChild(link);
+  }, []);
 
   // 🔹 Fetch account
   useEffect(() => {
@@ -148,198 +167,240 @@ const logout =async()=>{
     {login?
       <>
       <NavBar />
-      <div className="max-w-5xl mx-auto p-4">
+      <div className="bg-[#FAF6EF] min-h-screen" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <div className="max-w-5xl mx-auto p-4 sm:p-6">
         {/* USER INFO */}
-        <div className="flex flex-col md:flex-row items-center gap-6 mb-6">
-          <div className="w-full md:w-2/3 text-center md:text-left">
-            <h3 className="text-xl font-semibold my-3  ">
-              Name | {login?.name?.toUpperCase() || "Not provided"} <br />
-              Email | {login?.email || "Not provided"}
+        <div className="bg-white rounded-2xl border border-[#EDE3D3] p-6 sm:p-8 mb-6 flex flex-col md:flex-row items-center gap-6">
+          <img
+            src={login?.profile_image_url || userImg}
+            alt="User"
+            className="w-28 h-28 md:w-32 md:h-32 rounded-full object-cover border-2 border-[#F0E4C8] shrink-0"
+          />
+
+          <div className="w-full text-center md:text-left">
+            <h3
+              className="text-xl md:text-2xl text-[#2B2422] capitalize"
+              style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}
+            >
+              {login?.name || "Not provided"}
             </h3>
-           
+            <p className="text-sm text-[#8A7F73] mt-1">{login?.email || "Not provided"}</p>
+
+            <div className="flex gap-2.5 justify-center md:justify-start mt-4">
+              <button
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-[#4A0E1C] border border-[#EDE3D3] hover:bg-[#FBF3E0] transition-colors"
+                onClick={() => setEditProfile(true)}
+              >
+                <Pencil size={14} />
+                Edit profile
+              </button>
+
+              <button
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-[#B24444] border border-[#EDE3D3] hover:bg-[#FCEBEB] transition-colors"
+                onClick={logout}
+              >
+                <LogOut size={14} />
+                Logout
+              </button>
+            </div>
           </div>
 
-          <div className="flex flex-col items-center gap-2">
-            <img
-              src={login?.profile_image_url || userImg}
-              alt="User"
-              className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover"
-            />
-             <div className="flex gap-3 justify-between">
-             <button className="p-1 rounded-lg bg-yellow-400 text-white text-md border-2 border-amber-400 hover:border-yellow-400 hover:text-yellow-400 hover:bg-amber-200"
-            onClick={()=>setEditProfile(true)}> Edit Profile</button>
+          {editProfile && (
+            <div className="fixed inset-0 bg-[#2B2422]/60 flex items-center justify-center z-50 px-4">
+              <div className="bg-white rounded-2xl w-full max-w-sm p-6 relative">
+                <button
+                  onClick={() => setEditProfile(false)}
+                  className="absolute top-4 right-4 text-[#B0A48F] hover:text-[#2B2422]"
+                >
+                  <X size={18} />
+                </button>
+                <h2
+                  className="text-lg text-[#2B2422] mb-5"
+                  style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}
+                >
+                  Edit profile
+                </h2>
 
-             <button className="p-1 rounded-lg text-white text-md border-2 border-red-600 bg-red-600 hover:bg-red-300 hover:text-red-600" onClick={logout}> Logout</button> 
-          </div>
-           
-            {editProfile && 
-             <div className="fixed inset-0 bg-neutral-200 bg-opacity-50 flex items-center justify-center z-100">
-      <div className="bg-white p-6 rounded-lg w-96 border-2 border-green-700 h-fit m-2">
-        <h2 className="text-lg font-semibold mb-4">Edit Profile</h2>
-        <div className=" h-2/4 gap-2 flex flex-col justify-evenly  m-4">
-          <input
-          name="name"
-          value={profileName}
-          onChange={(e)=>{
-            setProfileName(e.target.value)
-          }}
-          placeholder="Your Name"
-        
-            className={`w-full p-2 rounded border `}
-        />
+                <div className="flex flex-col gap-3 mb-5">
+                  <input
+                    name="name"
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    placeholder="Your name"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDE3D3] text-sm focus:outline-none focus:border-[#B8862E]"
+                  />
 
-         <input type="file" accept="image/*" onChange={(e) => setProfileImage(e.target.files[0])} 
-         className={`w-full p-2 rounded border `} />
-        </div>
-        <div className="flex justify-end gap-3">
-          <button
-            onClick={()=>setEditProfile(false)}
-            className="px-4 py-2 bg-gray-600 rounded"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleProfileSave}
-            className="px-4 py-2 bg-emerald-600 rounded"
-          >
-            Save
-          </button>
-        </div>
-        </div>
-        </div>
-        }
-          </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setProfileImage(e.target.files[0])}
+                    className="w-full text-sm text-[#8A7F73] file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-[#FBF3E0] file:text-[#8A6A15] file:text-xs file:font-medium"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2.5">
+                  <button
+                    onClick={() => setEditProfile(false)}
+                    className="px-4 py-2 rounded-xl text-sm font-medium text-[#8A7F73] border border-[#EDE3D3]"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleProfileSave}
+                    className="px-4 py-2 rounded-xl text-sm font-semibold bg-[#4A0E1C] text-[#FFFDF9]"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* TABS */}
-        <div className="flex flex-col sm:flex-row border-b mb-4">
-          <div
-            className={`flex justify-between items-center p-2 cursor-pointer w-full bg-neutral-100 ${
-              option === "address" && "border-b-2 border-gray-700 bg-neutral-500"
+        <div className="flex gap-2 mb-5">
+          <button
+            className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+              option === "address"
+                ? "bg-[#4A0E1C] text-[#FFFDF9]"
+                : "bg-white text-[#8A7F73] border border-[#EDE3D3] hover:bg-[#FBF3E0]"
             }`}
             onClick={() => setOption("address")}
           >
-            <p>Addresses</p>
-            {option === "address" && <button
-              onClick={() => {
-                setEditAddressIndex(null);
-                setPageName("ADD");
-                setIsEditOpen(true);
-              }}
-              className="bg-green-600 text-white px-3 rounded"
-            >
-              ADD
-            </button>} 
-            
-          </div>
+            <MapPin size={14} />
+            Addresses
+          </button>
 
-          <div
-            className={`p-2 text-center cursor-pointer w-full bg-neutral-100 ${
-              option === "orders" && "border-b-2 border-gray-700  bg-neutral-500"
+          <button
+            className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+              option === "orders"
+                ? "bg-[#4A0E1C] text-[#FFFDF9]"
+                : "bg-white text-[#8A7F73] border border-[#EDE3D3] hover:bg-[#FBF3E0]"
             }`}
             onClick={() => {
               setOption("orders");
               fetchOrder();
             }}
           >
+            <Package size={14} />
             Orders
-          </div>
+          </button>
+
+          {option === "address" && (
+            <button
+              onClick={() => {
+                setEditAddressIndex(null);
+                setPageName("ADD");
+                setIsEditOpen(true);
+              }}
+              className="ml-auto flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium text-[#3F7D58] border border-[#D7E8DA] bg-[#EAF3DE] hover:bg-[#DCEAC6] transition-colors"
+            >
+              <Plus size={14} />
+              Add address
+            </button>
+          )}
         </div>
 
         {/* ADDRESS LIST */}
         {option === "address" && (
-          <div className="space-y-4 h-[70vh] border-2 border-black rounded-lg p-2 my-2  overflow-y-auto">
+          <div className="bg-white rounded-2xl border border-[#EDE3D3] p-5 sm:p-6 space-y-3">
             {addresses.length ? (
               addresses.map((item, index) => (
                 <div
                   key={index}
-                  className="border rounded-lg p-4 flex flex-col sm:flex-row gap-3 justify-between"
+                  className="border border-[#EDE3D3] rounded-xl p-4 flex flex-col sm:flex-row gap-3 justify-between sm:items-center"
                 >
-                  <p className="wrap-break-word sm:w-2/3">
+                  <p className="wrap-break-word sm:w-2/3 text-sm text-[#2B2422] leading-relaxed">
                     {item.address}, {item.city}, {item.state} - {item.pincode}
                   </p>
 
-                  <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="flex gap-2 shrink-0">
                     <button
                       onClick={() => {
                         setEditAddressIndex(index);
                         setPageName("EDIT");
                         setIsEditOpen(true);
                       }}
-                      className="bg-yellow-400 px-3 py-1 rounded"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#8A6A15] bg-[#FBF3E0] hover:bg-[#F5E9C8] transition-colors"
                     >
-                      EDIT
+                      <Pencil size={12} />
+                      Edit
                     </button>
-                     
+
                     <button
                       onClick={() => {
                         const updated = addresses.filter((_, i) => i !== index);
                         uploadSetAddress(updated);
                       }}
-                      className="bg-red-600 text-white px-3 py-1 rounded"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#B24444] bg-[#FCEBEB] hover:bg-[#F7C1C1] transition-colors"
                     >
-                      DELETE
+                      <Trash2 size={12} />
+                      Delete
                     </button>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-gray-400">No address found</p>
+              <p className="text-[#B0A48F] text-sm text-center py-10">No address found</p>
             )}
           </div>
         )}
 
         {/* ORDERS */}
         {option === "orders" && (
-          <div className="space-y-4 h-[70vh] border-2 border-black rounded-lg p-3 my-2  overflow-y-auto">
+          <div className="bg-white rounded-2xl border border-[#EDE3D3] p-5 sm:p-6 space-y-4">
             {orders.length ? (
               orders.map((order, i) => (
-                <div key={i} className="border p-4 rounded">
-                  <p className="text-sm text-gray-600 mb-2">
+                <div key={i} className="border border-[#EDE3D3] rounded-xl p-4">
+                  <p className="text-xs text-[#B0A48F] mb-3">
                     {new Date(order.order_date).toLocaleString()}
                   </p>
 
                   {order.productID.product_ids.map((item, idx) => (
                     <div
                       key={idx}
-                      className="flex flex-col sm:flex-row gap-4 border p-3 rounded mb-2"
+                      className="flex flex-col sm:flex-row gap-4 border border-[#F3EDE0] p-3 rounded-lg mb-2 items-start sm:items-center"
                     >
                       <img
                         src={item.product_id.image}
-                        className="w-full sm:w-28 h-40 sm:h-28 object-cover rounded"
+                        className="w-full sm:w-20 h-40 sm:h-24 object-cover rounded-lg border border-[#EDE3D3]"
                       />
 
                       <div className="flex-1">
-                        <h3 className="font-semibold">
+                        <h3 className="font-medium text-sm text-[#2B2422]">
                           {item.product_id.product_name}
                         </h3>
-                        <p>Size: {item.product_id.size} | Qty: {item.qty}</p>
-                        <p>₹{item.price}</p>
+                        <p className="text-xs text-[#8A7F73] mt-1">
+                          Size {item.product_id.size} · Qty {item.qty}
+                        </p>
+                        <p className="text-xs text-[#9C9082] mt-0.5">₹{item.price} / piece</p>
                       </div>
 
-                      <div className="font-bold text-right sm:text-center">
+                      <div className="font-semibold text-sm text-[#4A0E1C] sm:text-right">
                         ₹{item.qty * item.price}
                       </div>
                     </div>
                   ))}
 
-                  <p className="text-right font-semibold text-green-600">
+                  <p className="text-right text-sm font-semibold text-[#3F7D58] mt-2">
                     Total ₹{order.Total_price}
                   </p>
                 </div>
               ))
             ) : (
-              <p className="text-gray-400">No orders found</p>
+              <p className="text-[#B0A48F] text-sm text-center py-10">No orders found</p>
             )}
           </div>
         )}
 
-        <Footer />
-        
+      </div>
+      <Footer />
       </div>
       </>
       :
-      <h3 className="pl-4">Fetching Account Detail</h3>
+      <div className="bg-[#FAF6EF] min-h-screen flex items-center justify-center" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <h3 className="text-[#8A7F73] text-sm">Fetching account detail…</h3>
+      </div>
     
     }
 
