@@ -35,7 +35,7 @@ DEBUG = True
 CORS_ALLOWED_ORIGINS = [
     "https://ssgarment.in",
     "https://www.ssgarment.in",
-    "http://localhost:5173"
+    "http://localhost:5173",
     "https://api.ssgarment.in"
 ]
 
