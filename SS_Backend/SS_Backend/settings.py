@@ -39,7 +39,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://api.ssgarment.in"
 ]
 CSRF_TRUSTED_ORIGINS = [
-    
+    "https://ssgarment.in",
     "https://api.ssgarment.in",
 ]
 
