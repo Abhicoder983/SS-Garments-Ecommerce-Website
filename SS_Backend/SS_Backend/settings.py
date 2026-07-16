@@ -38,11 +38,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "https://api.ssgarment.in"
 ]
-CSRF_TRUSTED_ORIGINS = [
-    "https://ssgarment.in",
-    "https://www.ssgarment.in",
-    "https://api.ssgarment.in",
-]
+
 
 ALLOWED_HOSTS = ['ssgarment.in', 'www.ssgarment.in', 'api.ssgarment.in', '13.126.138.14',"127.0.0.1", "localhost"]
 
