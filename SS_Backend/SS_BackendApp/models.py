@@ -13,7 +13,7 @@ class UserModel(models.Model):
     total_order= models.IntegerField(null=True,blank=True)
     is_active = models.BooleanField(default=True)
     def __str__(self):
-        return self.email
+        return str(self.name)
 
 
 # ============================

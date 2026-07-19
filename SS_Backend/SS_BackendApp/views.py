@@ -30,14 +30,24 @@ from django.core.mail import EmailMultiAlternatives
 # ===============================
 @api_view(["POST"])
 def verifyUser(request):
-    
+
+
     recp_email = request.data.get("email", "").strip()
+
+
+
+
+    
+
+
     email_regex = r"^[^\s@]+@[^\s@]+\.[^\s@]+$"
     if not re.match(email_regex, recp_email):
         return Response(
             {"success": False, "error": "Invalid email address."},
             status=400,
         )
+    
+
 
 
     if not recp_email:
