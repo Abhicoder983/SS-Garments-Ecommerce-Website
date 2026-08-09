@@ -20,7 +20,7 @@ class orderSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Order
-        exclude=['id','customerID']
+        exclude=['id','customerID','awb_id']
 
 class cartSerializer(serializers.ModelSerializer):
     class Meta:

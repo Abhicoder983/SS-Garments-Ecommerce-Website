@@ -140,7 +140,7 @@ export default function ContactUs() {
             <Mail className="text-blue-600"/>
             <div>
               <h3 className="font-bold">Email</h3>
-              <p className="text-slate-600">support@ssgarment.in</p>
+              <p className="text-slate-600">abhishek558818@gmail.com</p>
             </div>
           </div>
 

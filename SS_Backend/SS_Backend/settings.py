@@ -43,7 +43,9 @@ CSRF_TRUSTED_ORIGINS = [
     "https://ssgarment.in",
     "https://www.ssgarment.in",
     "https://api.ssgarment.in",
-    "https://www.api.ssgarment.in"
+    "https://www.api.ssgarment.in",
+    "http://localhost:5173/"
+
 ]
 
 ALLOWED_HOSTS = ['ssgarment.in', 'www.ssgarment.in', 'api.ssgarment.in', '13.126.138.14',"127.0.0.1", "localhost"]
@@ -64,6 +66,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'storages',
     'SS_BackendApp',
+    'admin_app',
     "rest_framework",
     'corsheaders'
 ]

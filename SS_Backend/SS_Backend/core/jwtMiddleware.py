@@ -31,14 +31,35 @@ class JWTMiddleware:
         "/account/",
         "/cart/",
         "/",
-        "/contactusEmail/"
+        "/contactusEmail/",
+        "/admin-role/send-otp/",
+        "/admin-role/verify-otp/",
+        "/admin-role/dashboard/",
+        "/admin-role/customers/",
+        "/admin-role/orders/",
+        '/admin-role/categories/',
+        '/admin-role/coupons/',
+        '/admin-role/products/',
+        "/admin-role/productscreate/",
+
     ]
-    and not request.path.startswith("/productDetail/")
+    and not (request.path.startswith("/productDetail/") or
+              request.path.startswith("/admin-role/customers/") or
+                request.path.startswith("/admin-role/customers-update/") or 
+                request.path.startswith("/admin-role/orders-updateDetail/") or 
+                request.path.startswith("/admin-role/categories/") or
+                request.path.startswith("/admin-role/coupons/") or
+                request.path.startswith("/admin-role/products/") or
+                request.path.startswith("/admin-role/productsvariants/") or
+                request.path.startswith("/admin-role/productsdetail/") or
+                request.path.startswith("/admin-role/products-edit/") or
+                request.path.startswith("/admin-role/products-sizes/")
+                )
 ):
              print('1')
              return self.get_response(request)
 
-        elif (request.path in ["/login/", "/signup/","/verify/"] or request.path.startswith("/admin/")):
+        elif (request.path in ["/login/", "/signup/","/verify/","/admin-role/send-otp/", "/admin-role/verify-otp/"] or request.path.startswith("/admin/")):
             return self.get_response(request)
         
         auth_header = request.headers.get("Authorization")

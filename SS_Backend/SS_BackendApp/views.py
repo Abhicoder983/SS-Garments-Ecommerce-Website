@@ -488,20 +488,7 @@ def orders(request):
         print(1)
         userOrderSerializer=orderSerializer(userOrder,many=True)
         userOrderData=userOrderSerializer.data
-        print(userOrderData[0]['productID']['product_ids'])
-        print(2)
-        for order in userOrderData:
-            for product_Data in order['productID']['product_ids']:
-                productid=product_Data['product_id']
-                
-                variant =VariantSize.objects.get(id=ObjectId(productid))
-            
-                product_obj = VariantSize.objects.select_related("variant__product__category").get(id=ObjectId(productid))
-                
-                productDetail=variantSizeSerializer(product_obj).data
-                
-                product_Data['product_id']=productDetail
-                product_Data['product_id']['id']=str(product_obj.id)
+       
                 
 
         response=Response({'userOrderData':userOrderData, **userJson},status=200)

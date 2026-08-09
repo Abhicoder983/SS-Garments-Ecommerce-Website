@@ -1,6 +1,5 @@
 from django.contrib import admin
-from django.urls import path,include
-from SS_BackendApp import urls
+from django.urls import path
 from .views import login,verifyUser,signup,logout_view,home,orders,account,cart,productDetail,product_list, googleAuthentication,googleOauth2Authentication,contactUsEmail
 
 urlpatterns = [

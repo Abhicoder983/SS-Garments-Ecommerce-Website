@@ -17,13 +17,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 from django.conf.urls.static import static
-from SS_BackendApp import urls
+from SS_BackendApp import urls as user_urls
+from admin_app import urls as admin_urls
 from django.conf import settings
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('',include(urls))
+    path('',include(user_urls)),
+    path('admin-role/',include(admin_urls))
 ]
 
 if settings.DEBUG:
