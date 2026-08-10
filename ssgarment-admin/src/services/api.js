@@ -1,8 +1,8 @@
 // src/services/api.js
 import axios from 'axios';
-
+const apiUrl = import.meta.env.VITE_API_URL;
 const api = axios.create({
-  baseURL: 'http://localhost:8000/admin-role',
+  baseURL: `${apiUrl}/admin-role`,
   withCredentials: true,  // Django backend URL, baad me production URL se replace karna
 });
 
