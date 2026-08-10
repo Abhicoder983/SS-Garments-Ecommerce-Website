@@ -48,7 +48,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 ]
 
-ALLOWED_HOSTS = ['ssgarment.in', 'www.ssgarment.in', 'api.ssgarment.in', '13.126.138.14',"127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ['ssgarment.in', 'www.ssgarment.in', 'api.ssgarment.in', '13.126.138.14',"127.0.0.1", "localhost","www.api.ssgarment.in"]
 
 
 
