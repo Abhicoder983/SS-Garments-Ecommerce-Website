@@ -44,6 +44,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://www.ssgarment.in",
     "https://api.ssgarment.in",
     "https://www.api.ssgarment.in",
+    "https://www.admin-abhishek-98375.ssgarment.in",
+    "https://admin-abhishek-98375.ssgarment.in" 
     "http://localhost:5173/"
 
 ]
