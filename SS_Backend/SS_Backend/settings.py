@@ -36,7 +36,9 @@ CORS_ALLOWED_ORIGINS = [
     "https://ssgarment.in",
     "https://www.ssgarment.in",
     "http://localhost:5173",
-    "https://api.ssgarment.in" 
+    "https://api.ssgarment.in",
+    "https://www.admin-abhishek-98375.ssgarment.in",
+    "https://admin-abhishek-98375.ssgarment.in"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
