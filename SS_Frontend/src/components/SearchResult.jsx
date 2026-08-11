@@ -201,7 +201,7 @@ export default function SearchResults() {
               </button>
 
               {openFilter === "sort" && (
-                <div className="absolute top-full left-0 mt-2 bg-white border border-[#EDE8E0] rounded-2xl shadow-xl shadow-black/10 min-w-[200px] p-2 z-[100]">
+                <div className="absolute top-full left-0 mt-2 bg-white border border-[#EDE8E0] rounded-2xl shadow-xl shadow-black/10 min-w-[200px] p-2 z-[50]">
                   {sortOptions.map((opt) => (
                     <button
                       key={opt.value}
@@ -248,7 +248,7 @@ export default function SearchResults() {
               </button>
 
               {openFilter === "gender" && (
-                <div className="absolute top-full left-0 mt-2 bg-white border border-[#EDE8E0] rounded-2xl shadow-xl shadow-black/10 min-w-[160px] p-2 z-[100]">
+                <div className="absolute top-full left-0 mt-2 bg-white border border-[#EDE8E0] rounded-2xl shadow-xl shadow-black/10 min-w-[160px] p-2 z-[50]">
                   {genderOptions.map((opt) => (
                     <button
                       key={opt.value}
@@ -291,7 +291,7 @@ export default function SearchResults() {
               </button>
 
               {openFilter === "size" && (
-                <div className="absolute top-full left-0 mt-2 bg-white border border-[#EDE8E0] rounded-2xl shadow-xl shadow-black/10 p-3 z-[100]">
+                <div className="absolute top-full left-0 mt-2 bg-white border border-[#EDE8E0] rounded-2xl shadow-xl shadow-black/10 p-3 z-[50]">
                   <div className="grid grid-cols-4 gap-1.5 min-w-[200px]">
                     {sizeOptions.map((s) => (
                       <button
@@ -340,7 +340,7 @@ export default function SearchResults() {
               </button>
 
               {openFilter === "price" && (
-                <div className="absolute top-full left-0 mt-2 bg-white border border-[#EDE8E0] rounded-2xl shadow-xl shadow-black/10 w-64 p-4 z-[100]">
+                <div className="absolute top-full left-0 mt-2 bg-white border border-[#EDE8E0] rounded-2xl shadow-xl shadow-black/10 w-64 p-4 z-[50]">
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-xs font-bold text-[#6B6560] uppercase tracking-wider">
                       Price Range

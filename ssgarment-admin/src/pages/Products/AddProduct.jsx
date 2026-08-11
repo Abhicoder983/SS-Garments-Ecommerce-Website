@@ -3,6 +3,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ClipLoader } from 'react-spinners';
 import toast from 'react-hot-toast';
+import {
+  ArrowLeft,
+  UploadCloud,
+  X,
+  Trash2,
+  Plus,
+  Package,
+} from 'lucide-react';
 import api from '../../services/api';
 
 const GENDER_OPTIONS = ['male', 'female', 'unisex', 'kids'];
@@ -64,9 +72,16 @@ export default function AddProduct() {
   };
 
   const handleImageChange = (index, file) => {
+    if (!file) return;
     const preview = URL.createObjectURL(file);
     setVariants((prev) =>
       prev.map((v, i) => (i === index ? { ...v, image: file, imagePreview: preview } : v))
+    );
+  };
+
+  const removeImage = (index) => {
+    setVariants((prev) =>
+      prev.map((v, i) => (i === index ? { ...v, image: null, imagePreview: null } : v))
     );
   };
 
@@ -139,7 +154,7 @@ export default function AddProduct() {
       // Step 1: product create
       const productRes = await api.post('/productscreate/', product);
       const productId = productRes.data.id;
- 
+
       // Step 2: har variant ke liye image + sizes bhejo
       for (const v of variants) {
         const formData = new FormData();
@@ -171,51 +186,84 @@ export default function AddProduct() {
     }
   };
 
+  const totalSizesSelected = variants.reduce(
+    (sum, v) => sum + Object.keys(v.sizes).length,
+    0
+  );
+
   return (
-    <div className="max-w-3xl">
-      <button
-        onClick={() => navigate('/products')}
-        className="text-gray-500 hover:text-gray-700 text-sm mb-6 inline-flex items-center gap-1"
-      >
-        ← Back to Products
-      </button>
+    <div className="min-h-screen bg-slate-50 pb-28">
+      {/* Sticky header */}
+      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-slate-200">
+        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/products')}
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
+              aria-label="Back to products"
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <div>
+              <h1 className="text-lg font-semibold text-slate-900 leading-tight">
+                Add Product
+              </h1>
+              <p className="text-xs text-slate-400">
+                {variants.length} variant{variants.length !== 1 ? 's' : ''} ·{' '}
+                {totalSizesSelected} size{totalSizesSelected !== 1 ? 's' : ''} configured
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Add Product</h1>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="max-w-4xl mx-auto px-6 py-8 space-y-6">
         {/* Product Info */}
-        <div className="bg-white rounded-lg shadow p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-800">Product Details</h2>
+        <section className="bg-white rounded-xl border border-slate-200 p-6 space-y-5">
+          <div className="flex items-center gap-2">
+            <Package size={16} className="text-slate-400" />
+            <h2 className="text-sm font-semibold text-slate-800 uppercase tracking-wide">
+              Product Details
+            </h2>
+          </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1.5">Name</label>
+            <label className="block text-sm font-medium text-slate-600 mb-1.5">
+              Product name
+            </label>
             <input
               type="text"
               name="name"
               value={product.name}
               onChange={handleProductChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g. Oversized Drop Shoulder Tee"
+              className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1.5">Brand</label>
+              <label className="block text-sm font-medium text-slate-600 mb-1.5">
+                Brand
+              </label>
               <input
                 type="text"
                 name="brand"
                 value={product.brand}
                 onChange={handleProductChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g. Skyla"
+                className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1.5">Category</label>
+              <label className="block text-sm font-medium text-slate-600 mb-1.5">
+                Category
+              </label>
               <select
                 name="category"
                 value={product.category}
                 onChange={handleProductChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition bg-white"
               >
                 <option value="">Select category</option>
                 {categories.map((cat) => (
@@ -226,17 +274,19 @@ export default function AddProduct() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1.5">Gender</label>
-            <div className="flex gap-2">
+            <label className="block text-sm font-medium text-slate-600 mb-2">
+              Gender
+            </label>
+            <div className="inline-flex rounded-lg border border-slate-300 p-0.5 bg-slate-50">
               {GENDER_OPTIONS.map((g) => (
                 <button
                   type="button"
                   key={g}
                   onClick={() => setProduct((prev) => ({ ...prev, gender: g }))}
-                  className={`px-4 py-1.5 rounded-full text-xs font-medium border capitalize transition ${
+                  className={`px-4 py-1.5 rounded-md text-xs font-medium capitalize transition ${
                     product.gender === g
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                      ? 'bg-white text-slate-900 shadow-sm'
+                      : 'text-slate-500 hover:text-slate-700'
                   }`}
                 >
                   {g}
@@ -246,16 +296,19 @@ export default function AddProduct() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1.5">Description</label>
+            <label className="block text-sm font-medium text-slate-600 mb-1.5">
+              Description
+            </label>
             <textarea
               name="description"
               value={product.description}
               onChange={handleProductChange}
               rows={3}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Fabric, fit, print details..."
+              className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition resize-none"
             />
           </div>
-        </div>
+        </section>
 
         {/* Variants */}
         {variants.map((variant, vIndex) => {
@@ -263,90 +316,128 @@ export default function AddProduct() {
             ? SIZE_GROUPS.male
             : SIZE_GROUPS[product.gender];
           const availableSizes = sizeGroup[variant.sizeType];
+          const selectedCount = Object.keys(variant.sizes).length;
 
           return (
-            <div key={vIndex} className="bg-white rounded-lg shadow p-6 space-y-4">
+            <section
+              key={vIndex}
+              className="bg-white rounded-xl border border-slate-200 p-6 space-y-5"
+            >
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-800">
-                  Variant {vIndex + 1}
-                </h2>
+                <div className="flex items-center gap-2.5">
+                  <span className="w-6 h-6 flex items-center justify-center rounded-full bg-slate-900 text-white text-xs font-semibold">
+                    {vIndex + 1}
+                  </span>
+                  <h2 className="text-sm font-semibold text-slate-800">
+                    {variant.color || 'New color variant'}
+                  </h2>
+                  {selectedCount > 0 && (
+                    <span className="text-xs text-slate-400">
+                      {selectedCount} size{selectedCount !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                </div>
                 {variants.length > 1 && (
                   <button
                     type="button"
                     onClick={() => removeVariant(vIndex)}
-                    className="text-red-500 hover:text-red-600 text-sm"
+                    className="flex items-center gap-1 text-xs font-medium text-red-500 hover:text-red-600 transition"
                   >
+                    <Trash2 size={13} />
                     Remove
                   </button>
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1.5">Color</label>
-                  <input
-                    type="text"
-                    value={variant.color}
-                    onChange={(e) => updateVariant(vIndex, 'color', e.target.value)}
-                    placeholder="e.g. Navy Blue"
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1.5">Image</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleImageChange(vIndex, e.target.files[0])}
-                    className="w-full text-sm"
-                  />
-                </div>
-              </div>
+              <div className="grid grid-cols-[1fr_auto] gap-4 items-start">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-600 mb-1.5">
+                      Color
+                    </label>
+                    <input
+                      type="text"
+                      value={variant.color}
+                      onChange={(e) => updateVariant(vIndex, 'color', e.target.value)}
+                      placeholder="e.g. Navy Blue"
+                      className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition"
+                    />
+                  </div>
 
-              {variant.imagePreview && (
-                <img
-                  src={variant.imagePreview}
-                  alt="preview"
-                  className="w-20 h-20 rounded object-cover border"
-                />
-              )}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-600 mb-2">
+                      Size Type
+                    </label>
+                    <div className="inline-flex rounded-lg border border-slate-300 p-0.5 bg-slate-50">
+                      {['top', 'bottom'].map((type) => (
+                        <button
+                          type="button"
+                          key={type}
+                          onClick={() => updateVariant(vIndex, 'sizeType', type)}
+                          className={`px-4 py-1.5 rounded-md text-xs font-medium capitalize transition ${
+                            variant.sizeType === type
+                              ? 'bg-white text-slate-900 shadow-sm'
+                              : 'text-slate-500 hover:text-slate-700'
+                          }`}
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
 
-              {/* Top/Bottom toggle */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1.5">Size Type</label>
-                <div className="flex gap-2">
-                  {['top', 'bottom'].map((type) => (
-                    <button
-                      type="button"
-                      key={type}
-                      onClick={() => updateVariant(vIndex, 'sizeType', type)}
-                      className={`px-4 py-1.5 rounded-full text-xs font-medium border capitalize transition ${
-                        variant.sizeType === type
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      {type}
-                    </button>
-                  ))}
+                {/* Image dropzone */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-600 mb-1.5">
+                    Image
+                  </label>
+                  {variant.imagePreview ? (
+                    <div className="relative w-28 h-28 rounded-lg overflow-hidden border border-slate-200 group">
+                      <img
+                        src={variant.imagePreview}
+                        alt={variant.color || 'variant preview'}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(vIndex)}
+                        className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                        aria-label="Remove image"
+                      >
+                        <X size={13} />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="w-28 h-28 flex flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed border-slate-300 text-slate-400 hover:border-slate-400 hover:text-slate-500 cursor-pointer transition">
+                      <UploadCloud size={20} />
+                      <span className="text-[11px] font-medium">Upload</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageChange(vIndex, e.target.files[0])}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
                 </div>
               </div>
 
               {/* Sizes */}
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">
+                <label className="block text-sm font-medium text-slate-600 mb-2">
                   Available Sizes
                 </label>
-                <div className="flex flex-wrap gap-2 mb-3">
+                <div className="flex flex-wrap gap-2 mb-4">
                   {availableSizes.map((sizeKey) => (
                     <button
                       type="button"
                       key={sizeKey}
                       onClick={() => toggleSize(vIndex, sizeKey)}
-                      className={`px-3 py-1 rounded text-xs font-medium border transition ${
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition ${
                         variant.sizes[sizeKey]
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                          ? 'bg-slate-900 text-white border-slate-900'
+                          : 'bg-white text-slate-500 border-slate-300 hover:border-slate-400'
                       }`}
                     >
                       {sizeKey.split('_')[0]}
@@ -354,62 +445,78 @@ export default function AddProduct() {
                   ))}
                 </div>
 
-                {Object.keys(variant.sizes).length > 0 && (
-                  <div className="space-y-2">
+                {selectedCount > 0 ? (
+                  <div className="rounded-lg border border-slate-200 divide-y divide-slate-100 overflow-hidden">
                     {Object.entries(variant.sizes).map(([sizeKey, data]) => (
-                      <div key={sizeKey} className="flex items-center gap-3">
-                        <span className="text-xs font-medium text-gray-500 w-16">
+                      <div
+                        key={sizeKey}
+                        className="flex items-center gap-3 px-3.5 py-2.5 bg-slate-50/50"
+                      >
+                        <span className="text-xs font-semibold text-slate-700 w-10 shrink-0">
                           {sizeKey.split('_')[0]}
                         </span>
+                        <div className="flex-1 relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+                            ₹
+                          </span>
+                          <input
+                            type="number"
+                            placeholder="Price"
+                            value={data.price}
+                            onChange={(e) => updateSizeField(vIndex, sizeKey, 'price', e.target.value)}
+                            className="w-full border border-slate-300 rounded-md pl-6 pr-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition bg-white"
+                          />
+                        </div>
                         <input
                           type="number"
-                          placeholder="Price"
-                          value={data.price}
-                          onChange={(e) => updateSizeField(vIndex, sizeKey, 'price', e.target.value)}
-                          className="border border-gray-300 rounded px-3 py-1.5 text-sm w-28 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        <input
-                          type="number"
-                          placeholder="Stock"
+                          placeholder="Stock qty"
                           value={data.stock}
                           onChange={(e) => updateSizeField(vIndex, sizeKey, 'stock', e.target.value)}
-                          className="border border-gray-300 rounded px-3 py-1.5 text-sm w-28 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="flex-1 border border-slate-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition bg-white"
                         />
                       </div>
                     ))}
                   </div>
+                ) : (
+                  <p className="text-xs text-slate-400 italic">
+                    Select sizes above to set price and stock for each.
+                  </p>
                 )}
               </div>
-            </div>
+            </section>
           );
         })}
 
         <button
           type="button"
           onClick={addVariant}
-          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+          className="w-full flex items-center justify-center gap-1.5 py-3 rounded-xl border border-dashed border-slate-300 text-sm font-medium text-slate-500 hover:border-slate-400 hover:text-slate-700 hover:bg-white transition"
         >
-          + Add another color variant
+          <Plus size={15} />
+          Add another color variant
         </button>
+      </form>
 
-        {/* Submit */}
-        <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60 transition"
-          >
-            {loading ? <ClipLoader color="#ffffff" size={16} /> : 'Create Product'}
-          </button>
+      {/* Sticky action bar */}
+      <div className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur border-t border-slate-200">
+        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={() => navigate('/products')}
-            className="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition"
+            className="px-5 py-2.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 transition"
           >
             Cancel
           </button>
+          <button
+            type="submit"
+            onClick={handleSubmit}
+            disabled={loading}
+            className="flex items-center justify-center gap-2 bg-slate-900 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 disabled:opacity-60 transition min-w-[140px]"
+          >
+            {loading ? <ClipLoader color="#ffffff" size={16} /> : 'Create Product'}
+          </button>
         </div>
-      </form>
+      </div>
     </div>
   );
 }

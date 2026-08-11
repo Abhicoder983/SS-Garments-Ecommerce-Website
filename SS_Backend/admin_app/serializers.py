@@ -62,7 +62,7 @@ class OrderListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'customer_name', 'order_date', 'total_price', 'status']
+        fields = ['id', 'customer_name', 'order_date', 'total_price', 'status','awb_id']
 
     def get_id(self, obj):
         return str(obj.id)

@@ -86,7 +86,7 @@ export default function NavBar() {
   return (
     <>
       <nav
-        className={`sticky top-0 w-full z-50 transition-all duration-300 ${
+        className={`sticky top-0 w-full z-[70] transition-all duration-300 ${
           scrolled
             ? "bg-[#2B2422]/95 backdrop-blur-xl shadow-md shadow-black/20"
             : "bg-[#2B2422]"
@@ -184,7 +184,7 @@ export default function NavBar() {
 
       {/* Mobile Sidebar */}
       <div
-        className={`fixed inset-0 z-40 transition-all duration-300 ${
+        className={`fixed inset-0 z-[60] transition-all duration-300 ${
           openMenu ? "visible" : "invisible"
         }`}
       >
