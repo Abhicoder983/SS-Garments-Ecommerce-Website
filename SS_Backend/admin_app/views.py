@@ -548,7 +548,7 @@ def product_create(request):
     }, status=status.HTTP_201_CREATED)
 
 
-@api_view(['POST','PATCH'])
+@api_view(['POST','PATCH',"DELETE"])
 def product_variant_create(request, variant_id = None):
     if request.method=="POST":
 
@@ -600,23 +600,59 @@ def product_variant_create(request, variant_id = None):
             "id": str(variant.id),
             "message": "Variant created successfully"
         }, status=status.HTTP_201_CREATED)
+    try:
+        variant = ProductVariant.objects.get(id=ObjectId(variant_id))
+    except ProductVariant.DoesNotExist:
+        return Response({"error": "Variant not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'DELETE':
+        # NOTE: Image file is kept in storage intentionally
+        variant.delete()
+        return Response({
+            "message": "Variant deleted successfully",
+            "id": variant_id,
+        }, status=status.HTTP_200_OK)
+    
     if request.method == "PATCH":
-        try:
-            variant = ProductVariant.objects.get(id=ObjectId(variant_id))
-        except ProductVariant.DoesNotExist:
-            return Response({"error": "Variant not found"}, status=status.HTTP_404_NOT_FOUND)
 
+    # ─── Handle is_active toggle ───
         is_active = request.data.get('is_active')
+        if is_active is not None:
+            if not isinstance(is_active, bool):
+                return Response(
+                    {"error": "is_active must be true or false"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            variant.is_active = is_active
+            variant.save()
+            return Response({
+                "message": "Variant status updated",
+                "id": str(variant.id),
+                "is_active": variant.is_active,
+            }, status=status.HTTP_200_OK)
 
-        if not isinstance(is_active, bool):
-            return Response({"error": "is_active must be true or false"}, status=status.HTTP_400_BAD_REQUEST)
+        # ─── Handle color + image edit ───
+        color = request.data.get('color')
+        image = request.FILES.get('image')
 
-        variant.is_active = is_active
+        if not color or not color.strip():
+            return Response(
+                {"error": "Color name is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        variant.color = color.strip()
+
+        if image:
+            variant.image = image
+
         variant.save()
 
         return Response({
-            "message": "Variant status updated",
+            "message": "Variant updated successfully",
             "id": str(variant.id),
+            "color": variant.color,
+            "image": request.build_absolute_uri(variant.image.url) if variant.image else None,
             "is_active": variant.is_active,
         }, status=status.HTTP_200_OK)
 
@@ -705,32 +741,39 @@ def product_edit(request, product_id):
 
 
 
-@api_view(['PATCH'])
+@api_view(['PATCH','DELETE'])
 def variant_size_update(request, size_id):
     try:
         size = VariantSize.objects.get(id=ObjectId(size_id))
     except VariantSize.DoesNotExist:
         return Response({"error": "Size not found"}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == "PATCH":
+        price = request.data.get('price')
+        stock = request.data.get('stock')
 
-    price = request.data.get('price')
-    stock = request.data.get('stock')
+        if price is None or float(price) <= 0:
+            return Response({"error": "Price must be greater than 0"}, status=status.HTTP_400_BAD_REQUEST)
 
-    if price is None or float(price) <= 0:
-        return Response({"error": "Price must be greater than 0"}, status=status.HTTP_400_BAD_REQUEST)
+        if stock is None or int(stock) < 0:
+            return Response({"error": "Stock cannot be negative"}, status=status.HTTP_400_BAD_REQUEST)
 
-    if stock is None or int(stock) < 0:
-        return Response({"error": "Stock cannot be negative"}, status=status.HTTP_400_BAD_REQUEST)
+        size.price = price
+        size.stock = stock
+        size.save()
 
-    size.price = price
-    size.stock = stock
-    size.save()
+        return Response({
+            "message": "Size updated successfully",
+            "id": str(size.id),
+            "price": float(size.price),
+            "stock": size.stock,
+        }, status=status.HTTP_200_OK)
 
-    return Response({
-        "message": "Size updated successfully",
-        "id": str(size.id),
-        "price": float(size.price),
-        "stock": size.stock,
-    }, status=status.HTTP_200_OK)
+    if request.method == 'DELETE':
+        size.delete()
+        return Response({
+            "message": "Size deleted successfully",
+            "id": size_id,
+        }, status=status.HTTP_200_OK)
 
 
 

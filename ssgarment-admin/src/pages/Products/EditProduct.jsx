@@ -40,6 +40,23 @@ export default function EditProduct() {
   const [newSizeSelections, setNewSizeSelections] = useState({});
   const [savingNewSizes, setSavingNewSizes] = useState(false);
 
+  // ─── Variant Edit State ───
+  const [editingVariantId, setEditingVariantId] = useState(null);
+  const [editVariantData, setEditVariantData] = useState({ color: '', image: null, imagePreview: null });
+  const [savingVariantId, setSavingVariantId] = useState(null);
+
+  // ─── Delete Confirmation State ───
+  const [deleteConfirm, setDeleteConfirm] = useState({
+    show: false,
+    type: null,      // 'size' | 'variant'
+    id: null,
+    variantIndex: null,
+    sizeIndex: null,
+    title: '',
+    message: '',
+  });
+  const [deletingId, setDeletingId] = useState(null);
+
   useEffect(() => {
     fetchData();
   }, [id]);
@@ -125,6 +142,63 @@ export default function EditProduct() {
     }
   };
 
+  // ─── Delete Handlers ───
+  const openDeleteConfirm = (type, payload) => {
+    setDeleteConfirm({
+      show: true,
+      type,
+      ...payload,
+    });
+  };
+
+  const closeDeleteConfirm = () => {
+    setDeleteConfirm({
+      show: false,
+      type: null,
+      id: null,
+      variantIndex: null,
+      sizeIndex: null,
+      title: '',
+      message: '',
+    });
+  };
+
+  const handleDeleteSize = async () => {
+    const { id: sizeId, variantIndex, sizeIndex } = deleteConfirm;
+    setDeletingId(sizeId);
+    try {
+      await api.delete(`/products-sizes/${sizeId}/`);
+      setVariants((prev) =>
+        prev.map((v, i) =>
+          i === variantIndex
+            ? { ...v, sizes: v.sizes.filter((_, si) => si !== sizeIndex) }
+            : v
+        )
+      );
+      toast.success('Size deleted');
+      closeDeleteConfirm();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to delete size');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleDeleteVariant = async () => {
+    const { id: variantId, variantIndex } = deleteConfirm;
+    setDeletingId(variantId);
+    try {
+      await api.delete(`/productsvariants/${variantId}/`);
+      setVariants((prev) => prev.filter((_, i) => i !== variantIndex));
+      toast.success('Variant deleted');
+      closeDeleteConfirm();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to delete variant');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const handleNewVariantImage = (file) => {
     setNewVariant((prev) => ({ ...prev, image: file, imagePreview: URL.createObjectURL(file) }));
   };
@@ -168,6 +242,63 @@ export default function EditProduct() {
       toast.success(`Variant ${!variant.is_active ? 'activated' : 'deactivated'}`);
     } catch (err) {
       toast.error('Failed to update variant');
+    }
+  };
+
+  // ─── Variant Edit Handlers ───
+  const startEditVariant = (variant) => {
+    setEditingVariantId(variant.id);
+    setEditVariantData({
+      color: variant.color,
+      image: null,
+      imagePreview: variant.image || null,
+    });
+  };
+
+  const cancelEditVariant = () => {
+    setEditingVariantId(null);
+    setEditVariantData({ color: '', image: null, imagePreview: null });
+  };
+
+  const handleEditVariantImage = (file) => {
+    setEditVariantData((prev) => ({
+      ...prev,
+      image: file,
+      imagePreview: URL.createObjectURL(file),
+    }));
+  };
+
+  const handleSaveVariantEdit = async (variant, variantIndex) => {
+    if (!editVariantData.color.trim()) {
+      toast.error('Color name is required');
+      return;
+    }
+
+    setSavingVariantId(variant.id);
+    try {
+      const formData = new FormData();
+      formData.append('color', editVariantData.color.trim());
+      if (editVariantData.image) {
+        formData.append('image', editVariantData.image);
+      }
+
+      const res = await api.patch(`/productsvariants/${variant.id}/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      setVariants((prev) =>
+        prev.map((v, i) =>
+          i === variantIndex
+            ? { ...v, color: res.data.color || editVariantData.color.trim(), image: res.data.image || v.image }
+            : v
+        )
+      );
+      toast.success('Variant updated');
+      cancelEditVariant();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to update variant');
+    } finally {
+      setSavingVariantId(null);
     }
   };
 
@@ -267,7 +398,50 @@ export default function EditProduct() {
   const genderKey = product.gender === 'kids' || product.gender === 'unisex' ? 'male' : product.gender;
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto relative">
+      {/* ─── Delete Confirmation Modal ─── */}
+      {deleteConfirm.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 animate-[fadeIn_0.15s_ease-out]">
+            <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold text-slate-800 text-center mb-1">
+              Delete {deleteConfirm.type === 'variant' ? 'Variant' : 'Size'}
+            </h3>
+            <p className="text-sm text-slate-500 text-center mb-6">
+              {deleteConfirm.type === 'variant'
+                ? 'Are you sure? This will permanently remove this color variant and all its sizes.'
+                : 'Are you sure? This size will be permanently removed from this variant.'}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={closeDeleteConfirm}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={deleteConfirm.type === 'variant' ? handleDeleteVariant : handleDeleteSize}
+                disabled={deletingId !== null}
+                className="flex-1 inline-flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                {deletingId !== null ? <ClipLoader color="#ffffff" size={14} /> : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                    </svg>
+                    Delete
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Back link */}
       <button
         onClick={() => navigate('/products')}
@@ -405,6 +579,7 @@ export default function EditProduct() {
         </div>
 
         {variants.map((variant, vIndex) => {
+          const isEditing = editingVariantId === variant.id;
           const availableSizes = (SIZE_GROUPS[genderKey]?.[sizeTypeForNew] || []).filter(
             (sizeKey) => !variant.sizes.some((s) => s.size === sizeKey)
           );
@@ -413,8 +588,32 @@ export default function EditProduct() {
             <div key={variant.id} className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
               {/* Variant Header */}
               <div className="p-5 sm:p-6 flex items-start justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  {variant.image ? (
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                  {isEditing ? (
+                    <div className="shrink-0">
+                      {editVariantData.imagePreview ? (
+                        <div className="relative inline-block">
+                          <img
+                            src={editVariantData.imagePreview}
+                            alt="preview"
+                            className="w-14 h-14 rounded-xl object-cover ring-2 ring-slate-100"
+                          />
+                          <button
+                            onClick={() => setEditVariantData((prev) => ({ ...prev, image: null, imagePreview: null }))}
+                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] hover:bg-red-600 transition-colors shadow-sm"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-14 h-14 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                          <svg className="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H3.75A2.25 2.25 0 001.5 6v12a2.25 2.25 0 002.25 2.25zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  ) : variant.image ? (
                     <img
                       src={variant.image}
                       alt={variant.color}
@@ -427,37 +626,112 @@ export default function EditProduct() {
                       </svg>
                     </div>
                   )}
-                  <div>
-                    <p className="font-semibold text-slate-800">{variant.color}</p>
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold border mt-1 ${
-                        variant.is_active
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          : 'bg-red-50 text-red-700 border-red-200'
-                      }`}
-                    >
-                      <span className={`w-1 h-1 rounded-full ${variant.is_active ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                      {variant.is_active ? 'Active' : 'Inactive'}
-                    </span>
+
+                  <div className="flex-1 min-w-0">
+                    {isEditing ? (
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          value={editVariantData.color}
+                          onChange={(e) => setEditVariantData((prev) => ({ ...prev, color: e.target.value }))}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all"
+                          placeholder="Color name"
+                        />
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleEditVariantImage(e.target.files[0])}
+                            className="text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100 text-slate-500"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="font-semibold text-slate-800 truncate">{variant.color}</p>
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold border mt-1 ${
+                            variant.is_active
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : 'bg-red-50 text-red-700 border-red-200'
+                          }`}
+                        >
+                          <span className={`w-1 h-1 rounded-full ${variant.is_active ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                          {variant.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
-                <button
-                  onClick={() => handleToggleVariantActive(variant, vIndex)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
-                    variant.is_active
-                      ? 'text-amber-600 bg-amber-50 hover:bg-amber-100 border-amber-200'
-                      : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border-emerald-200'
-                  }`}
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                    {variant.is_active ? (
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" />
-                    ) : (
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    )}
-                  </svg>
-                  {variant.is_active ? 'Deactivate' : 'Activate'}
-                </button>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  {isEditing ? (
+                    <>
+                      <button
+                        onClick={() => handleSaveVariantEdit(variant, vIndex)}
+                        disabled={savingVariantId === variant.id}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 text-xs font-semibold hover:bg-blue-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {savingVariantId === variant.id ? <ClipLoader color="#2563eb" size={12} /> : (
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                          </svg>
+                        )}
+                        Save
+                      </button>
+                      <button
+                        onClick={cancelEditVariant}
+                        disabled={savingVariantId === variant.id}
+                        className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:bg-slate-100 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => startEditVariant(variant)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                        </svg>
+                        Edit
+                      </button>
+                      <button
+                        onClick={() =>
+                          openDeleteConfirm('variant', {
+                            id: variant.id,
+                            variantIndex: vIndex,
+                          })
+                        }
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-red-500 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                        </svg>
+                        Delete
+                      </button>
+                      <button
+                        onClick={() => handleToggleVariantActive(variant, vIndex)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                          variant.is_active
+                            ? 'text-amber-600 bg-amber-50 hover:bg-amber-100 border-amber-200'
+                            : 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border-emerald-200'
+                        }`}
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                          {variant.is_active ? (
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" />
+                          ) : (
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          )}
+                        </svg>
+                        {variant.is_active ? 'Deactivate' : 'Activate'}
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
 
               {/* Sizes */}
@@ -473,7 +747,7 @@ export default function EditProduct() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {variant.sizes.map((size) => (
+                    {variant.sizes.map((size, sIndex) => (
                       <div key={size.id} className="flex flex-wrap items-center gap-2 sm:gap-3 p-2 rounded-xl bg-slate-50/50 border border-slate-100">
                         <span className="text-xs font-bold text-slate-500 bg-white px-2 py-1 rounded-md border border-slate-200 w-14 text-center shrink-0">
                           {size.size.split('_')[0]}
@@ -497,18 +771,35 @@ export default function EditProduct() {
                           }`}
                           placeholder="Stock"
                         />
-                        <button
-                          onClick={() => handleSaveSize(vIndex, size)}
-                          disabled={savingSizeId === size.id || !sizeUpdates[size.id]}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 text-xs font-semibold hover:bg-blue-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors ml-auto"
-                        >
-                          {savingSizeId === size.id ? <ClipLoader color="#2563eb" size={12} /> : (
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        <div className="flex items-center gap-1 ml-auto">
+                          <button
+                            onClick={() => handleSaveSize(vIndex, size)}
+                            disabled={savingSizeId === size.id || !sizeUpdates[size.id]}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 text-xs font-semibold hover:bg-blue-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {savingSizeId === size.id ? <ClipLoader color="#2563eb" size={12} /> : (
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                              </svg>
+                            )}
+                            Save
+                          </button>
+                          <button
+                            onClick={() =>
+                              openDeleteConfirm('size', {
+                                id: size.id,
+                                variantIndex: vIndex,
+                                sizeIndex: sIndex,
+                              })
+                            }
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                            title="Delete size"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
                             </svg>
-                          )}
-                          Save
-                        </button>
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
