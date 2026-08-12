@@ -7,6 +7,8 @@ import {
   SlidersHorizontal,
   RotateCcw,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   ArrowUpDown,
   User,
   Ruler,
@@ -15,6 +17,7 @@ import {
 } from "lucide-react";
 
 const apiUrl = import.meta.env.VITE_API_URL;
+const PAGE_SIZE = 15;
 
 export default function SearchResults() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -29,6 +32,9 @@ export default function SearchResults() {
   const [gender, setGender] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const currentPage = parseInt(searchParams.get("page") || "1", 10) || 1;
 
   // Hardcoded lists - backend se nahi aayenge
   const sortOptions = [
@@ -75,14 +81,23 @@ export default function SearchResults() {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const qs = searchParams.toString();
-        const res = await axios.get(`${apiUrl}/products/?${qs}`,{
-        withCredentials: true,
-        xsrfCookieName: 'csrftoken',
-        xsrfHeaderName: 'X-CSRFToken',
-        withXSRFToken: true,
+        const qs = new URLSearchParams(searchParams);
+        if (!qs.get("page")) qs.set("page", "1");
+        qs.set("page_size", PAGE_SIZE);
+
+        const res = await axios.get(`${apiUrl}/products/?${qs.toString()}`, {
+          withCredentials: true,
+          xsrfCookieName: "csrftoken",
+          xsrfHeaderName: "X-CSRFToken",
+          withXSRFToken: true,
         });
         setProducts(res.data.products || []);
+
+        const pages =
+          res.data.total_pages ||
+          Math.ceil((res.data.total_count || res.data.count || 0) / PAGE_SIZE) ||
+          1;
+        setTotalPages(pages);
       } catch (err) {
         console.error(err);
       } finally {
@@ -119,6 +134,30 @@ export default function SearchResults() {
 
   const toggleFilter = (key) => {
     setOpenFilter((prev) => (prev === key ? null : key));
+  };
+
+  const goToPage = (p) => {
+    if (p < 1 || p > totalPages || p === currentPage) return;
+    const params = new URLSearchParams(searchParams);
+    params.set("page", p);
+    setSearchParams(params);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // windowed page numbers with ellipses, e.g. 1 … 4 5 6 … 12
+  const getPageNumbers = () => {
+    const pages = [];
+    const windowSize = 1;
+    const start = Math.max(2, currentPage - windowSize);
+    const end = Math.min(totalPages - 1, currentPage + windowSize);
+
+    pages.push(1);
+    if (start > 2) pages.push("...");
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (end < totalPages - 1) pages.push("...");
+    if (totalPages > 1) pages.push(totalPages);
+
+    return pages;
   };
 
   return (
@@ -479,6 +518,52 @@ export default function SearchResults() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!loading && products.length > 0 && totalPages > 1 && (
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-8 sm:mt-10">
+            <button
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="flex items-center justify-center w-9 h-9 rounded-xl border border-[#E8E2DA] text-[#6B6560] bg-white hover:border-[#D4CCC2] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              aria-label="Previous page"
+            >
+              <ChevronLeft size={16} />
+            </button>
+
+            {getPageNumbers().map((p, i) =>
+              p === "..." ? (
+                <span
+                  key={`ellipsis-${i}`}
+                  className="w-9 h-9 flex items-center justify-center text-xs font-bold text-[#C4B8A8]"
+                >
+                  ⋯
+                </span>
+              ) : (
+                <button
+                  key={p}
+                  onClick={() => goToPage(p)}
+                  className={`w-9 h-9 rounded-xl text-xs font-bold border transition-all ${
+                    p === currentPage
+                      ? "bg-[#4A0E1C] text-white border-[#4A0E1C] shadow-md shadow-[#4A0E1C]/20"
+                      : "bg-white text-[#2B2422] border-[#E8E2DA] hover:border-[#D4CCC2]"
+                  }`}
+                >
+                  {p}
+                </button>
+              )
+            )}
+
+            <button
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="flex items-center justify-center w-9 h-9 rounded-xl border border-[#E8E2DA] text-[#6B6560] bg-white hover:border-[#D4CCC2] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              aria-label="Next page"
+            >
+              <ChevronRight size={16} />
+            </button>
           </div>
         )}
       </div>

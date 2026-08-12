@@ -23,6 +23,7 @@ from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
+import math
 
 
 # ===============================
@@ -836,14 +837,13 @@ def productDetail(request, id):
         else:
             return response
     
-
 @api_view(["GET"])
 def product_list(request):
     """
-    Search + Filter + Sort products
-    Returns cheapest in-stock variant per product
+    Search + Filter + Sort products, paginated.
+    Returns cheapest/first in-stock variant per product for the requested page.
     """
-
+ 
     # -------------------------
     # BASE QUERYSET
     # -------------------------
@@ -852,77 +852,63 @@ def product_list(request):
     ).filter(
         stock__gt=0
     )
-
+ 
     # -------------------------
     # SEARCH
     # ?search=tshirt
     # -------------------------
-    search = request.GET.get("search").strip()
-    print(search)
+    search = (request.GET.get("search") or "").strip()
     if search:
-        keywords= search.split()
-        print(keywords)
+        keywords = search.split()
         search_q = Q()
-
+ 
         for word in keywords:
             search_q &= (
                 Q(variant__product__name__icontains=word) |
                 Q(variant__product__brand__icontains=word) |
                 Q(variant__product__category__name__istartswith=word) |
                 Q(variant__product__gender__icontains=word) |
-                Q(variant__color__icontains=word)|
+                Q(variant__color__icontains=word) |
                 Q(size__istartswith=word)
-
             )
-
-        print(search_q)
-        qs = VariantSize.objects.select_related(
-    "variant__product__category"
-).filter(
-    stock__gt=0
-).filter(search_q)
-        print(qs)
-       
-            
-            
-        
-
-   
-
-    
+ 
+        qs = qs.filter(search_q)
+ 
     # -------------------------
     # SIZE FILTER
     # ?size=M_32
     # -------------------------
     size = request.GET.get("size")
-    print(size)
     if size:
         qs = qs.filter(size__istartswith=size)
-
-    gender =request.GET.get('gender')
-    print(gender)
+ 
+    # -------------------------
+    # GENDER FILTER
+    # ?gender=male
+    # -------------------------
+    gender = request.GET.get("gender")
     if gender:
-        qs= qs.filter(variant__product__gender__istartswith=gender)
-
+        qs = qs.filter(variant__product__gender__istartswith=gender)
+ 
     # -------------------------
     # PRICE FILTER
     # ?min_price=500&max_price=1500
     # -------------------------
     min_price = request.GET.get("min_price")
     max_price = request.GET.get("max_price")
-
+ 
     if min_price:
         qs = qs.filter(price__gte=min_price)
-
+ 
     if max_price:
         qs = qs.filter(price__lte=max_price)
-
+ 
     # -------------------------
     # SORTING
     # ?order=latest | price_low | price_high
     # -------------------------
     order = request.GET.get("order")
-
+ 
     if order == "price_low":
         qs = qs.order_by("price")
     elif order == "price_high":
@@ -930,17 +916,17 @@ def product_list(request):
     else:
         # default: latest updated variant size
         qs = qs.order_by("-updated_At", "price")
-
+ 
     # -------------------------
-    # GROUP BY PRODUCT
-    # (cheapest variant per product)
+    # GROUP BY PRODUCT VARIANT
+    # (cheapest/first in-stock size per variant, in the sorted order above)
     # -------------------------
     products_map = {}
-
+ 
     for vs in qs:
         variant = vs.variant
         variant_id = str(variant.id)
-
+ 
         if variant_id not in products_map:
             products_map[variant_id] = {
                 "product_id": str(variant.product.id),
@@ -953,14 +939,51 @@ def product_list(request):
                 "variant_id": str(vs.variant.id),
                 "color": vs.variant.color,
             }
-
+ 
+    all_products = list(products_map.values())
+    total_count = len(all_products)
+ 
+    # -------------------------
+    # PAGINATION
+    # ?page=1&page_size=5
+    # (grouping happens in Python above, so pagination is applied
+    #  after grouping — not as a DB-level LIMIT/OFFSET)
+    # -------------------------
+    try:
+        page = int(request.GET.get("page", 1))
+    except (TypeError, ValueError):
+        page = 1
+    if page < 1:
+        page = 1
+ 
+    try:
+        page_size = int(request.GET.get("page_size", 15))
+    except (TypeError, ValueError):
+        page_size = 15
+    if page_size < 1:
+        page_size = 15
+ 
+    total_pages = math.ceil(total_count / page_size) if total_count else 1
+    # clamp page so an out-of-range page number doesn't return an empty slice silently
+    if page > total_pages:
+        page = total_pages
+ 
+    start = (page - 1) * page_size
+    end = start + page_size
+    page_products = all_products[start:end]
+ 
     # -------------------------
     # FINAL RESPONSE
     # -------------------------
     return Response({
-        "count": len(products_map),
-        "products": list(products_map.values())
-    })    
+        "count": total_count,
+        "total_count": total_count,
+        "total_pages": total_pages,
+        "page": page,
+        "page_size": page_size,
+        "products": page_products,
+    })
+ 
 
 def download_google_profile_image(picture_url, email):
     """
