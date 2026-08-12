@@ -72,7 +72,10 @@ export default function Account() {
       try {
         const res = await axios.get(`${apiUrl}/account/`, {
           headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
+         withCredentials: true,
+        xsrfCookieName: 'csrftoken',
+        xsrfHeaderName: 'X-CSRFToken',
+        withXSRFToken: true,
         });
 
         setLogin(res.data.userData);
@@ -95,6 +98,9 @@ export default function Account() {
       const res = await axios.get(`${apiUrl}/orderdetails/`, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
+        xsrfCookieName: 'csrftoken',
+        xsrfHeaderName: 'X-CSRFToken',
+        withXSRFToken: true,
       });
 
       setOrders(res?.data?.userOrderData || []);
@@ -119,6 +125,9 @@ export default function Account() {
         {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
+        xsrfCookieName: 'csrftoken',
+        xsrfHeaderName: 'X-CSRFToken',
+        withXSRFToken: true,
         }
       );
       setLogin(res.data.userData);
@@ -144,11 +153,16 @@ export default function Account() {
 
     try {
       const res = await axios.patch(`${apiUrl}/account/`, formData, {
-        withCredentials: true,
+        
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
+        withCredentials: true,
+        xsrfCookieName: 'csrftoken',
+        xsrfHeaderName: 'X-CSRFToken',
+        withXSRFToken: true,
+
       });
       setLogin(res.data.userData);
       setToken(res.data.access_Token);
@@ -170,6 +184,9 @@ export default function Account() {
       await axios.get(`${apiUrl}/logout/`, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
+        xsrfCookieName: 'csrftoken',
+        xsrfHeaderName: 'X-CSRFToken',
+        withXSRFToken: true,
       });
       toast.success("Successfully logged out");
       setToken(null);
@@ -234,10 +251,10 @@ export default function Account() {
   const getShopkeeperInfo = () => {
     // Fallback data - replace with actual order.shopkeeper data when available
     return {
-      name: "Fashion Hub Store",
-      location: "123 Market Street, Commercial Complex, Bangalore - 560001",
-      phone: "+91 98765 43210",
-      whatsapp:"+91 98765 43210",
+      name: "SS Garment",
+      location: "Mishalgarhi, Govindpuram,Ghaziabad, Uttar Pradesh - 201013",
+      phone: "+91 87009 93207 ",
+      whatsapp:"+91 87009 93207",
     };
   };
   const handleCancelOrder = ()=>{

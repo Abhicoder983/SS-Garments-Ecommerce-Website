@@ -103,11 +103,14 @@ export default function Buynow() {
 
     try {
       const res = await axios.patch(`${apiUrl}/account/`, formData, {
-        withCredentials: true,
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
+        withCredentials: true,
+        xsrfCookieName: 'csrftoken',
+        xsrfHeaderName: 'X-CSRFToken',
+        withXSRFToken: true,
       });
       setLogin(res.data.userData);
       setToken(res.data.access_Token);
@@ -130,6 +133,9 @@ export default function Buynow() {
         {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
+          xsrfCookieName: 'csrftoken',
+          xsrfHeaderName: 'X-CSRFToken',
+          withXSRFToken: true,
         }
       );
       setLogin(res.data.userData);
@@ -458,7 +464,7 @@ export default function Buynow() {
             <div className="grid grid-cols-3 gap-3">
               {[
                 { icon: ShieldCheck, label: "Secure payments" },
-                { icon: RotateCcw, label: "7-day easy returns" },
+                { icon: RotateCcw, label: "6-hours easy returns" },
                 { icon: Truck, label: "Tracked delivery" },
               ].map(({ icon: Icon, label }) => (
                 <div
@@ -540,8 +546,12 @@ export default function Buynow() {
 
             <p className="text-[11px] text-[#B0A48F] text-center px-4 leading-relaxed">
               By placing this order you agree to SS Garments'{" "}
-              <span className="text-[#8A7F73] underline underline-offset-2">terms</span> and{" "}
-              <span className="text-[#8A7F73] underline underline-offset-2">return policy</span>.
+              <span className="text-[#8A7F73] underline underline-offset-2" onClick={() => navigate("/terms")}>
+                terms
+              </span> and{" "}
+              <span className="text-[#8A7F73] underline underline-offset-2" onClick={() => navigate("/returns")}>
+                return policy
+              </span>.
             </p>
           </div>
         </div>

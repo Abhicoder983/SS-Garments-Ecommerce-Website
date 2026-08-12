@@ -50,7 +50,10 @@ export default function Homes() {
       try {
         const res = await axios.get(apiUrl, {
           headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true
+          withCredentials: true,
+          xsrfCookieName: 'csrftoken',
+          xsrfHeaderName: 'X-CSRFToken',
+          withXSRFToken: true,
         });
         console.log("abhishekapi")
         console.log(res.data?.productData)
@@ -191,7 +194,7 @@ const shortText = (text, limit = 120) =>
     </div>
 
     <div className="md:text-base text-sm flex justify-between text-[#9C9082] mt-2">
-      <div>{item?.brand}</div>
+      <div>{item!=""?.brand}</div>
       <div className="text-base md:text-xl text-[#4A0E1C] font-semibold">
         ₹{item?.price} 
       </div>
@@ -234,7 +237,7 @@ const shortText = (text, limit = 120) =>
     </div>
 
     <div className="flex justify-between text-[#9C9082] text-base mt-2">
-      <div>{item?.brand}</div>
+      <div>{item!=""?.brand}</div>
       <div className="text-xl text-[#4A0E1C] font-semibold">
         ₹{item?.price}
       </div>
@@ -305,7 +308,7 @@ const shortText = (text, limit = 120) =>
     </div>
 
     <div className="md:text-base text-sm flex justify-between text-[#9C9082] mt-2">
-      <div>{item?.brand}</div>
+      <div>{item!=""?.brand}</div>
       <div className="text-base md:text-xl text-[#4A0E1C] font-semibold">
         ₹{item?.price} 
       </div>
@@ -349,7 +352,7 @@ const shortText = (text, limit = 120) =>
     </div>
 
     <div className="flex justify-between text-[#9C9082] text-base mt-2">
-      <div>{item?.brand}</div>
+      <div>{item!=""?.brand}</div>
       <div className="text-xl text-[#4A0E1C] font-semibold">
         ₹{item?.price}
       </div>
@@ -422,7 +425,7 @@ const shortText = (text, limit = 120) =>
     </div>
 
     <div className="md:text-base text-sm flex justify-between text-[#9C9082] mt-2">
-      <div>{item?.brand}</div>
+      <div>{item!=""?.brand}</div>
       <div className="text-base md:text-xl text-[#4A0E1C] font-semibold">
         ₹{item?.price} 
       </div>
@@ -475,7 +478,7 @@ const shortText = (text, limit = 120) =>
     </div>
 
     <div className="flex justify-between text-[#9C9082] text-base mt-2">
-      <div>{item?.brand}</div>
+      <div>{item!=""?.brand}</div>
       <div className="text-xl text-[#4A0E1C] font-semibold">
         ₹{item?.price}
       </div>
@@ -525,7 +528,7 @@ const shortText = (text, limit = 120) =>
     </div>
 
     <div className="md:text-base text-sm flex justify-between text-[#9C9082] mt-2">
-      <div>{item?.brand}</div>
+      <div>{item!=""?.brand}</div>
       <div className="text-base md:text-xl text-[#4A0E1C] font-semibold">
         ₹{item?.price} 
       </div>

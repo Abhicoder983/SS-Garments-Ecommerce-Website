@@ -31,9 +31,8 @@ export default function Footer() {
   };
 
   const socialLinks = [
-    { icon: Instagram, href: "#", label: "Instagram" },
-    { icon: Facebook, href: "#", label: "Facebook" },
-    { icon: Twitter, href: "#", label: "Twitter" },
+    { icon: Instagram, href: "https://www.instagram.com/ssgarments_up?igsh=MTB2dTM0eWJ1dndtcg%3D%3D&utm_source=qr", label: "Instagram" },
+  
   ];
 
   return (

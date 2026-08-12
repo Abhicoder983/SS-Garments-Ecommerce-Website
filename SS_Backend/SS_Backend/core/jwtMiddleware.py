@@ -72,6 +72,7 @@ class JWTMiddleware:
         print(token)
         refreshToken = request.COOKIES.get("refresh_token",None)
         print(refreshToken)
+        print(request.COOKIES)
         
        
         try:

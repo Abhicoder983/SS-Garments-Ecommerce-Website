@@ -62,9 +62,13 @@ export default function ContactUs() {
     const response = await axios.post(
       `${apiUrl}/contactusEmail/`,
       formData,
-      { withCredentials: true, headers: { 
-           Authorization:`Bearer ${token}`,
+      { headers: { 
+          Authorization:`Bearer ${token}`,
           "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+          xsrfCookieName: 'csrftoken',
+          xsrfHeaderName: 'X-CSRFToken',
+          withXSRFToken: true,
          }
     );
   
@@ -132,7 +136,7 @@ export default function ContactUs() {
             <Phone className="text-green-600"/>
             <div>
               <h3 className="font-bold">Phone</h3>
-              <p className="text-slate-600">+91 8796210760</p>
+              <p className="text-slate-600">+91 8700993207</p>
             </div>
           </div>
 

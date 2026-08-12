@@ -246,6 +246,33 @@ export default function NavBar() {
                 })}
               </ul>
             </div>
+            <div>
+
+            </div>
+              <p className="text-[10px] font-bold text-[#9A9187] uppercase tracking-[0.2em] mb-2 px-1">
+                Terms And Conditions
+              </p>
+              <ul className="space-y-1">
+                <li>
+                  <Link to="/terms" className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${location.pathname === "/terms" ? "bg-[#4A0E1C] text-white" : "text-[#2B2422] hover:bg-[#F5F0E8]"}`}>
+                    <FileText size={16} strokeWidth={location.pathname === "/terms" ? 2.5 : 2} />
+                    Terms and Conditions  
+                  </Link>
+                </li>
+              </ul>
+
+              <p className="text-[10px] font-bold text-[#9A9187] uppercase tracking-[0.2em] mb-2 px-1">
+               Payment Flow
+              </p>
+              <ul className="space-y-1">
+                <li>
+                  <Link to="/payment-flow" className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${location.pathname === "/payment-flow" ? "bg-[#4A0E1C] text-white" : "text-[#2B2422] hover:bg-[#F5F0E8]"}`}>
+                    <FileText size={16} strokeWidth={location.pathname === "/payment-flow" ? 2.5 : 2} />
+                    Payment Flow
+                  </Link>
+                </li>
+              </ul>
+          
 
             <div>
               <p className="text-[10px] font-bold text-[#9A9187] uppercase tracking-[0.2em] mb-2 px-1">

@@ -55,10 +55,11 @@ CSRF_TRUSTED_ORIGINS = [
 ALLOWED_HOSTS = ['ssgarment.in', 'www.ssgarment.in', 'api.ssgarment.in', '13.126.138.14',"127.0.0.1", "localhost","www.api.ssgarment.in"]
 
 
-
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = False
 CORS_ALLOW_CREDENTIALS = True
-
-
 # Application definition
 
 INSTALLED_APPS = [

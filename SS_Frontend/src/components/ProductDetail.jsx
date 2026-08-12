@@ -53,6 +53,9 @@ export default function ProductDetail() {
             Authorization: `Bearer ${token}`,
           },
           withCredentials: true,
+          xsrfCookieName: 'csrftoken',
+          xsrfHeaderName: 'X-CSRFToken',
+          withXSRFToken: true,
         }
       );
       const data = res.response?.data;
@@ -77,6 +80,9 @@ export default function ProductDetail() {
         const res = await axios.get(`${apiUrl}/productDetail/${variantId}/`, {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
+          xsrfCookieName: 'csrftoken',
+          xsrfHeaderName: 'X-CSRFToken',
+          withXSRFToken: true,
         });
         const data = res.data;
         setLogin(data.userData);
@@ -224,7 +230,7 @@ export default function ProductDetail() {
             {/* Brand & Rating */}
             <div className="flex items-center gap-3 mb-3">
               <span className="px-3 py-1 rounded-lg bg-[#FDF6ED] text-[#8A6A15] text-xs font-bold border border-[#F0E4D4]">
-                {product.brand}
+                {product!=""?.brand}
               </span>
               <div className="flex items-center gap-1 text-amber-500">
                 {[...Array(5)].map((_, i) => (
@@ -264,11 +270,11 @@ export default function ProductDetail() {
             <div className="grid grid-cols-3 gap-3 mb-8">
               <div className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white border border-[#EDE8E0] text-center">
                 <Truck size={18} className="text-[#4A0E1C]" />
-                <span className="text-[10px] font-bold text-[#6B6560]">Free Delivery</span>
+                <span className="text-[10px] font-bold text-[#6B6560]">Safe Delivery</span>
               </div>
               <div className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white border border-[#EDE8E0] text-center">
                 <RotateCcw size={18} className="text-[#4A0E1C]" />
-                <span className="text-[10px] font-bold text-[#6B6560]">6 Hr Return</span>
+                <span className="text-[10px] font-bold text-[#6B6560]">6-Hour Return</span>
               </div>
               <div className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white border border-[#EDE8E0] text-center">
                 <ShieldCheck size={18} className="text-[#4A0E1C]" />

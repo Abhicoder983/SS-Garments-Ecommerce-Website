@@ -35,6 +35,9 @@ export default function UserLogin(){
       Authorization: `Bearer ${token}`,
     },
     withCredentials: true,
+    xsrfCookieName: 'csrftoken',
+    xsrfHeaderName: 'X-CSRFToken',
+    withXSRFToken: true,
   }
 ).then((response)=>{
       console.log(apiUrl)
@@ -64,7 +67,12 @@ export default function UserLogin(){
     console.log(code)
     const googleAuth=async(code)=>{
       setLoading(true)
-      await axios.post(`${apiUrl}/google-oauth2-authentication/`, { code: code }, { withCredentials: true })
+      await axios.post(`${apiUrl}/google-oauth2-authentication/`, { code: code }, {
+        
+        withCredentials: true,
+        xsrfCookieName: 'csrftoken',
+        xsrfHeaderName: 'X-CSRFToken',
+        withXSRFToken: true })
       .then((response) => {
         // login success, ab dashboard pe navigate kar do
         setLogin(response.data?.userData)
@@ -109,9 +117,14 @@ export default function UserLogin(){
       if(!(email && otp)){
         return toast.warn('Enter your Email and OTP')
       }
-     await axios.post(`${apiUrl}/signup/`,
+     await axios.post(`${apiUrl}/signup/`, 
 
-      {email,otp},{ withCredentials: true })
+      {email,otp},{ 
+        withCredentials: true,
+        xsrfCookieName: 'csrftoken',
+        xsrfHeaderName: 'X-CSRFToken',
+        withXSRFToken: true,
+       })
       .then((response)=>{
         console.log(response.data)
         setLogin(response.data?.userData)
@@ -145,7 +158,12 @@ export default function UserLogin(){
       await axios.post(`${apiUrl}/verify/`,{
         email
       }
-    , { withCredentials: true })
+    , { 
+      withCredentials: true,
+      xsrfCookieName: 'csrftoken',
+      xsrfHeaderName: 'X-CSRFToken',
+      withXSRFToken: true,
+     })
     .then((data)=>{
       
       setotpEnable(true)

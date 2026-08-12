@@ -3,7 +3,10 @@ import axios from 'axios';
 const apiUrl = import.meta.env.VITE_API_URL;
 const api = axios.create({
   baseURL: `${apiUrl}/admin-role`,
-  withCredentials: true,  // Django backend URL, baad me production URL se replace karna
+  withCredentials: true,
+  xsrfCookieName: 'csrftoken',
+  xsrfHeaderName: 'X-CSRFToken',
+  withXSRFToken: true, 
 });
 
 // Har request ke saath token attach karega agar available ho

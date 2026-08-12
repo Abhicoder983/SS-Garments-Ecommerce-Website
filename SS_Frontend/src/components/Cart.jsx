@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 const apiUrl = import.meta.env.VITE_API_URL;
-axios.defaults.withCredentials = true;
+
 
 const STEPS = ["Bag", "Review & pay", "Confirmed"];
 
@@ -56,6 +56,9 @@ export default function CartPage() {
           Authorization: `Bearer ${token}`,
         },
         withCredentials: true,
+        xsrfCookieName: 'csrftoken',
+        xsrfHeaderName: 'X-CSRFToken',
+        withXSRFToken: true,
       });
       setCartItems(res.data.cart_Detail || []);
       setLogin(res.data.userData);
@@ -84,6 +87,9 @@ export default function CartPage() {
             Authorization: `Bearer ${token}`,
           },
           withCredentials: true,
+          xsrfCookieName: 'csrftoken',
+          xsrfHeaderName: 'X-CSRFToken',
+          withXSRFToken: true,
         }
       )
       .then((res) => {
@@ -109,6 +115,9 @@ export default function CartPage() {
           Authorization: `Bearer ${token}`,
         },
         withCredentials: true,
+        xsrfCookieName: 'csrftoken',
+        xsrfHeaderName: 'X-CSRFToken',
+        withXSRFToken: true,
       })
       .then((res) => {
         setLogin(res.data.userData);

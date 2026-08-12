@@ -76,7 +76,12 @@ export default function SearchResults() {
       setLoading(true);
       try {
         const qs = searchParams.toString();
-        const res = await axios.get(`${apiUrl}/products/?${qs}`);
+        const res = await axios.get(`${apiUrl}/products/?${qs}`,{
+        withCredentials: true,
+        xsrfCookieName: 'csrftoken',
+        xsrfHeaderName: 'X-CSRFToken',
+        withXSRFToken: true,
+        });
         setProducts(res.data.products || []);
       } catch (err) {
         console.error(err);

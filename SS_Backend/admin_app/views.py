@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from rest_framework.decorators import api_view
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
 from rest_framework import status
 from .templates.email import otp_send
@@ -16,7 +17,7 @@ from SS_BackendApp.utils import generateJWT, getIPAddress
 from django.db.models import Sum
 from bson import ObjectId
 from SS_BackendApp.models import Coupon, Order, Products, UserModel, VariantSize, Category, ProductVariant
-import json
+import json 
 @api_view(['POST'])
 def send_admin_otp(request):
     serializer = SendOTPSerializer(data=request.data)
@@ -778,6 +779,7 @@ def product_variant_create_without_size(request):
         "message": "Variant created successfully",
         "variant": variant_data,
     }, status=status.HTTP_201_CREATED)
+
 
 
 
