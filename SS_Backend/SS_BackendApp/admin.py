@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserModel,Order,refreshTokenStore,cart,Category,Products,ProductVariant,VariantSize
+from .models import Coupon, UserModel,Order,refreshTokenStore,cart,Category,Products,ProductVariant,VariantSize
 
 # Register your models here.
 
@@ -44,6 +44,11 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(VariantSize)
 class CategoryAdmin(admin.ModelAdmin):
+    def get_list_display(self, request):
+        return [field.name for field in self.model._meta.fields]
+    
+@admin.register(Coupon)
+class CouponAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         return [field.name for field in self.model._meta.fields]
     

@@ -2,6 +2,7 @@
 import random
 from datetime import timedelta,datetime
 import re
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.utils import timezone
 from django.core.mail import EmailMultiAlternatives
@@ -18,6 +19,8 @@ from django.db.models import Sum
 from bson import ObjectId
 from SS_BackendApp.models import Coupon, Order, Products, UserModel, VariantSize, Category, ProductVariant
 import json 
+import math
+from .shared.permission import admin_required
 @api_view(['POST'])
 def send_admin_otp(request):
     serializer = SendOTPSerializer(data=request.data)
@@ -160,6 +163,7 @@ LOW_STOCK_THRESHOLD = 15
 
 
 @api_view(['GET'])
+@admin_required
 def admin_dashboard(request):
     # 1. Total orders
     total_orders = Order.objects.count()
@@ -216,13 +220,75 @@ def admin_dashboard(request):
 
 
 @api_view(['GET'])
+@admin_required
 def customer_list(request):
+    """
+    Customer list, with search + pagination.
+    ?search=john&page=1&page_size=15
+    """
     customers = UserModel.objects.filter(role='customer').order_by('-id')
-    serializer = CustomerSerializer(customers, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+ 
+    # -------------------------
+    # SEARCH
+    # ?search=john
+    # -------------------------
+    search = (request.GET.get('search') or '').strip()
+    if search:
+        customers = customers.filter(
+            Q(name__icontains=search) | Q(email__icontains=search)
+        )
+ 
+    # -------------------------
+    # COUNTS
+    # computed on the filtered (searched) set, before pagination is applied,
+    # so the stat cards on the frontend stay accurate even while searching
+    # -------------------------
+    total_count = customers.count()
+    active_count = customers.filter(is_active=True).count()
+    blocked_count = customers.filter(is_active=False).count()
+ 
+    # -------------------------
+    # PAGINATION
+    # ?page=1&page_size=15
+    # -------------------------
+    try:
+        page = int(request.GET.get('page', 1))
+    except (TypeError, ValueError):
+        page = 1
+    if page < 1:
+        page = 1
+ 
+    try:
+        page_size = int(request.GET.get('page_size', 15))
+    except (TypeError, ValueError):
+        page_size = 15
+    if page_size < 1:
+        page_size = 15
+ 
+    total_pages = math.ceil(total_count / page_size) if total_count else 1
+    # clamp so an out-of-range page number doesn't return an empty slice silently
+    if page > total_pages:
+        page = total_pages
+ 
+    start = (page - 1) * page_size
+    end = start + page_size
+    page_customers = customers[start:end]
+ 
+    serializer = CustomerSerializer(page_customers, many=True)
+ 
+    return Response({
+        'customers': serializer.data,
+        'total_count': total_count,
+        'total_pages': total_pages,
+        'active_count': active_count,
+        'blocked_count': blocked_count,
+        'page': page,
+        'page_size': page_size,
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(['PATCH'])
+@admin_required
 def customer_update_status(request, customer_id):
     try:
         customer = UserModel.objects.get(id=customer_id, role='customer')
@@ -243,6 +309,7 @@ def customer_update_status(request, customer_id):
 
 
 @api_view(['GET'])
+@admin_required
 def customer_detail(request, customer_id):
     try:
         customer = UserModel.objects.get(id=customer_id, role='customer')
@@ -260,14 +327,55 @@ def customer_detail(request, customer_id):
     }, status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
-def order_list(request):
-    orders = Order.objects.select_related('customerID').order_by('-order_date')
-    serializer = OrderListSerializer(orders, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+@admin_required
+def order_list(request):
+    # Base queryset
+    orders = Order.objects.select_related('customerID').order_by('-order_date')
+
+    # ─── Search (order id, customer name, awb_id) ───
+    search = request.query_params.get('search')
+    status_counts = {
+        'ALL': orders.count(),
+        'PENDING': orders.filter(statusID='PENDING').count(),
+        'SHIPPED': orders.filter(statusID='SHIPPED').count(),
+        'DELIVERED': orders.filter(statusID='DELIVERED').count(),
+        'CANCELLED': orders.filter(statusID='CANCELLED').count()
+    }
+    if search:
+        orders = orders.filter(
+            Q(id__icontains=search) |
+            Q(customerID__name__icontains=search) |
+            Q(awb_id__icontains=search)
+        )
+
+   
+    # ─── Status filter ───
+    status_filter = request.query_params.get('status')
+    if status_filter and status_filter != 'ALL':
+        orders = orders.filter(status=status_filter)
+    print(13)
+    # ─── Pagination ───
+    page = int(request.query_params.get('page', 1))
+    page_size = int(request.query_params.get('page_size', 15))
+    print(14)
+    paginator = Paginator(orders, page_size)
+    page_obj = paginator.get_page(page)
+    print(page_obj.object_list)
+    serializer = OrderListSerializer(page_obj.object_list, many=True)
+
+    return Response({
+        'results': serializer.data,
+        'count': paginator.count,
+        'total_pages': max(1, paginator.num_pages),
+        'current_page': page,
+        'page_size': page_size,
+        'status_counts': status_counts,
+    }, status=status.HTTP_200_OK)
 
 @api_view(['GET', 'PATCH'])
+@admin_required
 def order_detail_or_update(request, order_id):
     try:
         order = Order.objects.select_related('customerID').get(id=order_id)
@@ -293,6 +401,7 @@ def order_detail_or_update(request, order_id):
 
 
 @api_view(['GET', 'POST'])
+@admin_required
 def category_list_create(request):
     if request.method == 'GET':
         categories = Category.objects.all().order_by('name')
@@ -314,6 +423,7 @@ def category_list_create(request):
 
 
 @api_view(['PATCH', 'DELETE'])
+@admin_required
 def category_update_delete(request, category_id):
     try:
         category = Category.objects.get(id=ObjectId(category_id))
@@ -351,9 +461,37 @@ def category_update_delete(request, category_id):
 def coupon_list_create(request):
     if request.method == 'GET':
         coupons = Coupon.objects.all().order_by('-created_at')
-        serializer = CouponSerializer(coupons, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
+        # ─── Search by code ───
+        search = request.query_params.get('search')
+        if search:
+            coupons = coupons.filter(code__icontains=search)
+
+        # ─── Stats (respects search, not pagination) ───
+        now = timezone.now()
+        stats = {
+            'total': coupons.count(),
+            'active': coupons.filter(is_active=True, valid_until__gt=now).count(),
+            'expired': coupons.filter(valid_until__lte=now).count(),
+        }
+
+        # ─── Pagination ───
+        page = int(request.query_params.get('page', 1))
+        page_size = int(request.query_params.get('page_size', 15))
+
+        paginator = Paginator(coupons, page_size)
+        page_obj = paginator.get_page(page)
+
+        serializer = CouponSerializer(page_obj.object_list, many=True)
+
+        return Response({
+            'results': serializer.data,
+            'count': paginator.count,
+            'total_pages': max(1, paginator.num_pages),
+            'current_page': page,
+            'page_size': page_size,
+            'stats': stats,
+        }, status=status.HTTP_200_OK)
     elif request.method == 'POST':
         data = request.data
 

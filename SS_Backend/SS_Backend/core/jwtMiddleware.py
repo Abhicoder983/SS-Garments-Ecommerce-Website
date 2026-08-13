@@ -69,14 +69,15 @@ class JWTMiddleware:
         if auth_header and auth_header.startswith("Bearer "):
             token = auth_header.split(" ")[1]
         
-        print(token)
+        print("accessToken",token)
         refreshToken = request.COOKIES.get("refresh_token",None)
-        print(refreshToken)
-        print(request.COOKIES)
+        print("refreshToken",refreshToken)
+        
+    
         
        
         try:
-            print('enter in try')
+            
             payload = jwt.decode(
                 token,
                 settings.SECRET_KEYS,
@@ -88,12 +89,10 @@ class JWTMiddleware:
             # Custom user model se user fetch
 
             user=UserModel.objects.filter(id=user_id).first()
-            print('log1')
-            print(user)
+            
             if(not user):
-                print('log2')
                 return JsonResponse({'error':'user does not exist'},status=401)
-            print(1)
+            
             request.id= user
             request.access_token=token
             request.refresh_token=None

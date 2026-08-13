@@ -5,54 +5,61 @@ import { ClipLoader } from 'react-spinners';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 
-const STATUS_OPTIONS = ['ALL', 'CONFIRMED', 'SHIPPED', 'DELIVERED'];
-
+const STATUS_OPTIONS = ['ALL', 'PENDING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
 export default function OrderList() {
-  const [orders, setOrders] = useState([]);
   const [searchParams] = useSearchParams();
   const initialStatus = searchParams.get('status');
+  const navigate = useNavigate();
+
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState(initialStatus || 'ALL');
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
-  const itemsPerPage = 10;
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  const fetchOrders = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get('/orders/');
-      setOrders(res.data);
-    } catch (err) {
-      toast.error('Failed to load orders');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredOrders = orders.filter((order) => {
-    const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter;
-    const matchesSearch =
-      order.id.toLowerCase().includes(search.toLowerCase()) ||
-      order.customer_name?.toLowerCase().includes(search.toLowerCase());
-    return matchesStatus && matchesSearch;
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [statusCounts, setStatusCounts] = useState({
+   'ALL':0, 'PENDING':0, 'SHIPPED':0, 'DELIVERED':0, 'CANCELLED':0
   });
+  const itemsPerPage = 15;
 
-  // Pagination logic
-  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage) || 1;
-  const paginatedOrders = filteredOrders.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
-  );
+  // Debounce search input (400ms)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 400);
+    return () => clearTimeout(timer);
+  }, [search]);
 
-  // Reset to page 1 when filters change
+  // Reset to page 1 when search or status changes
   useEffect(() => {
     setPage(1);
-  }, [search, statusFilter]);
+  }, [debouncedSearch, statusFilter]);
+
+  // Fetch orders from backend
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (debouncedSearch.trim()) params.append('search', debouncedSearch.trim());
+        if (statusFilter && statusFilter !== 'ALL') params.append('status', statusFilter);
+        params.append('page', page);
+        params.append('page_size', itemsPerPage);
+
+        const res = await api.get(`/orders/?${params.toString()}`);
+        setOrders(res.data.results);
+        setTotalPages(res.data.total_pages);
+        setTotalCount(res.data.count);
+        setStatusCounts(res.data.status_counts);
+      } catch (err) {
+        toast.error('Failed to load orders');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, [debouncedSearch, statusFilter, page]);
 
   const getStatusBadge = (status) => {
     const styles = {
@@ -80,13 +87,6 @@ export default function OrderList() {
     if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
     for (let i = start; i <= end; i++) pages.push(i);
     return pages;
-  };
-
-  const statusCounts = {
-    ALL: orders.length,
-    CONFIRMED: orders.filter((o) => o.status === 'CONFIRMED').length,
-    SHIPPED: orders.filter((o) => o.status === 'SHIPPED').length,
-    DELIVERED: orders.filter((o) => o.status === 'DELIVERED').length,
   };
 
   return (
@@ -117,7 +117,7 @@ export default function OrderList() {
             <p className={`text-xl font-bold mt-1 ${
               statusFilter === status ? 'text-blue-600' : 'text-slate-800'
             }`}>
-              {statusCounts[status]}
+              {statusCounts[status] ?? 0}
             </p>
           </button>
         ))}
@@ -133,7 +133,7 @@ export default function OrderList() {
           </div>
           <input
             type="text"
-            placeholder="Search by order ID or customer..."
+            placeholder="Search by order ID, AWB, or customer..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all"
@@ -150,7 +150,7 @@ export default function OrderList() {
       )}
 
       {/* Empty */}
-      {!loading && filteredOrders.length === 0 && (
+      {!loading && orders.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-slate-200/60 shadow-sm">
           <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-3">
             <svg className="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
@@ -167,9 +167,9 @@ export default function OrderList() {
       )}
 
       {/* Mobile Card View */}
-      {!loading && filteredOrders.length > 0 && (
+      {!loading && orders.length > 0 && (
         <div className="md:hidden space-y-3 mb-6">
-          {paginatedOrders.map((order) => (
+          {orders.map((order) => (
             <div
               key={order.id}
               className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-4 cursor-pointer active:scale-[0.98] transition-transform"
@@ -183,6 +183,11 @@ export default function OrderList() {
                   <p className="text-sm font-semibold text-slate-800 mt-1 truncate">
                     {order.customer_name}
                   </p>
+                  {order.awb_id && (
+                    <p className="text-xs text-slate-500 mt-0.5 font-mono">
+                      AWB: {order.awb_id}
+                    </p>
+                  )}
                 </div>
                 <span
                   className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(order.status)}`}
@@ -207,7 +212,7 @@ export default function OrderList() {
       )}
 
       {/* Desktop Table View */}
-      {!loading && filteredOrders.length > 0 && (
+      {!loading && orders.length > 0 && (
         <div className="hidden md:block bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden mb-6">
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[700px]">
@@ -215,6 +220,7 @@ export default function OrderList() {
                 <tr className="bg-slate-50/80 border-b border-slate-100">
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Order ID</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</th>
+                  <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">AWB</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Total</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
@@ -222,7 +228,7 @@ export default function OrderList() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {paginatedOrders.map((order) => (
+                {orders.map((order) => (
                   <tr
                     key={order.id}
                     className="group hover:bg-slate-50/50 transition-colors duration-150"
@@ -235,6 +241,15 @@ export default function OrderList() {
                     <td className="px-6 py-4 text-slate-800 font-semibold whitespace-nowrap">
                       {order.customer_name}
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {order.awb_id ? (
+                        <span className="font-mono text-xs text-slate-600 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
+                          {order.awb_id}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-slate-400 italic">—</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4 text-slate-600 whitespace-nowrap">
                       {new Date(order.order_date).toLocaleDateString('en-IN', {
                         day: 'numeric',
@@ -245,6 +260,7 @@ export default function OrderList() {
                     <td className="px-6 py-4 text-slate-800 font-bold whitespace-nowrap">
                       ₹{order.total_price?.toLocaleString('en-IN')}
                     </td>
+                    
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(order.status)}`}
@@ -276,11 +292,11 @@ export default function OrderList() {
       )}
 
       {/* Pagination */}
-      {!loading && filteredOrders.length > 0 && (
+      {!loading && orders.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-slate-500">
-            Showing <span className="font-semibold text-slate-700">{paginatedOrders.length}</span> of{' '}
-            <span className="font-semibold text-slate-700">{filteredOrders.length}</span> orders · Page{' '}
+            Showing <span className="font-semibold text-slate-700">{orders.length}</span> of{' '}
+            <span className="font-semibold text-slate-700">{totalCount}</span> orders · Page{' '}
             <span className="font-semibold text-slate-700">{page}</span> of{' '}
             <span className="font-semibold text-slate-700">{totalPages}</span>
           </p>

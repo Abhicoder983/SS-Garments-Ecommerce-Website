@@ -56,8 +56,7 @@ class Order(models.Model):
     def save(self, *args, **kwargs):
         if self.statusID == self.StatusChoices.DELIVERED and self.delivered_at is None:
             self.delivered_at = timezone.now()
-
-        else:
+        elif self.statusID != self.StatusChoices.DELIVERED:
             self.delivered_at = None
         super().save(*args, **kwargs)
 

@@ -1,4 +1,3 @@
-// src/pages/Coupons/CouponList.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ClipLoader } from 'react-spinners';
@@ -9,25 +8,51 @@ export default function CouponList() {
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [stats, setStats] = useState({ total: 0, active: 0, expired: 0 });
   const [togglingId, setTogglingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const itemsPerPage = 15;
   const navigate = useNavigate();
 
+  // Debounce search input (400ms)
   useEffect(() => {
-    fetchCoupons();
-  }, []);
+    const timer = setTimeout(() => setDebouncedSearch(search), 400);
+    return () => clearTimeout(timer);
+  }, [search]);
 
-  const fetchCoupons = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get('/coupons/');
-      setCoupons(res.data);
-    } catch (err) {
-      toast.error('Failed to load coupons');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
+  // Fetch coupons from backend
+  useEffect(() => {
+    const fetchCoupons = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (debouncedSearch.trim()) params.append('search', debouncedSearch.trim());
+        params.append('page', page);
+        params.append('page_size', itemsPerPage);
+
+        const res = await api.get(`/coupons/?${params.toString()}`);
+        setCoupons(res.data.results);
+        setTotalPages(res.data.total_pages);
+        setTotalCount(res.data.count);
+        setStats(res.data.stats);
+      } catch (err) {
+        toast.error('Failed to load coupons');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCoupons();
+  }, [debouncedSearch, page]);
 
   const handleToggleActive = async (coupon) => {
     setTogglingId(coupon.id);
@@ -35,12 +60,15 @@ export default function CouponList() {
       await api.patch(`/coupons/${coupon.id}/`, {
         is_active: !coupon.is_active,
       });
-      setCoupons((prev) =>
-        prev.map((c) =>
-          c.id === coupon.id ? { ...c, is_active: !c.is_active } : c
-        )
-      );
       toast.success(`Coupon ${!coupon.is_active ? 'activated' : 'deactivated'}`);
+      // Refetch to update stats and pagination
+      const params = new URLSearchParams();
+      if (debouncedSearch.trim()) params.append('search', debouncedSearch.trim());
+      params.append('page', page);
+      params.append('page_size', itemsPerPage);
+      const res = await api.get(`/coupons/?${params.toString()}`);
+      setCoupons(res.data.results);
+      setStats(res.data.stats);
     } catch (err) {
       toast.error('Failed to update coupon status');
     } finally {
@@ -54,8 +82,19 @@ export default function CouponList() {
     setDeletingId(id);
     try {
       await api.delete(`/coupons/${id}/`);
-      setCoupons((prev) => prev.filter((c) => c.id !== id));
       toast.success('Coupon deleted');
+      // Refetch current page (or go back if empty)
+      const targetPage = coupons.length === 1 && page > 1 ? page - 1 : page;
+      const params = new URLSearchParams();
+      if (debouncedSearch.trim()) params.append('search', debouncedSearch.trim());
+      params.append('page', targetPage);
+      params.append('page_size', itemsPerPage);
+      const res = await api.get(`/coupons/?${params.toString()}`);
+      setCoupons(res.data.results);
+      setTotalPages(res.data.total_pages);
+      setTotalCount(res.data.count);
+      setStats(res.data.stats);
+      setPage(targetPage);
     } catch (err) {
       toast.error('Failed to delete coupon');
     } finally {
@@ -65,12 +104,15 @@ export default function CouponList() {
 
   const isExpired = (validUntil) => new Date(validUntil) < new Date();
 
-  const filteredCoupons = coupons.filter((c) =>
-    c.code.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const activeCount = coupons.filter((c) => c.is_active && !isExpired(c.valid_until)).length;
-  const expiredCount = coupons.filter((c) => isExpired(c.valid_until)).length;
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    let start = Math.max(1, page - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  };
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -95,15 +137,15 @@ export default function CouponList() {
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-4">
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total</p>
-          <p className="text-2xl font-bold text-slate-800 mt-1">{coupons.length}</p>
+          <p className="text-2xl font-bold text-slate-800 mt-1">{stats.total}</p>
         </div>
         <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-4">
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active</p>
-          <p className="text-2xl font-bold text-emerald-600 mt-1">{activeCount}</p>
+          <p className="text-2xl font-bold text-emerald-600 mt-1">{stats.active}</p>
         </div>
         <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-4">
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Expired</p>
-          <p className="text-2xl font-bold text-slate-400 mt-1">{expiredCount}</p>
+          <p className="text-2xl font-bold text-slate-400 mt-1">{stats.expired}</p>
         </div>
       </div>
 
@@ -126,13 +168,13 @@ export default function CouponList() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden mb-6">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <ClipLoader color="#2563eb" size={32} />
             <p className="text-slate-400 text-sm mt-3">Loading coupons...</p>
           </div>
-        ) : filteredCoupons.length === 0 ? (
+        ) : coupons.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-3">
               <svg className="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
@@ -159,7 +201,7 @@ export default function CouponList() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredCoupons.map((coupon) => {
+                {coupons.map((coupon) => {
                   const expired = isExpired(coupon.valid_until);
                   return (
                     <tr
@@ -266,6 +308,55 @@ export default function CouponList() {
           </div>
         )}
       </div>
+
+      {/* Pagination */}
+      {!loading && coupons.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-slate-500">
+            Showing <span className="font-semibold text-slate-700">{coupons.length}</span> of{' '}
+            <span className="font-semibold text-slate-700">{totalCount}</span> coupons · Page{' '}
+            <span className="font-semibold text-slate-700">{page}</span> of{' '}
+            <span className="font-semibold text-slate-700">{totalPages}</span>
+          </p>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+              Prev
+            </button>
+
+            {getPageNumbers().map((p) => (
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${
+                  p === page
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              Next
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

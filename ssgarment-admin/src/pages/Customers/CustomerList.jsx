@@ -5,22 +5,51 @@ import { ClipLoader } from 'react-spinners';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 
+const PAGE_SIZE = 15;
+
 export default function CustomerList() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [togglingId, setTogglingId] = useState(null);
+  const [page, setPage] = useState(1);
+
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [activeCount, setActiveCount] = useState(0);
+  const [blockedCount, setBlockedCount] = useState(0);
+
   const navigate = useNavigate();
+
+  // debounce the search box - reset to page 1 once the debounced value changes
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [search]);
 
   useEffect(() => {
     fetchCustomers();
-  }, []);
+  }, [page, debouncedSearch]);
 
   const fetchCustomers = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/customers/');
-      setCustomers(res.data);
+      const params = { page, page_size: PAGE_SIZE };
+      if (debouncedSearch) params.search = debouncedSearch;
+
+      const res = await api.get('/customers/', { params });
+
+      setCustomers(res.data.customers || []);
+      setTotalCount(res.data.total_count ?? 0);
+      setTotalPages(
+        res.data.total_pages || Math.ceil((res.data.total_count || 0) / PAGE_SIZE) || 1
+      );
+      setActiveCount(res.data.active_count ?? 0);
+      setBlockedCount(res.data.blocked_count ?? 0);
     } catch (err) {
       toast.error('Failed to load customers');
     } finally {
@@ -39,6 +68,8 @@ export default function CustomerList() {
           c.id === customer.id ? { ...c, is_active: !c.is_active } : c
         )
       );
+      setActiveCount((prev) => (customer.is_active ? prev - 1 : prev + 1));
+      setBlockedCount((prev) => (customer.is_active ? prev + 1 : prev - 1));
       toast.success(
         `${customer.name || 'Customer'} ${!customer.is_active ? 'unblocked' : 'blocked'}`
       );
@@ -49,16 +80,26 @@ export default function CustomerList() {
     }
   };
 
-  const filteredCustomers = customers.filter((c) => {
-    const query = search.toLowerCase();
-    return (
-      c.name?.toLowerCase().includes(query) ||
-      c.email?.toLowerCase().includes(query)
-    );
-  });
+  const goToPage = (p) => {
+    if (p < 1 || p > totalPages) return;
+    setPage(p);
+  };
 
-  const activeCount = customers.filter((c) => c.is_active).length;
-  const blockedCount = customers.filter((c) => !c.is_active).length;
+  // windowed page numbers with ellipses, e.g. 1 … 4 5 6 … 12
+  const getPageNumbers = () => {
+    const pages = [];
+    const windowSize = 1;
+    const start = Math.max(2, page - windowSize);
+    const end = Math.min(totalPages - 1, page + windowSize);
+
+    pages.push(1);
+    if (start > 2) pages.push('...');
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (end < totalPages - 1) pages.push('...');
+    if (totalPages > 1) pages.push(totalPages);
+
+    return pages;
+  };
 
   const getInitials = (name) => {
     if (!name) return '?';
@@ -79,7 +120,7 @@ export default function CustomerList() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-4">
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total</p>
-          <p className="text-2xl font-bold text-slate-800 mt-1">{customers.length}</p>
+          <p className="text-2xl font-bold text-slate-800 mt-1">{totalCount}</p>
         </div>
         <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-4">
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active</p>
@@ -118,7 +159,7 @@ export default function CustomerList() {
       )}
 
       {/* Empty */}
-      {!loading && filteredCustomers.length === 0 && (
+      {!loading && customers.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-slate-200/60 shadow-sm">
           <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-3">
             <svg className="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
@@ -126,18 +167,18 @@ export default function CustomerList() {
             </svg>
           </div>
           <p className="text-slate-500 font-medium text-sm">
-            {search ? 'No customers match your search' : 'No customers found'}
+            {debouncedSearch ? 'No customers match your search' : 'No customers found'}
           </p>
           <p className="text-slate-400 text-xs mt-1">
-            {search ? 'Try a different search term' : 'Customers will appear here once they register'}
+            {debouncedSearch ? 'Try a different search term' : 'Customers will appear here once they register'}
           </p>
         </div>
       )}
 
       {/* Mobile Card View */}
-      {!loading && filteredCustomers.length > 0 && (
+      {!loading && customers.length > 0 && (
         <div className="md:hidden space-y-3">
-          {filteredCustomers.map((customer) => (
+          {customers.map((customer) => (
             <div
               key={customer.id}
               className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-4"
@@ -220,7 +261,7 @@ export default function CustomerList() {
       )}
 
       {/* Desktop Table View */}
-      {!loading && filteredCustomers.length > 0 && (
+      {!loading && customers.length > 0 && (
         <div className="hidden md:block bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[640px]">
@@ -234,7 +275,7 @@ export default function CustomerList() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredCustomers.map((customer) => (
+                {customers.map((customer) => (
                   <tr
                     key={customer.id}
                     className="group hover:bg-slate-50/50 transition-colors duration-150"
@@ -315,6 +356,64 @@ export default function CustomerList() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {!loading && customers.length > 0 && totalPages > 1 && (
+        <div className="flex items-center justify-between gap-3 mt-6 flex-wrap">
+          <p className="text-xs text-slate-400">
+            Showing{' '}
+            <span className="font-semibold text-slate-600">
+              {(page - 1) * PAGE_SIZE + 1}-
+              {Math.min(page * PAGE_SIZE, totalCount)}
+            </span>{' '}
+            of <span className="font-semibold text-slate-600">{totalCount}</span>
+          </p>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => goToPage(page - 1)}
+              disabled={page === 1}
+              className="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 text-slate-500 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              aria-label="Previous page"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+            </button>
+
+            {getPageNumbers().map((p, i) =>
+              p === '...' ? (
+                <span key={`ellipsis-${i}`} className="w-8 h-8 flex items-center justify-center text-xs font-semibold text-slate-300">
+                  ⋯
+                </span>
+              ) : (
+                <button
+                  key={p}
+                  onClick={() => goToPage(p)}
+                  className={`w-8 h-8 rounded-lg text-xs font-semibold border transition-colors ${
+                    p === page
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-500/20'
+                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  {p}
+                </button>
+              )
+            )}
+
+            <button
+              onClick={() => goToPage(page + 1)}
+              disabled={page === totalPages}
+              className="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 text-slate-500 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              aria-label="Next page"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
           </div>
         </div>
       )}
