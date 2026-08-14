@@ -1,7 +1,7 @@
 from django.db import models
 from django_mongodb_backend.fields import ObjectIdAutoField
 from django.utils import timezone
-
+from django.core.validators import RegexValidator
 # ============================
 #   USER MODEL
 # ============================
@@ -9,6 +9,17 @@ class UserModel(models.Model):
     id = ObjectIdAutoField(primary_key=True)
     name = models.CharField(max_length=100, null=True,blank=True)
     email = models.EmailField(unique=True, null=True,blank=True)
+    phone_regex = RegexValidator(
+    regex=r'^\+?1?\d{9,15}$',
+    message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed."
+)
+
+    mobile_no = models.CharField(
+        validators=[phone_regex],
+        max_length=15,
+        null=True,
+        blank=True
+    )
     profile_image=models.ImageField(upload_to='profile_image/', null=True, blank=True)
     address=models.JSONField(blank=True,null=False,default=list)
     total_order= models.IntegerField(null=True,blank=True)

@@ -300,7 +300,7 @@ export default function CartPage() {
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { icon: ShieldCheck, label: "Secure payments" },
-                  { icon: RotateCcw, label: "7-day easy returns" },
+                  { icon: RotateCcw, label: "6-hr easy returns" },
                   { icon: Truck, label: "Tracked delivery" },
                 ].map(({ icon: Icon, label }) => (
                   <div

@@ -49,6 +49,8 @@ export default function Account() {
   const [shopkeeperModal, setShopkeeperModal] = useState(false);
   const [modalAction, setModalAction] = useState(null); // 'cancel' or 'return'
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [profileMobile, setProfileMobile] = useState("");
+  const [mobileError, setMobileError] = useState("");
 
   const navigate = useNavigate();
 
@@ -90,6 +92,22 @@ export default function Account() {
     };
     fetchAccount();
   }, []);
+
+  const validateMobile = (value) => {
+  if (value === "") return true; // optional field
+  const regex = /^[6-9]\d{9}$/;
+  return regex.test(value);
+};
+
+  const handleMobileChange = (e) => {
+  const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+  setProfileMobile(value);
+  if (value && !validateMobile(value)) {
+    setMobileError("Enter a valid 10-digit mobile number");
+  } else {
+    setMobileError("");
+  }
+};
 
   // Fetch orders
   const fetchOrder = async () => {
@@ -143,41 +161,46 @@ export default function Account() {
   };
 
   const handleProfileSave = async () => {
-    if (!profileName.trim() && profileImage == undefined) {
-      toast.error("Please enter a name or select an image");
-      return;
-    }
-    const formData = new FormData();
-    if (profileImage != undefined) formData.append("profile_image", profileImage);
-    if (profileName != "") formData.append("name", profileName);
+  if (!profileName.trim() && profileImage == undefined && !profileMobile.trim()) {
+    toast.error("Please enter a name, mobile number, or select an image");
+    return;
+  }
+  if (profileMobile && !validateMobile(profileMobile)) {
+    toast.error("Please enter a valid 10-digit mobile number");
+    return;
+  }
+  const formData = new FormData();
+  if (profileImage != undefined) formData.append("profile_image", profileImage);
+  if (profileName != "") formData.append("name", profileName);
+  if (profileMobile != "") formData.append("mobile_no", profileMobile);
 
-    try {
-      const res = await axios.patch(`${apiUrl}/account/`, formData, {
-        
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-        withCredentials: true,
-        xsrfCookieName: 'csrftoken',
-        xsrfHeaderName: 'X-CSRFToken',
-        withXSRFToken: true,
-
-      });
-      setLogin(res.data.userData);
-      setToken(res.data.access_Token);
-      toast.success("Profile updated successfully");
-      setEditProfile(false);
-      setProfileImage(null);
-      setProfileName("");
-    } catch {
-      setLogin(null);
-      setToken(null);
-      toast.error("Update failed. Please try logging out and back in.");
-      setEditProfile(false);
-      navigate("/login");
-    }
-  };
+  try {
+    const res = await axios.patch(`${apiUrl}/account/`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+      withCredentials: true,
+      xsrfCookieName: 'csrftoken',
+      xsrfHeaderName: 'X-CSRFToken',
+      withXSRFToken: true,
+    });
+    setLogin(res.data.userData);
+    setToken(res.data.access_Token);
+    toast.success("Profile updated successfully");
+    setEditProfile(false);
+    setProfileImage(null);
+    setProfileName("");
+    setProfileMobile("");
+    setMobileError("");
+  } catch {
+    setLogin(null);
+    setToken(null);
+    toast.error("Update failed. Please try logging out and back in.");
+    setEditProfile(false);
+    navigate("/login");
+  }
+};
 
   const logout = async () => {
     try {
@@ -323,6 +346,12 @@ export default function Account() {
                     {login?.email || "Not provided"}
                   </p>
                 </div>
+                {login?.mobile_no && (
+                  <div className="flex items-center justify-center sm:justify-start gap-2 mt-1">
+                    <Phone size={12} className="text-[#9A9187]" />
+                    <p className="text-sm text-[#9A9187] font-medium">{login.mobile_no}</p>
+                  </div>
+)}
                 <div className="flex items-center justify-center sm:justify-start gap-4 mt-3 text-xs text-[#9A9187]">
                   <span className="flex items-center gap-1">
                     <ShieldCheck size={12} className="text-emerald-500" />
@@ -747,7 +776,7 @@ export default function Account() {
                 Edit Profile
               </h2>
               <p className="text-sm text-[#9A9187] mt-1">
-                Update your name and profile photo
+                Update your name or profile photo or Mobile number
               </p>
             </div>
 
@@ -763,6 +792,33 @@ export default function Account() {
                   placeholder="Your name"
                   className="w-full px-4 py-3.5 rounded-xl border border-[#E8E2DA] text-sm text-[#2B2422] placeholder:text-[#C4B8A8] focus:outline-none focus:border-[#4A0E1C] focus:ring-4 focus:ring-[#4A0E1C]/5 transition-all bg-[#FDFBF7] font-medium"
                 />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-[#6B6560] uppercase tracking-wider mb-2.5">
+                  Mobile Number
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[#9A9187] font-semibold">
+                    +91
+                  </span>
+                  <input
+                    name="mobile"
+                    type="tel"
+                    inputMode="numeric"
+                    value={profileMobile}
+                    onChange={handleMobileChange}
+                    placeholder="10-digit Mobile Number"
+                    maxLength={10}
+                    className={`w-full pl-12 pr-4 py-3.5 rounded-xl border text-sm text-[#2B2422] placeholder:text-[#C4B8A8] focus:outline-none focus:ring-4 transition-all bg-[#FDFBF7] font-medium ${
+                      mobileError
+                        ? "border-red-300 focus:border-red-400 focus:ring-red-100"
+                        : "border-[#E8E2DA] focus:border-[#4A0E1C] focus:ring-[#4A0E1C]/5"
+                    }`}
+                  />
+                </div>
+                {mobileError && (
+                  <p className="text-xs text-red-500 mt-1.5 font-medium">{mobileError}</p>
+                )}
               </div>
 
               <div>
@@ -784,6 +840,8 @@ export default function Account() {
                   </p>
                 )}
               </div>
+
+
             </div>
 
             <div className="flex gap-3 mt-8">
