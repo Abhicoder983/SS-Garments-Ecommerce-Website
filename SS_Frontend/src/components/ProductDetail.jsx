@@ -87,6 +87,7 @@ export default function ProductDetail() {
         const data = res.data;
         setLogin(data.userData);
         setToken(data.access_Token);
+        data?.productData? "": toast.error(data?.message);
         setProduct(data?.productData);
         setSizes(data?.productData?.variants?.[selectedColor]?.sizes || null);
       } catch (err) {
@@ -94,6 +95,7 @@ export default function ProductDetail() {
         const data = err.response.data;
         setLogin(data.userData);
         setToken(data.access_Token);
+        data?.productData? "": toast.error(data?.message);
         setProduct(data?.productData);
         setSizes(data?.productData?.variants?.[selectedColor]?.sizes || null);
       } finally {
@@ -292,7 +294,7 @@ export default function ProductDetail() {
                   Color
                 </p>
                 <span className="text-xs text-[#9A9187] font-medium">
-                  {product.variants?.[selectedColor]?.color}
+                  {product.variants?.[selectedColor]?.color || "Color is not found"}
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -310,7 +312,7 @@ export default function ProductDetail() {
                         : "bg-white text-[#6B6560] border-[#E8E2DA] hover:border-[#D4CCC2] hover:bg-[#FDFBF7]"
                     }`}
                   >
-                    {variant?.color}
+                    {variant?.color || "Color is not found" }
                   </button>
                 ))}
               </div>
@@ -323,11 +325,11 @@ export default function ProductDetail() {
                   Size
                 </p>
                 <span className="text-xs text-[#9A9187] font-medium">
-                  {sizes?.[selectedSize]?.size}
+                  {sizes?.[selectedSize]?.size || "size is not found"}
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">
-                {sizes.map((size, i) => (
+                {sizes?.map((size, i) => (
                   <button
                     key={i}
                     onClick={() => setSelectedSize(i)}

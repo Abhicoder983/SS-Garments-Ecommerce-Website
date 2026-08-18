@@ -243,6 +243,7 @@ class VariantSize(models.Model):
 
     stock = models.PositiveIntegerField()
     updated_At=models.DateTimeField(auto_now=True)
+    
 
     class Meta:
         unique_together = ('variant', 'size')

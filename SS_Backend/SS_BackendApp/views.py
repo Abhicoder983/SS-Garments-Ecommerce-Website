@@ -29,6 +29,7 @@ import math
 # ===============================
 # 🚀 SEND OTP
 # ===============================
+@csrf_exempt
 @api_view(["POST"])
 def verifyUser(request):
 
@@ -101,6 +102,7 @@ def verifyUser(request):
 # ===============================
 # 🚀 SIGNUP
 # ===============================
+@csrf_exempt
 @api_view(["POST"])
 def signup(request):
     
@@ -246,6 +248,7 @@ def login(request):
     return response
 
 
+@csrf_exempt
 def logout_view(request):
     try:
 
@@ -348,7 +351,11 @@ def home(request):
         qs = (
     VariantSize.objects
     .select_related("variant__product__category")
-    .filter(stock__gt=0)
+    .filter(
+        stock__gt=0,
+        variant__is_active=True,
+        variant__product__is_active=True,
+    )
     .order_by("-updated_At", "price")
 )
 
@@ -454,7 +461,9 @@ def home(request):
         
         else:
             return response
-        
+
+
+@csrf_exempt       
 @api_view(["GET","POST"])
 def orders(request):
     if getattr(request, "id", None):
@@ -526,7 +535,7 @@ def orders(request):
             return response
         else:
             return response
-            
+@csrf_exempt           
 @api_view(['GET','PATCH','DELETE','POST'])
 def cart(request):
     cart_datail=[]
@@ -638,12 +647,18 @@ def cart(request):
             
         
             for index, product_item in enumerate(cart_item['cartData']):
-                data=VariantSize.objects.get(pk=ObjectId(product_item['product_id']))
-                serializer=variantSizeSerializer(data)
-                cart_data=serializer.data
-                cart_data['qty']=cart_item['cartData'][index]['qty']
-                cart_data['product_id']=str(data.id)
-                cart_datail.append(cart_data)
+                data = VariantSize.objects.filter(
+        pk=ObjectId(product_item['product_id']),
+        variant__is_active=True,
+        variant__product__is_active=True,
+    ).select_related("variant__product__category")
+                if(data.exists()):
+                    data= data.first()
+                    serializer=variantSizeSerializer(data)
+                    cart_data=serializer.data
+                    cart_data['qty']=cart_item['cartData'][index]['qty']
+                    cart_data['product_id']=str(data.id)
+                    cart_datail.append(cart_data)
                 
 
             
@@ -714,6 +729,7 @@ def cart(request):
         else:
             return response
 
+@csrf_exempt
 @api_view(['GET'])
 def productDetail(request, id):
     NoneRefreshToken=False
@@ -737,28 +753,38 @@ def productDetail(request, id):
 ).get(id=id)
 
         product = variant.product
-        all_variants = product.variants.prefetch_related("sizes")
-
+        if(product.is_active==False):
+            raise Exception("Product is not active or delete")
+    
+        all_variants = (
+                product.variants
+                .filter(is_active=True, sizes__isnull=False)
+                .distinct()
+                .prefetch_related("sizes")
+            )
+        print(all_variants)
+        if(not all_variants):
+            raise Exception('product of its variant or size are not active or delete')
         result = {
             "product_name": product.name,
             "product_id": str(product.id),
             "brand": product.brand,
             "description": product.description,
-            "variants": []   # 👈 list, not dict
+            "variants": []   # list, not dict
         }
+        
 
         for v in all_variants:
+            sizes = v.sizes.all()
+            if(not sizes):
+               continue
             variant_data = {
                 "variant_id": str(v.id),
                 "color": v.color,
                 "image": v.image.url if v.image else None,
                 "sizes": []
             }
-            if(not v.sizes.all() ):
-               continue
-            for size in v.sizes.all():
-                if(size.stock==0):
-                    continue
+            for size in sizes:
                 variant_data["sizes"].append({
                     "size_id":str(size.id),
                     "size": size.size,
@@ -773,6 +799,7 @@ def productDetail(request, id):
         json_data={
             **userJson,
             'productData':result     
+            
         }
     
         response=Response(json_data,status=200)
@@ -805,10 +832,11 @@ def productDetail(request, id):
         
         
     except Exception as e:
-        print(e)
+        print("hello",e)
         json_data={
           **userJson,
-            'productData':'product not found'
+        'productData': None,
+        "message":str(e)
         }
         response=Response(json_data,status=200)
         if(NoneRefreshToken):
@@ -836,7 +864,8 @@ def productDetail(request, id):
         
         else:
             return response
-    
+
+@csrf_exempt  
 @api_view(["GET"])
 def product_list(request):
     """
@@ -850,7 +879,10 @@ def product_list(request):
     qs = VariantSize.objects.select_related(
         "variant__product__category"
     ).filter(
-        stock__gt=0
+        stock__gt=0, 
+        variant__is_active=True,
+        variant__product__is_active=True,
+
     )
  
     # -------------------------
@@ -984,7 +1016,7 @@ def product_list(request):
         "products": page_products,
     })
  
-
+@csrf_exempt
 def download_google_profile_image(picture_url, email):
     """
     Downloads the profile picture from Google's URL and returns a
@@ -1004,7 +1036,7 @@ def download_google_profile_image(picture_url, email):
     file_name = f"{email.split('@')[0]}_google.jpg"
     return ContentFile(response.content, name=file_name)
  
- 
+@csrf_exempt
 @api_view(["POST"])
 def googleAuthentication(request):
     print('1234')
@@ -1096,8 +1128,7 @@ def googleAuthentication(request):
 
 
  
-
-
+@csrf_exempt
 @api_view(["POST"])
 def googleOauth2Authentication(request):
     print('1234')
@@ -1214,6 +1245,8 @@ def googleOauth2Authentication(request):
     )
     return response
 
+
+@csrf_exempt
 @api_view(["POST"])
 def contactUsEmail(request):
     NoneRefreshToken=False

@@ -88,17 +88,20 @@ class JWTMiddleware:
                     
             # Custom user model se user fetch
 
-            user=UserModel.objects.filter(id=user_id).first()
-            
-            if(not user):
-                return JsonResponse({'error':'user does not exist'},status=401)
-            
+            user=UserModel.objects.filter(id=user_id, is_active=True).first()
+            if not user:
+                UserModel.DoesNotExist("User does not exist or blocked")
+                
+           
             request.id= user
             request.access_token=token
             request.refresh_token=None
+
+        except UserModel.DoesNotExist as e:
+            request.userData=None
             
 
-        except:
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
             print(2)
             try:
                 payload = jwt.decode(refreshToken,settings.SECRET_KEYS,algorithms=["HS256"])
@@ -128,8 +131,10 @@ class JWTMiddleware:
                     User=refreshTokenStore.objects.create(user_id=ObjectId(payload.get('user_id')),jti=jti,token=refreshToken1,expires_at=expiry_at,ip_address=ipAddress)
                     print(8)
                     User.save()
-                    user=UserModel.objects.filter(id=User.user.id).first()
-
+                    user=UserModel.objects.filter(id=User.user.id, is_active=True).first()
+                    if not user:
+                        raise UserModel.DoesNotExist("User does not exist or blocked")
+                    
                     request.id=user
                   
                     request.access_token=accessToken1
@@ -146,7 +151,7 @@ class JWTMiddleware:
                 refreshTokenStore.objects.filter(user_id=ObjectId(payload.get('user_id')),jti=str(payload.get('jti'))).delete()
                 request.userData=None
                 
-            except:
+            except(jwt.InvalidTokenError,UserModel.DoesNotExist):
                 request.userData=None
             
             
