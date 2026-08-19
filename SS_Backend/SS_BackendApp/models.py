@@ -111,7 +111,7 @@ class refreshTokenStore(models.Model):
 class cart(models.Model):
     id=ObjectIdAutoField(primary_key=True)
     customerId=models.OneToOneField(UserModel, verbose_name="customer ID",on_delete=models.CASCADE)
-    cartItem=models.JSONField(default=list,null=True)
+    cartItem=models.JSONField(default=dict,null=True)
     def __str__(self):
         return f"Order #{self.id} - {self.customerId.name}-{self.customerId.email}"
     

@@ -95,6 +95,7 @@ export default function CartPage() {
       .then((res) => {
         setLogin(res.data.userData);
         setToken(res.data.access_Token);
+        res?.data?.error?toast.error(res?.data?.error):null
       })
       .catch((err) => {
         setLogin(null);

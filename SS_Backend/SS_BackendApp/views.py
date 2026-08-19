@@ -538,7 +538,8 @@ def orders(request):
 @csrf_exempt           
 @api_view(['GET','PATCH','DELETE','POST'])
 def cart(request):
-    cart_datail=[]
+    cart_detail=[]
+    error = None
     if getattr(request, "id", None):
         data=userSerializer(request.id).data
         print(2)
@@ -573,72 +574,79 @@ def cart(request):
             raise Exception("User not authenticated")
         print(2)
     except:
-        data = models.cart.objects.filter(customerId=request.id)
-        serializer=cartSerializer(data,many=True)
         try:
+            data = models.cart.objects.get(customerId=request.id)
             
-            cart_item=serializer.data[0]['cartItem']
 
         except:
-            
-            cart_item={}
+            data=models.cart.objects.create(customerId=request.id)
+            data.cartItem={
+                'cartData':[],
+                'customerId':str(request.id)
+            }
+            data.save()
+        serializer=cartSerializer(data)
+        cart_item=serializer.data['cartItem']
             
     try:
         if (request.method=='POST'):
+            qty = request.data.get('qty')
             product_id=request.data.get('product_id')
-            print(product_id)
-            if not cart_item:
-                print(1)
-                print(cart_item)
-                cart_item['customerId']=str(request.id)
-                cart_item['cartData']=[{
-                    'product_id':product_id,
-                    'qty':1
-                }]
-                print(type(request.id))
-                data=models.cart.objects.create(customerId=request.id,cartItem=cart_item)
-                data.save()
-                
+            stock = VariantSize.objects.filter(id=ObjectId(product_id)).first().stock
+            if(int(qty)<int(stock)):
+                # error={'error':"out of stock to add the product"}
+
             
-            else:
+                    
+                 
+                
                 print(cart_item,'productid',product_id)
                 item=None
                 for product in cart_item['cartData']:
                     
                     if product['product_id']==product_id:
 
-                        print('increse')
-                        qty=product['qty']
-                        qty=qty+1
-                        product['qty']=qty
-                        print('qty',qty)
-                        item=product                     
+                        error="product already exist into the cart"
+                        item=product   
+                        break                  
                 if item is None:
                     cart_item['cartData'].append(
                         {'product_id':product_id,
-                        'qty':1}
+                        'qty':qty}
                     )
-                cart = models.cart.objects.filter(customerId=request.id).first()
+                    cart = models.cart.objects.filter(customerId=request.id).first()
 
-                if cart:
-                    cart.cartItem= cart_item
-                    cart.save()
-                
+                    if cart:
+                        cart.cartItem= cart_item
+                        cart.save()
+                        cart_item = cart.cartItem
+
+            else:
+                error='Product is out of stock.!Please the decrease the quantity of product'
+                    
 
         
         elif(request.method=='PATCH'):
             # index=int(request.data.get('index'))
             productID=request.data.get('product_id')
             qty=int(request.data.get('qty'))
-            cart_item["cartData"] = [
-    {**item, "qty": qty} if item["product_id"] == productID else item
-    for item in  cart_item["cartData"]
-]
-            # cart_item["cartData"][index]["qty"]=qty
-            cart = models.cart.objects.filter(customerId=request.id).first()
-            if cart:
-                cart.cartItem= cart_item
-                cart.save()
+            stock = VariantSize.objects.filter(id=ObjectId(productID)).first().stock
+            if(int(stock)>int(qty)):
+
+                cart_item["cartData"] = [
+        {**item, "qty": qty} if item["product_id"] == productID else item
+        for item in  cart_item["cartData"]
+    ]
+                # cart_item["cartData"][index]["qty"]=qty
+                cart = models.cart.objects.filter(customerId=request.id).first()
+                if cart:
+                    cart.cartItem= cart_item 
+                    cart.save()
+
+                cart_item = cart.cartItem
+
+            else:
+                error='Product is out of stock.!Please the decrease the quantity of product'
 
  
             
@@ -658,7 +666,7 @@ def cart(request):
                     cart_data=serializer.data
                     cart_data['qty']=cart_item['cartData'][index]['qty']
                     cart_data['product_id']=str(data.id)
-                    cart_datail.append(cart_data)
+                    cart_detail.append(cart_data)
                 
 
             
@@ -675,10 +683,17 @@ def cart(request):
             cart = models.cart.objects.filter(customerId=request.id).first()
             if cart:
                 cart.cartItem= cart_item
-                cart.save()
+                try:
+                    cart.save()
+                    cart_item = cart.cartItem
+                except:
+                    cart_item = cart.cartItem
+                    
 
-        cart_item["customerId"]=str(request.id) 
-        response=Response({ 'cart_item':cart_item,'cart_Detail':cart_datail,**userJson},status=200)
+
+        
+
+        response=Response({'cart_item':cart_item,'cart_Detail':cart_detail,'error':error,**userJson},status=200)
         response.set_signed_cookie(
     key="cart",
     value=json.dumps(cart_item),          # list / dict

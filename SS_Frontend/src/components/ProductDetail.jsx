@@ -47,7 +47,9 @@ export default function ProductDetail() {
     try {
       const res = await axios.post(
         `${apiUrl}/cart/`,
-        { product_id: id },
+        { product_id: id,
+          qty
+         },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -58,11 +60,13 @@ export default function ProductDetail() {
           withXSRFToken: true,
         }
       );
-      const data = res.response?.data;
-      console.log(data);
-      toast.success("Saved to Cart ");
-      setLogin(res.response.data.userData);
-      setToken(res.response.data.access_Token);
+      const data = res.data;
+      console.log(res);
+      console.log(13)
+      data?.error?toast.error(data?.error):toast.success("Saved to Cart ");
+      console.log(14)
+      setLogin(data.userData);
+      setToken(data.access_Token);
     } catch (err) {
       const data = err.response?.data;
       toast.warning(data?.error);
@@ -133,7 +137,7 @@ export default function ProductDetail() {
             className="text-2xl text-[#2B2422] mb-2"
             style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}
           >
-            Product Not Found
+            Not Found
           </h2>
           <p className="text-sm text-[#9A9187] mb-6">
             The product you're looking for doesn't exist or has been removed.
@@ -312,7 +316,7 @@ export default function ProductDetail() {
                         : "bg-white text-[#6B6560] border-[#E8E2DA] hover:border-[#D4CCC2] hover:bg-[#FDFBF7]"
                     }`}
                   >
-                    {variant?.color || "Color is not found" }
+                    {variant?.color }
                   </button>
                 ))}
               </div>
@@ -325,7 +329,7 @@ export default function ProductDetail() {
                   Size
                 </p>
                 <span className="text-xs text-[#9A9187] font-medium">
-                  {sizes?.[selectedSize]?.size || "size is not found"}
+                  {sizes?.[selectedSize]?.size }
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -384,12 +388,14 @@ export default function ProductDetail() {
 
             {/* 🛒 ACTIONS */}
             <div className="flex flex-col sm:flex-row gap-3 mt-auto pt-2">
-              <button
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-sm font-bold bg-[#FDF6ED] text-[#4A0E1C] hover:bg-[#F5E6D0] border border-[#F0E4D4] transition-all duration-200 hover:shadow-md active:scale-95"
-                onClick={() => addToCart(sizes[selectedSize]?.size_id)}
-              >
+             <button
+  disabled={sizes?.[selectedSize]?.stock === 0}
+  className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-sm font-bold bg-[#FDF6ED] text-[#4A0E1C] hover:bg-[#F5E6D0] border border-[#F0E4D4] transition-all duration-200 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:active:scale-100"
+  onClick={() => addToCart(sizes[selectedSize]?.size_id)}
+>
                 <ShoppingCart size={18} />
-                Add to Cart
+                
+                {sizes?.[selectedSize]?.stock === 0?"Out of Stock for add to cart ":"Add to Cart"}
               </button>
 
               <button
@@ -398,10 +404,11 @@ export default function ProductDetail() {
                     state: { product, variant: selectedImage, selectedSize, qty },
                   })
                 }
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-sm font-bold bg-[#4A0E1C] text-white hover:bg-[#3A0B16] transition-all duration-200 shadow-lg shadow-[#4A0E1C]/25 hover:shadow-xl active:scale-95"
+                disabled={sizes?.[selectedSize]?.stock === 0}
+                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-sm font-bold bg-[#4A0E1C] text-white hover:bg-[#3A0B16] transition-all duration-200 shadow-lg shadow-[#4A0E1C]/25 hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:active:scale-100"
               >
                 <Zap size={18} />
-                Buy Now
+                {sizes?.[selectedSize]?.stock === 0?"Out of Stock for buying":"Buy Now"}
               </button>
             </div>
           </div>
