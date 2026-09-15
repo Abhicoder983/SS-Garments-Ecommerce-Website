@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Confirmed</title>
+</head>
+<body style="margin:0; padding:0; background-color:#FAF6EF; font-family: Arial, Helvetica, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF6EF; padding: 32px 0;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background-color:#FFFFFF; border-radius:16px; overflow:hidden; border:1px solid #EDE3D3;">
+
+          <!-- Header -->
+          <tr>
+            <td style="background-color:#4A0E1C; padding: 28px 32px;">
+              <span style="color:#FFFDF9; font-size:20px; font-weight:600; letter-spacing:0.5px;">SS Garments</span>
+            </td>
+          </tr>
+
+          <!-- Success icon + heading -->
+          <tr>
+            <td style="padding: 32px 32px 8px 32px; text-align:center;">
+              <div style="width:56px; height:56px; background-color:#E7F3EA; border-radius:50%; margin:0 auto 16px auto; line-height:56px; font-size:28px; color:#3F7D58;">
+                &#10003;
+              </div>
+              <h1 style="margin:0; font-size:22px; color:#2B2422; font-weight:600;">
+                Your order is confirmed!
+              </h1>
+              <p style="margin:8px 0 0 0; font-size:14px; color:#8A7F73; line-height:1.5;">
+                Thank you for shopping with SS Garments. We've received your payment and your order is now being processed.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Order details -->
+          <tr>
+            <td style="padding: 24px 32px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#FBF7F0; border-radius:12px; border:1px solid #EDE3D3;">
+                <tr>
+                  <td style="padding: 18px 20px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="padding: 6px 0; font-size:13px; color:#8A7F73;">Order ID</td>
+                        <td style="padding: 6px 0; font-size:13px; color:#2B2422; font-weight:600; text-align:right;">{{ order_id }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0; font-size:13px; color:#8A7F73;">Payment ID</td>
+                        <td style="padding: 6px 0; font-size:13px; color:#2B2422; font-weight:600; text-align:right;">{{ payment_id }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0; font-size:13px; color:#8A7F73;">Razorpay Order ID</td>
+                        <td style="padding: 6px 0; font-size:13px; color:#2B2422; font-weight:600; text-align:right;">{{ razorpay_order_id }}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 6px 0; font-size:13px; color:#8A7F73;">Razorpay Payment ID</td>
+                        <td style="padding: 6px 0; font-size:13px; color:#2B2422; font-weight:600; text-align:right;">{{ razorpay_payment_id }}</td>
+                      </tr>
+                      {% if amount %}
+                      <tr>
+                        <td style="padding: 6px 0; font-size:13px; color:#8A7F73;">Amount Paid</td>
+                        <td style="padding: 6px 0; font-size:13px; color:#4A0E1C; font-weight:700; text-align:right;">&#8377;{{ amount }}</td>
+                      </tr>
+                      {% endif %}
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer note -->
+          <tr>
+            <td style="padding: 0 32px 32px 32px; text-align:center;">
+              <p style="margin:0; font-size:12px; color:#B0A48F; line-height:1.6;">
+                You'll receive another email once your order ships.<br />
+                If you have any questions, just reply to this email.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Bottom bar -->
+          <tr>
+            <td style="background-color:#F5EFE2; padding: 16px 32px; text-align:center;">
+              <p style="margin:0; font-size:11px; color:#8A7F73;">&copy; SS Garments. All rights reserved.</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

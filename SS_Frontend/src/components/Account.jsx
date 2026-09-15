@@ -280,8 +280,25 @@ export default function Account() {
       whatsapp:"+91 87009 93207",
     };
   };
-  const handleCancelOrder = ()=>{
-
+  const handleCancelOrder = async(order)=>{
+    try{
+      const orderID= order?.order_id
+      const res = await axios.post(`${apiUrl}/cancel-order/${orderID}/`, { order_id: order.order_id }, {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+        xsrfCookieName: 'csrftoken',
+        xsrfHeaderName: 'X-CSRFToken',
+        withXSRFToken: true,}
+    );
+    
+    setLogin(res.data.userData);
+    setToken(res.data.access_Token);
+    toast.success(`${res.data.message}. Refunding amount ${res.data.refund_amount}`);
+    fetchOrder()
+    }catch(err){
+      toast.error(err.response?.data?.userorderData || "Failed to load orders");
+      
+    }
   }
 
   if (!login) {
@@ -535,7 +552,7 @@ export default function Account() {
               ) : orders.length > 0 ? (
                 orders.map((order, orderIndex) => {
                   const finalTotal =
-                    order.Total_price - order.discount + order.delivery_charge;
+                    order.amount - order.discount + order.delivery_charge;
                   
                   // Logic for buttons
                   const canCancel = order.statusID === "CONFIRMED" || order.statusID === "PENDING";
@@ -560,6 +577,9 @@ export default function Account() {
                             <div className="flex items-center gap-3 flex-wrap">
                               <h3 className="font-bold text-[#2B2422] text-[15px]">
                                 Order #{String(orderIndex + 1).padStart(3, "0")}
+                              </h3>
+                              <h3 className="font-bold text-[#2B2422] text-[15px]">
+                                Order ID : {order?.order_id}
                               </h3>
                               <span
                                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold border ${statusConfig.color} shadow-sm`}
@@ -636,7 +656,7 @@ export default function Account() {
                         <div className="max-w-xs ml-auto space-y-2.5">
                           <div className="flex justify-between text-sm text-[#6B6560]">
                             <span className="font-medium">Subtotal</span>
-                            <span className="font-bold">₹{order.Total_price}</span>
+                            <span className="font-bold">₹{order.amount}</span>
                           </div>
                           <div className="flex justify-between text-sm">
                             <span className="text-emerald-700 font-medium">Discount</span>
@@ -976,7 +996,7 @@ export default function Account() {
                 Close
               </button>
               <button
-                onClick={modalAction === "cancel" ? handleCancelOrder :""}
+                onClick={()=>{modalAction === "cancel" ? handleCancelOrder(selectedOrder) :""}}
                 className={`flex-1 px-4 py-3.5 rounded-xl text-sm font-bold text-white shadow-xl transition-all active:scale-95 ${
                   modalAction === "cancel"
                     ? "bg-gradient-to-r from-[#B24444] to-[#D47575] hover:from-[#A33D3D] hover:to-[#C46A6A] shadow-[#B24444]/25"

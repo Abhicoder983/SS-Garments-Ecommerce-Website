@@ -41,38 +41,8 @@ class UserModel(models.Model):
 # ============================
 
 
-# ============================
-#   ORDER MODEL
-# ============================
-class Order(models.Model):
 
-    # Order statuses
-    class StatusChoices(models.TextChoices):
-        PENDING = "PENDING", "Pending"
-        SHIPPED = "SHIPPED", "Shipped"
-        DELIVERED = "DELIVERED", "Delivered"
-        CANCELLED = "CANCELLED", "Cancelled"
-    id = ObjectIdAutoField(primary_key=True)
-    customerID = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="orders")
-    productID = models.JSONField(default=dict)  
-    awb_id = models.CharField(max_length=100, null= True, blank=True) 
-    statusID = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.PENDING)
-    delivery_charge= models.PositiveIntegerField(default=0)
-    discount = models.PositiveIntegerField(default = 0)
-    Total_price=models.PositiveIntegerField(default=0)
-    order_date = models.DateTimeField(auto_now_add=True)
-    delivered_at = models.DateTimeField(null=True, blank=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
-    def save(self, *args, **kwargs):
-        if self.statusID == self.StatusChoices.DELIVERED and self.delivered_at is None:
-            self.delivered_at = timezone.now()
-        elif self.statusID != self.StatusChoices.DELIVERED:
-            self.delivered_at = None
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"Order #{self.id} - {self.customerID.name}-{self.customerID.email}"
 
 
 
@@ -264,6 +234,7 @@ class Coupon(models.Model):
     discount_type = models.CharField(max_length=15, choices=DiscountType.choices, default=DiscountType.PERCENTAGE)
     discount_value = models.DecimalField(max_digits=10, decimal_places=2)
     min_order_value = models.PositiveIntegerField(default=0)
+    max_order_value = models.PositiveIntegerField(default=0)
     max_discount_amount = models.PositiveIntegerField(null=True, blank=True)
     usage_limit = models.PositiveIntegerField(null=True, blank=True)
     used_count = models.PositiveIntegerField(default=0)
@@ -310,6 +281,90 @@ class NotificationTemplate(models.Model):
 
 
 
+
+class Payment(models.Model):
+    class StatusChoices(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        SUCCESS = "SUCCESS", "Success"
+        FAILED = "FAILED", "Failed"
+
+    id = ObjectIdAutoField(primary_key=True)
+    customerID = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="payments")
+    razorpay_order_id = models.CharField(max_length=100, unique=True)
+    razorpay_payment_id = models.CharField(max_length=100, null=True, blank=True)
+    productID = models.JSONField(default=dict)          # cart snapshot
+    amount = models.PositiveIntegerField(default=0)      # final subtotal amount (paise)
+    total_price = models.PositiveIntegerField(default=0)  # final total amount (paise)
+
+    delivery_charge = models.PositiveIntegerField(default=0)
+
+    discount = models.PositiveIntegerField(default=0)
+        # flat 10% + coupon discount, combined
+    couponCode = models.CharField(max_length= 100, null=True, blank= True)
+    couponDiscount = models.PositiveIntegerField(null=True, blank=True)
+    address = models.JSONField(default=dict)
+    phone_regex = RegexValidator(
+            regex=r'^\+?1?\d{9,15}$',
+            message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed."
+        )
+        
+    mobile_no = models.CharField(
+                validators=[phone_regex],
+                max_length=15,
+               
+            )
+    statusID = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.PENDING)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+    def __str__(self):
+        return f"Payment #{self.id} - {self.customerID.name} - {self.statusID}"
+
+
+class Order(models.Model):
+
+    class StatusChoices(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        SHIPPED = "SHIPPED", "Shipped"
+        DELIVERED = "DELIVERED", "Delivered"
+        CANCELLED = "CANCELLED", "Cancelled"
+    id = ObjectIdAutoField(primary_key=True)
+    paymentID = models.OneToOneField(Payment, on_delete=models.CASCADE, related_name="order", default=None, null=True, blank=True)
+    customerID = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="orders")
+    productID = models.JSONField(default=dict)  
+    awb_id = models.CharField(max_length=100, null= True, blank=True)
+    address = models.JSONField(default=dict)
+    phone_regex = RegexValidator(
+        regex=r'^\+?1?\d{9,10}$',
+        message="Phone number must be entered in the format: '+999999999'. Up to 10 digits allowed."
+    )
+    
+    mobile_no = models.CharField(
+            validators=[phone_regex],
+            max_length=10,
+        )  
+    statusID = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.PENDING)
+    delivery_charge= models.PositiveIntegerField(default=0)
+    discount = models.PositiveIntegerField(default = 0)
+    couponDiscount = models.PositiveIntegerField(null=True, blank=True)
+    couponCode = models.CharField(max_length= 100, null=True, blank= True)
+    amount = models.PositiveIntegerField(default=0)  
+    total_price=models.PositiveIntegerField(default=0) # final total amount (paise)
+    order_date = models.DateTimeField(auto_now_add=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if self.statusID == self.StatusChoices.DELIVERED and self.delivered_at is None:
+            self.delivered_at = timezone.now()
+        elif self.statusID != self.StatusChoices.DELIVERED:
+            self.delivered_at = None
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Order #{self.id} - {self.customerID.name}-{self.customerID.email}"
+
 class returned_order(models.Model):
     id = ObjectIdAutoField(primary_key=True)
     orderID = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="returned_orders")
@@ -333,3 +388,4 @@ class returned_order(models.Model):
 
     def __str__(self):
         return f"Returned Order #{self.id} - {self.orderID.id}"
+

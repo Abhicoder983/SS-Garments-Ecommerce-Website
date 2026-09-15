@@ -14,6 +14,7 @@ export default function AddCoupon() {
     discount_type: 'PERCENTAGE',
     discount_value: '',
     min_order_value: '',
+    max_order_value: '',
     max_discount_amount: '',
     usage_limit: '',
     valid_from: '',
@@ -40,6 +41,18 @@ export default function AddCoupon() {
       toast.error('Percentage discount cannot exceed 100');
       return;
     }
+    if(form.min_order_value && Number(form.min_order_value) < 0) {
+      toast.error('Minimum order value cannot be negative');
+      return;
+    } 
+    if(form.max_order_value && Number(form.max_order_value) < 0) {
+      toast.error('Maximum order value cannot be negative');
+      return;
+    }
+    if(form.max_order_value && form.min_order_value && Number(form.max_order_value) < Number(form.min_order_value)) {
+      toast.error('Maximum order value cannot be less than minimum order value');
+      return;
+    } 
     if (!form.valid_from || !form.valid_until) {
       toast.error('Select validity dates');
       return;
@@ -56,6 +69,7 @@ export default function AddCoupon() {
         discount_type: form.discount_type,
         discount_value: Number(form.discount_value),
         min_order_value: Number(form.min_order_value) || 0,
+        max_order_value: Number(form.max_order_value) || 0,
         max_discount_amount: form.max_discount_amount ? Number(form.max_discount_amount) : null,
         usage_limit: form.usage_limit ? Number(form.usage_limit) : null,
         valid_from: form.valid_from,
@@ -193,6 +207,22 @@ export default function AddCoupon() {
                   type="number"
                   name="min_order_value"
                   value={form.min_order_value}
+                  onChange={handleChange}
+                  placeholder="0"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-7 pr-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
+                Maximum Order Value
+              </label>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium text-sm">₹</div>
+                <input
+                  type="number"
+                  name="max_order_value"
+                  value={form.max_order_value}
                   onChange={handleChange}
                   placeholder="0"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-7 pr-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all"

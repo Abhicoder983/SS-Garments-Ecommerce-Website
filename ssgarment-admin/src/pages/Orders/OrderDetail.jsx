@@ -1,11 +1,10 @@
-// src/pages/Orders/OrderDetail.jsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ClipLoader } from 'react-spinners';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 
-const STATUS_FLOW = ['CONFIRMED', 'SHIPPED', 'DELIVERED'];
+const STATUS_FLOW = ['PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED'];
 
 export default function OrderDetail() {
   const { id } = useParams();
@@ -14,6 +13,11 @@ export default function OrderDetail() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [showOverride, setShowOverride] = useState(false);
+
+  // ─── AWB Form State ───
+  const [showAwbForm, setShowAwbForm] = useState(false);
+  const [awbInput, setAwbInput] = useState('');
+  const [savingAwb, setSavingAwb] = useState(false);
 
   useEffect(() => {
     fetchOrder();
@@ -24,6 +28,10 @@ export default function OrderDetail() {
     try {
       const res = await api.get(`/orders-updateDetail/${id}/`);
       setOrder(res.data);
+      // Auto-open AWB form if confirmed but no tracking ID yet
+      if (res.data.status === 'CONFIRMED' && !res.data.awb_id) {
+        setShowAwbForm(true);
+      }
     } catch (err) {
       toast.error('Failed to load order');
     } finally {
@@ -38,6 +46,12 @@ export default function OrderDetail() {
       setOrder((prev) => ({ ...prev, status: newStatus }));
       toast.success(`Order status updated to ${newStatus}`);
       setShowOverride(false);
+
+      // ─── Open AWB form when transitioning to CONFIRMED ───
+      if (newStatus === 'CONFIRMED') {
+        setShowAwbForm(true);
+        setAwbInput('');
+      }
     } catch (err) {
       toast.error('Failed to update status');
     } finally {
@@ -45,8 +59,32 @@ export default function OrderDetail() {
     }
   };
 
+  const handleSaveAwb = async () => {
+    if (!awbInput.trim()) {
+      toast.error('Tracking ID is required');
+      return;
+    }
+    setSavingAwb(true);
+    try {
+      await api.patch(`/orders-updateDetail/${id}/`, { awb_id: awbInput.trim() });
+      setOrder((prev) => ({ ...prev, awb_id: awbInput.trim() }));
+      toast.success('Tracking ID updated');
+      setShowAwbForm(false);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to update tracking ID');
+    } finally {
+      setSavingAwb(false);
+    }
+  };
+
+  const handleCancelAwb = () => {
+    setShowAwbForm(false);
+    setAwbInput(order?.awb_id || '');
+  };
+
   const getStatusBadge = (status) => {
     const styles = {
+      PENDING: 'bg-slate-50 text-slate-600 border-slate-200',
       CONFIRMED: 'bg-amber-50 text-amber-700 border-amber-200',
       SHIPPED: 'bg-blue-50 text-blue-700 border-blue-200',
       DELIVERED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -56,6 +94,7 @@ export default function OrderDetail() {
 
   const getStatusDot = (status) => {
     const colors = {
+      PENDING: 'bg-slate-400',
       CONFIRMED: 'bg-amber-500',
       SHIPPED: 'bg-blue-500',
       DELIVERED: 'bg-emerald-500',
@@ -65,6 +104,11 @@ export default function OrderDetail() {
 
   const getStepIcon = (step) => {
     const icons = {
+      PENDING: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
       CONFIRMED: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -153,7 +197,7 @@ export default function OrderDetail() {
               const isCurrent = idx === currentStepIndex;
               return (
                 <div key={step} className="flex items-center flex-1">
-                  <div className="flex flex-col items-center relative z-10">
+                  <div className="flex flex-col items-center relative z-10 w-full">
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
                         isDone
@@ -165,7 +209,7 @@ export default function OrderDetail() {
                     >
                       {isDone ? getStepIcon(step) : <span className="text-sm font-bold">{idx + 1}</span>}
                     </div>
-                    <span className={`text-xs font-semibold mt-2 ${isDone ? 'text-slate-700' : 'text-slate-400'}`}>
+                    <span className={`text-xs font-semibold mt-2 text-center ${isDone ? 'text-slate-700' : 'text-slate-400'}`}>
                       {step.charAt(0) + step.slice(1).toLowerCase()}
                     </span>
                   </div>
@@ -177,6 +221,56 @@ export default function OrderDetail() {
             })}
           </div>
         </div>
+
+        {/* ─── AWB Form (appears when CONFIRMED) ─── */}
+        {order.status === 'CONFIRMED' && showAwbForm && (
+          <div className="mt-6 pt-6 border-t border-slate-100">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                </svg>
+              </div>
+              <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">
+                {order.awb_id ? 'Update Tracking ID' : 'Add Tracking ID'}
+              </h3>
+            </div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <input
+                type="text"
+                value={awbInput}
+                onChange={(e) => setAwbInput(e.target.value)}
+                placeholder="Enter Ekart AWB / Tracking ID"
+                className="flex-1 w-full sm:w-auto bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all"
+              />
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  onClick={handleSaveAwb}
+                  disabled={savingAwb}
+                  className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-blue-500/25 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all min-w-[100px]"
+                >
+                  {savingAwb ? <ClipLoader color="#ffffff" size={14} /> : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Save
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={handleCancelAwb}
+                  className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+            <p className="text-xs text-slate-400 mt-2">
+              Enter the Ekart tracking ID to enable shipment tracking for this order.
+            </p>
+          </div>
+        )}
 
         {/* Manual Override */}
         <div className="mt-6 pt-6 border-t border-slate-100">
@@ -261,12 +355,29 @@ export default function OrderDetail() {
             </div>
             <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Tracking</h2>
           </div>
-          {order.tracking_id ? (
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-sm font-semibold text-slate-800 bg-slate-100 px-3 py-1.5 rounded-lg">
-                {order.tracking_id}
-              </span>
-              <span className="text-xs text-slate-400">Ekart</span>
+          {order.awb_id ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-sm font-semibold text-slate-800 bg-slate-100 px-3 py-1.5 rounded-lg">
+                  {order.awb_id}
+                </span>
+                <span className="text-xs text-slate-400">Ekart</span>
+              </div>
+              {/* ─── Edit button (enabled when confirmed) ─── */}
+              {order.status === 'CONFIRMED' && (
+                <button
+                  onClick={() => {
+                    setAwbInput(order.awb_id);
+                    setShowAwbForm(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                  </svg>
+                  Edit
+                </button>
+              )}
             </div>
           ) : (
             <div className="flex items-center gap-2 text-slate-400">

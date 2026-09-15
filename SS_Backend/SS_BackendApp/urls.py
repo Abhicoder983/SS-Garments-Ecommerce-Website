@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from .views import login,verifyUser,signup,logout_view,home,orders,account,cart,productDetail,product_list, googleAuthentication,googleOauth2Authentication,contactUsEmail
+from .views import *
 
 urlpatterns = [
     path("login/", login),
@@ -15,9 +15,12 @@ urlpatterns = [
     path('products/',product_list),
     path('google-login/', googleAuthentication),
     path('google-oauth2-authentication/',googleOauth2Authentication),
-    path('contactusEmail/',contactUsEmail)
-
-
-
-
+    path('contactusEmail/',contactUsEmail),
+    path('create-payment/',create_order),
+    path('webhook-order/',razorpay_webhook),
+    path('verify-order/<str:razorpay_order_id>/',verify_order),
+    path('apply-coupon/', apply_coupon, name='apply-coupon'),
+    path('remove-coupon/', remove_coupon, name='remove-coupon'),
+    path('cancel-order/<str:order_id>/', cancel_order, name='cancel-order'),
+    path('payment-cancel/<str:razorpay_order_id>/', cancel_payment_attempt)
 ]

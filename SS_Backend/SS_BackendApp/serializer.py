@@ -17,10 +17,11 @@ class userSerializer(serializers.ModelSerializer):
   
     
 class orderSerializer(serializers.ModelSerializer):
+    order_id = serializers.CharField(source="id")
     
     class Meta:
         model = Order
-        exclude=['id','customerID','awb_id']
+        exclude=['id','customerID','awb_id','paymentID']
 
 class cartSerializer(serializers.ModelSerializer):
     class Meta:

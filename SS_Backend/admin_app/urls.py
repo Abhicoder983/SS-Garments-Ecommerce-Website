@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import category_update_delete, low_stock_view,product_edit,product_variant_create_without_size, product_detail, send_admin_otp,admin_otp_verify,admin_dashboard,customer_list,customer_update_status,customer_detail,order_list, order_detail_or_update, category_list_create,coupon_list_create, coupon_update_delete,product_list,product_create, product_variant_create, variant_size_update, variant_sizes_add
+from .views import category_update_delete, low_stock_view, payment_list,product_edit,product_variant_create_without_size, product_detail, send_admin_otp,admin_otp_verify,admin_dashboard,customer_list,customer_update_status,customer_detail,order_list, order_detail_or_update, category_list_create,coupon_list_create, coupon_update_delete,product_list,product_create, product_variant_create, variant_size_update, variant_sizes_add
 
 
 urlpatterns = [
@@ -28,5 +28,6 @@ urlpatterns = [
     path('productsdetail/<str:product_id>/', product_detail),
     path('products-edit/<str:product_id>/', product_edit),
     path('products-sizes/<str:size_id>/', variant_size_update),
+    path('payments/', payment_list, name='payment-list'),
 
 ]

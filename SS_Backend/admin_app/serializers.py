@@ -1,6 +1,6 @@
 from bson import ObjectId
 from rest_framework import serializers
-from SS_BackendApp.models import UserModel,Order,Products,VariantSize, Category, Coupon
+from SS_BackendApp.models import Payment, UserModel,Order,Products,VariantSize, Category, Coupon
 from django.db.models import Sum
 import json
 class SendOTPSerializer(serializers.Serializer):
@@ -41,7 +41,7 @@ class CustomerDetailSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
-    total_price = serializers.IntegerField(source='Total_price')
+    total_price = serializers.IntegerField()
     status = serializers.CharField(source='statusID')
 
     class Meta:
@@ -57,7 +57,7 @@ class OrderSerializer(serializers.ModelSerializer):
 class OrderListSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
     customer_name = serializers.CharField(source='customerID.name')
-    total_price = serializers.IntegerField(source='Total_price')
+    total_price = serializers.IntegerField()
     status = serializers.CharField(source='statusID')
 
     class Meta:
@@ -73,7 +73,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
     customer_name = serializers.CharField(source='customerID.name')
     customer_email = serializers.CharField(source='customerID.email')
-    total_price = serializers.IntegerField(source='Total_price')
+    total_price = serializers.IntegerField()
     status = serializers.CharField(source='statusID')
     items = serializers.SerializerMethodField()
 
@@ -124,8 +124,12 @@ class OrderDetailSerializer(serializers.ModelSerializer):
                 "price": price,
             })
         return items
-class OrderStatusUpdateSerializer(serializers.Serializer):
-    status = serializers.ChoiceField(choices=['CONFIRMED', 'SHIPPED', 'DELIVERED'])
+class OrderStatus_awb_UpdateSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(choices=['PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED'])
+    
+    class Meta:
+        model = Order
+        fields =[ 'status','awb_id']
 
 
 # admin_app/serializers.py
@@ -240,3 +244,30 @@ class ProductListSerializer(serializers.ModelSerializer):
 
 class ProductStatusUpdateSerializer(serializers.Serializer):
     is_active = serializers.BooleanField()
+
+
+class PaymentListSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
+    customer_name = serializers.CharField(source='customerID.name', read_only=True)
+
+    class Meta:
+        model = Payment
+        fields = [
+            'id', 'customer_name', 'razorpay_order_id', 'razorpay_payment_id',
+            'amount', 'total_price', 'delivery_charge', 'discount',
+            'couponCode', 'couponDiscount', 'statusID', 'created_at',
+        ]
+
+    def get_id(self, obj):
+        return str(obj.id)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # Convert paise to rupees for display
+        data['amount'] = instance.amount / 100
+        data['total_price'] = instance.total_price / 100
+        data['delivery_charge'] = instance.delivery_charge / 100
+        data['discount'] = instance.discount / 100
+        if instance.couponDiscount:
+            data['couponDiscount'] = instance.couponDiscount / 100
+        return data

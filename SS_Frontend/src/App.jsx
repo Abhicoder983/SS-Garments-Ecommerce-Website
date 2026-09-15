@@ -14,6 +14,7 @@ import GoogleSignInDropdown from "./components/auth/GoogleSignInButton.jsx"
 import PolicyPage from './components/PolicyPage';
 import TermsAndConditions from "./components/TermsAndConditions";
 import PaymentCheckout from "./components/PaymentCheckout.jsx";
+import OrderProcessing from "./components/OrderProcessing";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
       <Route path="/products" element={< SearchResults />}/>
       <Route path="/contactus" element={< ContactUs />}/>
       <Route path="/aboutus" element={< AboutUs />}/>
+      <Route path="/order-processing" element={< OrderProcessing />}/>
 
 
     </Routes>

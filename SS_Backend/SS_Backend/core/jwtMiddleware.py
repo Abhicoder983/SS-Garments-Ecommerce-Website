@@ -31,6 +31,10 @@ class JWTMiddleware:
         "/account/",
         "/cart/",
         "/",
+        '/verify-order/',
+        '/create-payment/',
+        "/apply-coupon/",
+        "/remove-coupon/",
         "/contactusEmail/",
         "/admin-role/send-otp/",
         "/admin-role/verify-otp/",
@@ -41,7 +45,7 @@ class JWTMiddleware:
         '/admin-role/coupons/',
         '/admin-role/products/',
         "/admin-role/productscreate/",
-
+        "/admin-role/payments/"
     ]
     and not (request.path.startswith("/productDetail/") or
               request.path.startswith("/admin-role/customers/") or
@@ -53,13 +57,16 @@ class JWTMiddleware:
                 request.path.startswith("/admin-role/productsvariants/") or
                 request.path.startswith("/admin-role/productsdetail/") or
                 request.path.startswith("/admin-role/products-edit/") or
-                request.path.startswith("/admin-role/products-sizes/")
-                )
-):
-             print('1')
-             return self.get_response(request)
+                request.path.startswith("/admin-role/products-sizes/") or
+                request.path.startswith("/verify-order/") or
+                request.path.startswith("/cancel-order/") or
+                request.path.startswith("/payment-cancel/")
+            )
+            ):
+            print('1')
+            return self.get_response(request)
 
-        elif (request.path in ["/login/", "/signup/","/verify/","/admin-role/send-otp/", "/admin-role/verify-otp/"] or request.path.startswith("/admin/")):
+        elif (request.path in ["/login/", "/signup/","/verify/","/admin-role/send-otp/", "/admin-role/verify-otp/","/webhook-order/"] or request.path.startswith("/admin/")):
             return self.get_response(request)
         
         auth_header = request.headers.get("Authorization")
@@ -77,12 +84,14 @@ class JWTMiddleware:
         
        
         try:
-            
+            print(1)
             payload = jwt.decode(
                 token,
                 settings.SECRET_KEYS,
                 algorithms=["HS256"]
             )
+            print(2)
+            print(payload)
 
             user_id = ObjectId(payload.get("user_id"))
                     
@@ -92,11 +101,11 @@ class JWTMiddleware:
             if not user:
                 UserModel.DoesNotExist("User does not exist or blocked")
                 
-           
+            print(3)
             request.id= user
             request.access_token=token
             request.refresh_token=None
-
+            print(4)
         except UserModel.DoesNotExist as e:
             request.userData=None
             

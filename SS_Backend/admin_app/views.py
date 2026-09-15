@@ -2,6 +2,7 @@
 import random
 from datetime import timedelta,datetime
 import re
+from bson.errors import InvalidId
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.utils import timezone
@@ -13,11 +14,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from .templates.email import otp_send
 import random, uuid
-from .serializers import CouponStatusUpdateSerializer, ProductListSerializer, SendOTPSerializer, VerifyOTPSerializer, CustomerSerializer, CustomerStatusUpdateSerializer,CustomerDetailSerializer,OrderSerializer,OrderListSerializer,OrderDetailSerializer,OrderStatusUpdateSerializer, CategorySerializer, CouponSerializer, CouponCreateSerializer, ProductStatusUpdateSerializer
+from .serializers import CouponStatusUpdateSerializer, OrderStatus_awb_UpdateSerializer, PaymentListSerializer, ProductListSerializer, SendOTPSerializer, VerifyOTPSerializer, CustomerSerializer, CustomerStatusUpdateSerializer,CustomerDetailSerializer,OrderSerializer,OrderListSerializer,OrderDetailSerializer, CategorySerializer, CouponSerializer, CouponCreateSerializer, ProductStatusUpdateSerializer
 from SS_BackendApp.utils import generateJWT, getIPAddress
 from django.db.models import Sum
 from bson import ObjectId
-from SS_BackendApp.models import Coupon, Order, Products, UserModel, VariantSize, Category, ProductVariant
+from SS_BackendApp.models import Payment,Coupon, Order, Products, UserModel, VariantSize, Category, ProductVariant
 import json 
 import math
 from .shared.permission import admin_required
@@ -173,7 +174,7 @@ def admin_dashboard(request):
 
     # 3. Total revenue - sab orders ka total (chunki humne decide kiya tha
     #    sirf paid orders ka record banta hai, to sab orders revenue me count honge)
-    total_revenue = Order.objects.aggregate(total=Sum('Total_price'))['total'] or 0
+    total_revenue = Order.objects.aggregate(total=Sum('total_price'))['total'] or 0
 
     # 4. Total customers - sirf role='customer' wale
     total_customers = UserModel.objects.filter(role='customer').count()
@@ -202,7 +203,7 @@ def admin_dashboard(request):
             "id": str(order.id),
             "customer_name": order.customerID.name,
             "status": order.statusID,
-            "total_price": order.Total_price,
+            "total_price": order.total_price,
             "order_date": order.order_date,
         }
         for order in recent_orders_qs
@@ -354,7 +355,7 @@ def order_list(request):
     # ─── Status filter ───
     status_filter = request.query_params.get('status')
     if status_filter and status_filter != 'ALL':
-        orders = orders.filter(status=status_filter)
+        orders = orders.filter(statusID=status_filter)
     print(13)
     # ─── Pagination ───
     page = int(request.query_params.get('page', 1))
@@ -387,10 +388,14 @@ def order_detail_or_update(request, order_id):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     elif request.method == 'PATCH':
-        serializer = OrderStatusUpdateSerializer(data=request.data)
+        print(request.data)
+        serializer = OrderStatus_awb_UpdateSerializer(data=request.data, partial=True)
+    
         serializer.is_valid(raise_exception=True)
-
-        order.statusID = serializer.validated_data['status']
+        if 'status' in serializer.validated_data:
+            order.statusID = serializer.validated_data['status']
+        if 'awb_id' in serializer.validated_data:
+            order.awb_id = serializer.validated_data['awb_id']
         order.save()
 
         return Response({
@@ -1080,4 +1085,49 @@ def low_stock_view(request):
         "total_pages": total_pages,
         "out_of_stock_count": out_of_stock_count,
         "critical_count": critical_count,
+    }, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def payment_list(request):
+    payments = Payment.objects.select_related('customerID').order_by('-created_at')
+
+    # ─── Search by payment id, razorpay order id, or razorpay payment id ───
+    search = request.query_params.get('search')
+    if search:
+        query = Q(razorpay_order_id__icontains=search) | Q(razorpay_payment_id__icontains=search)
+        try:
+            query |= Q(id=ObjectId(search))
+        except InvalidId:
+            pass
+        payments = payments.filter(query)
+
+    # ─── Stats (respects search, not status filter) ───
+    stats = {
+        'ALL': payments.count(),
+        'PENDING': payments.filter(statusID='PENDING').count(),
+        'SUCCESS': payments.filter(statusID='SUCCESS').count(),
+        'FAILED': payments.filter(statusID='FAILED').count(),
+    }
+
+    # ─── Status filter ───
+    status_filter = request.query_params.get('status')
+    if status_filter and status_filter != 'ALL':
+        payments = payments.filter(statusID=status_filter)
+
+    # ─── Pagination ───
+    page = int(request.query_params.get('page', 1))
+    page_size = int(request.query_params.get('page_size', 10))
+
+    paginator = Paginator(payments, page_size)
+    page_obj = paginator.get_page(page)
+
+    serializer = PaymentListSerializer(page_obj.object_list, many=True)
+
+    return Response({
+        'results': serializer.data,
+        'count': paginator.count,
+        'total_pages': max(1, paginator.num_pages),
+        'current_page': page,
+        'page_size': page_size,
+        'stats': stats,
     }, status=status.HTTP_200_OK)

@@ -38,7 +38,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "https://api.ssgarment.in",
     "https://www.admin-abhishek-98375.ssgarment.in",
-    "https://admin-abhishek-98375.ssgarment.in"
+    "https://admin-abhishek-98375.ssgarment.in",
+    "https://fountain-arbitrary-paramedic.ngrok-free.dev"
+    
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -48,11 +50,13 @@ CSRF_TRUSTED_ORIGINS = [
     "https://www.api.ssgarment.in",
     "https://www.admin-abhishek-98375.ssgarment.in",
     "https://admin-abhishek-98375.ssgarment.in",
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "https://fountain-arbitrary-paramedic.ngrok-free.dev",
+    
 
 ]
 
-ALLOWED_HOSTS = ['ssgarment.in', 'www.ssgarment.in', 'api.ssgarment.in', '13.126.138.14',"127.0.0.1", "localhost","www.api.ssgarment.in"]
+ALLOWED_HOSTS = ['ssgarment.in', 'www.ssgarment.in', 'api.ssgarment.in', '13.126.138.14',"127.0.0.1", "localhost","www.api.ssgarment.in",'.ngrok-free.app', '.ngrok-free.dev']
 
 
 CSRF_COOKIE_SAMESITE = 'Lax'
@@ -73,7 +77,8 @@ INSTALLED_APPS = [
     'SS_BackendApp',
     'admin_app',
     "rest_framework",
-    'corsheaders'
+    'corsheaders',
+    # 'django_celery_beat'
 ]
 
 MIDDLEWARE = [
@@ -87,6 +92,16 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'SS_Backend.core.jwtMiddleware.JWTMiddleware'
 ]
+
+CELERY_BEAT_SCHEDULE = {
+    'release-stale-reservations': {
+        'task': 'SS_BackendApp.tasks.release_stale_reservations',
+        'schedule': 300.0,  # har 5 minute mein
+    },
+}
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_TIMEZONE = 'Asia/Kolkata'
 
 ROOT_URLCONF = 'SS_Backend.urls'
 
@@ -189,6 +204,9 @@ AWS_QUERYSTRING_AUTH = False
 AWS_S3_OBJECT_PARAMETERS = {
     "CacheControl": "max-age=86400",
 }
+RAZORPAY_KEY_ID = config('VITE_RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = config('VITE_RAZORPAY_KEY_SECRET')
+RAZORPAY_WEBHOOK_SECRET = config('RAZORPAY_WEBHOOK_SECRET')
 
 GOOGLE_OAUTH_CLIENT_ID = config('VITE_GOOGLE_CLIENT_ID')
 GOOGLE_OAUTH_CLIENT_SECRET = config('GOOGLE_CLIENT_SECRET')

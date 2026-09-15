@@ -1,8 +1,8 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState,useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { AuthContext } from "../Context/AuthContext";
+import { AuthContext } from "../context/AuthContext";
 import NavBar from "./NavBar";
 import Footer from "./Footer";
 import AddressPage from "./inPages/AddressPage";
@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 const apiUrl = import.meta.env.VITE_API_URL;
+const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID;
 const DISCOUNT_RATE = 0.1;
 const STEPS = ["Bag", "Review & pay", "Confirmed"];
 
@@ -55,9 +56,10 @@ export default function Buynow() {
     if (product) {
       const v = product?.variants?.[variant];
       const sizeObj = v?.sizes?.[selectedSize];
+      console.log('abhishek',sizeObj)
       return [
         {
-          product_id: product?.product_id || product?._id,
+          product_id:sizeObj?.size_id,
           name: product?.product_name,
           image: v?.image,
           size: sizeObj?.size,
@@ -77,6 +79,18 @@ export default function Buynow() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [placing, setPlacing] = useState(false);
 
+  /* ── Coupon state ── */
+  const [couponCode, setCouponCode] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState(() => {
+    try {
+      const saved = localStorage.getItem("buynow_coupon");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
   useEffect(() => {
     if (!login && !token) {
       setLogin(null);
@@ -92,6 +106,72 @@ export default function Buynow() {
     document.head.appendChild(link);
     return () => document.head.removeChild(link);
   }, []);
+
+  // 🔹 Load Razorpay checkout script once
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => document.body.removeChild(script);
+  }, []);
+
+  // 🔹 Persist applied coupon so UI matches backend session after refresh
+  useEffect(() => {
+    if (appliedCoupon) {
+      localStorage.setItem("buynow_coupon", JSON.stringify(appliedCoupon));
+    } else {
+      localStorage.removeItem("buynow_coupon");
+    }
+  }, [appliedCoupon]);
+
+const safetyTimerRef = useRef(null);
+const rzpInstanceRef = useRef(null);
+
+// clears the timer + closes any open Razorpay modal on unmount
+useEffect(() => {
+  return () => {
+    if (safetyTimerRef.current) {
+      clearTimeout(safetyTimerRef.current);
+      safetyTimerRef.current = null;
+    }
+    if (rzpInstanceRef.current) {
+      try {
+        rzpInstanceRef.current.close();
+      } catch {
+        /* already closed */
+      }
+    }
+  };
+}, []);
+
+  /* ── 🆕 Clear coupon on unmount (navigate away / refresh) ── */
+  useEffect(() => {
+    return () => {
+      // 1. Wipe localStorage so next mount starts fresh
+      localStorage.removeItem("buynow_coupon");
+
+      // 2. Tell backend to drop the session coupon as well
+      //    Fire-and-forget: we don't block unmount on this call
+      if (token) {
+        axios
+          .post(
+            `${apiUrl}/remove-coupon/`,
+            {},
+            {
+              headers: { Authorization: `Bearer ${token}` },
+              withCredentials: true,
+              xsrfCookieName: "csrftoken",
+              xsrfHeaderName: "X-CSRFToken",
+              withXSRFToken: true,
+            }
+          )
+          .catch(() => {
+            /* silent fail — not worth blocking navigation */
+          });
+      }
+    };
+  }, [token, apiUrl]);
 
   const handleProfileSave = async () => {
     if (!profileName.trim()) {
@@ -154,20 +234,224 @@ export default function Buynow() {
     () => items.reduce((s, i) => s + (i.price || 0) * i.qty, 0),
     [items]
   );
-  const discount = Math.round(subtotal * DISCOUNT_RATE);
+
+  /* ── Pricing (default 10 % + optional coupon) ── */
+  const defaultDiscount = Math.round(subtotal * DISCOUNT_RATE);
+  const couponDiscount = appliedCoupon ? Number(appliedCoupon.discount_amount) : 0;
   const shipping = subtotal > 0 ? 99 : 0;
-  const total = subtotal - discount + shipping;
+  const total = Math.max(0, subtotal - defaultDiscount - couponDiscount + shipping);
 
   const address = login?.address?.[selectedAddress];
+  const mobile_no = login?.mobile_no;
 
-  const handlePlaceOrder = () => {
+  /* ── Coupon handlers ── */
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error("Enter a coupon code");
+      return;
+    }
+    setCouponLoading(true);
+    try {
+      const res = await axios.post(
+        `${apiUrl}/apply-coupon/`,
+        { code: couponCode.trim(), subtotal },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+          xsrfCookieName: "csrftoken",
+          xsrfHeaderName: "X-CSRFToken",
+          withXSRFToken: true,
+        }
+      );
+      if (res.data.error) {
+        toast.error(res.data.error);
+      } else {
+        setAppliedCoupon(res.data);
+        if (res.data.userData) setLogin(res.data.userData);
+        if (res.data.access_Token) setToken(res.data.access_Token);
+        toast.success(`Coupon ${res.data.code} applied!`);
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.error || "Failed to apply coupon");
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = async () => {
+    try {
+      const res = await axios.post(
+        `${apiUrl}/remove-coupon/`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+          xsrfCookieName: "csrftoken",
+          xsrfHeaderName: "X-CSRFToken",
+          withXSRFToken: true,
+        }
+      );
+      if (res.data.error) {
+        toast.error(res.data.error);
+      } else {
+        setAppliedCoupon(null);
+        setCouponCode("");
+        if (res.data.userData) setLogin(res.data.userData);
+        if (res.data.access_Token) setToken(res.data.access_Token);
+        toast.success("Coupon removed");
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.error || "Failed to remove coupon");
+    }
+  };
+
+  const handlePlaceOrder = async () => {
     if (!address) {
       toast.error("Add a delivery address to continue");
       return;
     }
+    if (!mobile_no) {
+      toast.error("Add a mobile number to continue");
+      return;
+    }
+    if (!window.Razorpay) {
+      toast.error("Payment gateway is still loading, please try again in a moment");
+      return;
+    }
+
     setPlacing(true);
-    // TODO: call your order-creation endpoint here, e.g.
-    // await axios.post(`${apiUrl}/orders/`, { items, address, discount, total }, { headers: { Authorization: `Bearer ${token}` }, withCredentials: true })
+    try {
+      const payload = { address_index: selectedAddress };
+      if(couponCode) payload.couponId = couponCode;
+
+      // buynow flow (single product, no cart cookie) → send items explicitly
+      // cart flow → backend reads the signed cart cookie itself
+      if (!cartItems || !cartItems.length) {
+        payload.items = items.map((i) => ({
+          product_id: i.product_id,
+          qty: i.qty,
+          price: i.price,
+        }));
+      }
+
+      const { data } = await axios.post(`${apiUrl}/create-payment/`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+        xsrfCookieName: "csrftoken",
+        xsrfHeaderName: "X-CSRFToken",
+        withXSRFToken: true,
+      });
+
+      // backend sends business errors with 200 + error field
+      if (data.error) {
+        toast.error(data.error);
+        setPlacing(false);
+        return;
+      }
+
+      if (!data.userData || !data.access_Token) {
+        toast.error("Session expired, please login again");
+        setLogin(null);
+        setToken(null);
+        navigate("/login");
+        setPlacing(false);
+        return;
+      }
+      setLogin(data.userData);
+      setToken(data.access_Token);
+      let navigated = false;
+      let safetyTimer;
+
+      const goToProcessing = (razorpayOrderId) => {
+        if (navigated) return;
+        navigated = true;
+        clearTimeout(safetyTimer);
+        navigate("/order-processing", { state: { razorpayOrderId } });
+      };
+
+      const options = {
+        key: RAZORPAY_KEY_ID, 
+        amount: data.amount,
+        currency: data.currency || "INR",
+        order_id: data.order_id,
+        name: "SS Garments",
+        description: `Order for ${totalItems} ${totalItems === 1 ? "item" : "items"}`,
+        prefill: { name: login?.name, contact: mobile_no },
+        theme: { color: "#4A0E1C" },
+        modal: {
+          ondismiss: async() => {
+            try {
+        await axios.post(
+          `${apiUrl}/payment-cancel/${data.order_id}/`,
+          {},
+          {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+        xsrfCookieName: "csrftoken",
+        xsrfHeaderName: "X-CSRFToken",
+        withXSRFToken: true,
+          }
+        );
+        clearTimeout(safetyTimerRef.current);
+      } catch (err) {
+        console.error("Failed to mark payment as dismissed", err);
+      }
+      toast.error("Payment cancelled");
+    }    
+        },
+        handler: function (response) {
+          console.log("handler fired", response);
+          goToProcessing(response.razorpay_order_id);
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzpInstanceRef.current = rzp;
+
+      rzp.on("payment.failed", (resp) => {
+        toast.error(resp?.error?.description || "Payment failed, please try again");
+        setPlacing(false);
+        clearTimeout(safetyTimerRef.current);
+      });
+
+      rzp.open();
+
+      safetyTimerRef.current = setTimeout(() => {
+      if (rzpInstanceRef.current) {
+        try {
+          async()=>{
+            await axios.post(
+          `${apiUrl}/payment-cancel/${data.order_id}/`,
+          {},
+          {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+        xsrfCookieName: "csrftoken",
+        xsrfHeaderName: "X-CSRFToken",
+        withXSRFToken: true,
+          }
+        );
+
+          }
+      rzpInstanceRef.current.close();
+      toast.error("Payment timed out, please try again");
+
+
+    }   catch(err) {toast.error(`something went wrong ${err.message}`)}
+        
+      }
+}, 12 * 60 * 1000); // 12 minutes
+    } catch (err) {
+      if (err?.response?.status === 401) {
+        toast.error("Session expired, please login again");
+        setLogin(null);
+        setToken(null);
+        navigate("/login");
+      } else {
+        toast.error(err?.response?.data?.error || "Could not start payment, please try again");
+      }
+      setPlacing(false);
+    }
   };
 
   if (items.length === 0) {
@@ -485,6 +769,51 @@ export default function Buynow() {
                 Payment summary
               </h2>
 
+              {/* ── Coupon section ── */}
+              <div className="mb-5">
+                {!appliedCoupon ? (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      placeholder="COUPON CODE"
+                      className="flex-1 px-3.5 py-2.5 rounded-xl border border-[#EDE3D3] text-sm focus:outline-none focus:border-[#B8862E] uppercase tracking-wide"
+                      onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
+                    />
+                    <button
+                      onClick={handleApplyCoupon}
+                      disabled={couponLoading || !couponCode.trim()}
+                      className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#4A0E1C] text-[#FFFDF9] disabled:opacity-60 transition-all"
+                    >
+                      {couponLoading ? "Applying…" : "Apply"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between bg-[#FBF3E0] border border-[#E7D49E] rounded-xl px-3.5 py-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-full bg-[#4A0E1C] flex items-center justify-center">
+                        <Tag size={13} className="text-[#FFFDF9]" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-[#2B2422] uppercase tracking-wide">
+                          {appliedCoupon.code}
+                        </p>
+                        <p className="text-xs text-[#3F7D58] font-medium">
+                          −{currency(appliedCoupon.discount_amount)} saved
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleRemoveCoupon}
+                      className="text-xs font-semibold text-[#8A7F73] hover:text-[#4A0E1C] px-2 py-1 rounded-lg hover:bg-[#F5E9C8] transition-colors"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-3 text-sm text-[#4A413A]">
                 <div className="flex justify-between">
                   <span>
@@ -498,8 +827,18 @@ export default function Buynow() {
                     <Tag size={13} />
                     Discount (10%)
                   </span>
-                  <span>−{currency(discount)}</span>
+                  <span>−{currency(defaultDiscount)}</span>
                 </div>
+
+                {appliedCoupon && (
+                  <div className="flex justify-between text-[#3F7D58]">
+                    <span className="flex items-center gap-1.5">
+                      <Tag size={13} />
+                      Coupon ({appliedCoupon.code})
+                    </span>
+                    <span>−{currency(appliedCoupon.discount_amount)}</span>
+                  </div>
+                )}
 
                 <div className="flex justify-between">
                   <span className="flex items-center gap-1.5">

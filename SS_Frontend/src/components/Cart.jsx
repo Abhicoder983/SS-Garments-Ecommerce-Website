@@ -61,6 +61,8 @@ export default function CartPage() {
         withXSRFToken: true,
       });
       setCartItems(res.data.cart_Detail || []);
+      res.data.removed_count?toast.warn(`${res.data.removed_count} item(s) removed from cart because of quantity is more then stock or inactive or deleted`):null
+
       setLogin(res.data.userData);
       setToken(res.data.access_Token);
     } catch (err) {
@@ -81,7 +83,7 @@ export default function CartPage() {
     await axios
       .patch(
         `${apiUrl}/cart/`,
-        { product_id, qty },
+        {product_id, qty },
         {
           headers: {
             Authorization: `Bearer ${token}`,
