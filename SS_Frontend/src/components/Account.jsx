@@ -293,6 +293,9 @@ export default function Account() {
     
     setLogin(res.data.userData);
     setToken(res.data.access_Token);
+    setModalAction(null);
+    setSelectedOrder(null);
+    setShopkeeperModal(false);
     toast.success(`${res.data.message}. Refunding amount ${res.data.refund_amount}`);
     fetchOrder()
     }catch(err){

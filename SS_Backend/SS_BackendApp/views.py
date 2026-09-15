@@ -2114,6 +2114,7 @@ def cancel_order(request, order_id):
 
             if payment_id:
                 try:
+                    print(1)
                     refund_response = client.payment.refund(
                         payment_id,
                         {
@@ -2125,6 +2126,7 @@ def cancel_order(request, order_id):
                             }
                         }
                     )
+                    print(2)
                 except razorpay.errors.BadRequestError as e:
                     response = Response({"error": f"Refund failed: {str(e)}", **userJson}, status=400)
                     refund_failed = True
