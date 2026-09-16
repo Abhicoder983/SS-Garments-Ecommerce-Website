@@ -2,7 +2,7 @@ import { useContext, useEffect, useMemo, useState,useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../Context/AuthContext";
 import NavBar from "./NavBar";
 import Footer from "./Footer";
 import AddressPage from "./inPages/AddressPage";
