@@ -1,4 +1,3 @@
-from tkinter import TRUE
 from django.db.models import F
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
