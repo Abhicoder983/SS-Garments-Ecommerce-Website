@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState,useRef } from "react";
+import { useContext, useEffect, useMemo, useState, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -18,12 +18,14 @@ import {
   Check,
   Sparkles,
   X,
+  Banknote,
 } from "lucide-react";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID;
 const DISCOUNT_RATE = 0.1;
 const STEPS = ["Bag", "Review & pay", "Confirmed"];
+const COD_ADVANCE = 99;
 
 const currency = (n) =>
   `₹${Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
@@ -56,10 +58,9 @@ export default function Buynow() {
     if (product) {
       const v = product?.variants?.[variant];
       const sizeObj = v?.sizes?.[selectedSize];
-      console.log('abhishek',sizeObj)
       return [
         {
-          product_id:sizeObj?.size_id,
+          product_id: sizeObj?.size_id,
           name: product?.product_name,
           image: v?.image,
           size: sizeObj?.size,
@@ -78,6 +79,9 @@ export default function Buynow() {
   const [selectionPage, setSelectionPage] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [placing, setPlacing] = useState(false);
+
+  /* ── Payment method: "ONLINE" (full amount online) | "COD" (₹99 advance) ── */
+  const [paymentMethod, setPaymentMethod] = useState("ONLINE");
 
   /* ── Coupon state ── */
   const [couponCode, setCouponCode] = useState("");
@@ -125,25 +129,25 @@ export default function Buynow() {
     }
   }, [appliedCoupon]);
 
-const safetyTimerRef = useRef(null);
-const rzpInstanceRef = useRef(null);
+  const safetyTimerRef = useRef(null);
+  const rzpInstanceRef = useRef(null);
 
-// clears the timer + closes any open Razorpay modal on unmount
-useEffect(() => {
-  return () => {
-    if (safetyTimerRef.current) {
-      clearTimeout(safetyTimerRef.current);
-      safetyTimerRef.current = null;
-    }
-    if (rzpInstanceRef.current) {
-      try {
-        rzpInstanceRef.current.close();
-      } catch {
-        /* already closed */
+  // clears the timer + closes any open Razorpay modal on unmount
+  useEffect(() => {
+    return () => {
+      if (safetyTimerRef.current) {
+        clearTimeout(safetyTimerRef.current);
+        safetyTimerRef.current = null;
       }
-    }
-  };
-}, []);
+      if (rzpInstanceRef.current) {
+        try {
+          rzpInstanceRef.current.close();
+        } catch {
+          /* already closed */
+        }
+      }
+    };
+  }, []);
 
   /* ── 🆕 Clear coupon on unmount (navigate away / refresh) ── */
   useEffect(() => {
@@ -188,8 +192,8 @@ useEffect(() => {
           "Content-Type": "multipart/form-data",
         },
         withCredentials: true,
-        xsrfCookieName: 'csrftoken',
-        xsrfHeaderName: 'X-CSRFToken',
+        xsrfCookieName: "csrftoken",
+        xsrfHeaderName: "X-CSRFToken",
         withXSRFToken: true,
       });
       setLogin(res.data.userData);
@@ -213,8 +217,8 @@ useEffect(() => {
         {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
-          xsrfCookieName: 'csrftoken',
-          xsrfHeaderName: 'X-CSRFToken',
+          xsrfCookieName: "csrftoken",
+          xsrfHeaderName: "X-CSRFToken",
           withXSRFToken: true,
         }
       );
@@ -240,6 +244,10 @@ useEffect(() => {
   const couponDiscount = appliedCoupon ? Number(appliedCoupon.discount_amount) : 0;
   const shipping = subtotal > 0 ? 99 : 0;
   const total = Math.max(0, subtotal - defaultDiscount - couponDiscount + shipping);
+
+  /* ── COD split: ₹99 advance now, rest on delivery ── */
+  const payableNow = paymentMethod === "COD" ? Math.min(COD_ADVANCE, total) : total;
+  const codBalance = Math.max(0, total - COD_ADVANCE);
 
   const address = login?.address?.[selectedAddress];
   const mobile_no = login?.mobile_no;
@@ -321,8 +329,11 @@ useEffect(() => {
 
     setPlacing(true);
     try {
-      const payload = { address_index: selectedAddress };
-      if(couponCode) payload.couponId = couponCode;
+      const payload = {
+        address_index: selectedAddress,
+        payment_method: paymentMethod, // 🔹 "ONLINE" | "cod"
+      };
+      if (couponCode) payload.couponId = couponCode;
 
       // buynow flow (single product, no cart cookie) → send items explicitly
       // cart flow → backend reads the signed cart cookie itself
@@ -360,47 +371,55 @@ useEffect(() => {
       setLogin(data.userData);
       setToken(data.access_Token);
       let navigated = false;
-      let safetyTimer;
 
       const goToProcessing = (razorpayOrderId) => {
         if (navigated) return;
         navigated = true;
-        clearTimeout(safetyTimer);
-        navigate("/order-processing", { state: { razorpayOrderId } });
+        clearTimeout(safetyTimerRef.current);
+        navigate("/order-processing", {
+          state: { razorpayOrderId, paymentMethod },
+        });
+      };
+
+      const cancelPayment = async () => {
+        try {
+          await axios.post(
+            `${apiUrl}/payment-cancel/${data.order_id}/`,
+            {},
+            {
+              headers: { Authorization: `Bearer ${token}` },
+              withCredentials: true,
+              xsrfCookieName: "csrftoken",
+              xsrfHeaderName: "X-CSRFToken",
+              withXSRFToken: true,
+            }
+          );
+        } catch (err) {
+          console.error("Failed to mark payment as cancelled", err);
+        }
       };
 
       const options = {
-        key: RAZORPAY_KEY_ID, 
-        amount: data.amount,
+        key: RAZORPAY_KEY_ID,
+        amount: data.amount, // 🔹 backend returns full total for ONLINE, 9900 paise for COD
         currency: data.currency || "INR",
         order_id: data.order_id,
         name: "SS Garments",
-        description: `Order for ${totalItems} ${totalItems === 1 ? "item" : "items"}`,
+        description:
+          paymentMethod === "COD"
+            ? `COD advance of ${currency(COD_ADVANCE)}`
+            : `Order for ${totalItems} ${totalItems === 1 ? "item" : "items"}`,
         prefill: { name: login?.name, contact: mobile_no },
         theme: { color: "#4A0E1C" },
         modal: {
-          ondismiss: async() => {
-            try {
-        await axios.post(
-          `${apiUrl}/payment-cancel/${data.order_id}/`,
-          {},
-          {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
-        xsrfCookieName: "csrftoken",
-        xsrfHeaderName: "X-CSRFToken",
-        withXSRFToken: true,
-          }
-        );
-        clearTimeout(safetyTimerRef.current);
-      } catch (err) {
-        console.error("Failed to mark payment as dismissed", err);
-      }
-      toast.error("Payment cancelled");
-    }    
+          ondismiss: async () => {
+            await cancelPayment();
+            clearTimeout(safetyTimerRef.current);
+            setPlacing(false);
+            toast.error("Payment cancelled");
+          },
         },
         handler: function (response) {
-          console.log("handler fired", response);
           goToProcessing(response.razorpay_order_id);
         },
       };
@@ -416,31 +435,18 @@ useEffect(() => {
 
       rzp.open();
 
-      safetyTimerRef.current = setTimeout(() => {
-      if (rzpInstanceRef.current) {
-        try {
-          async()=>{
-            await axios.post(
-          `${apiUrl}/payment-cancel/${data.order_id}/`,
-          {},
-          {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
-        xsrfCookieName: "csrftoken",
-        xsrfHeaderName: "X-CSRFToken",
-        withXSRFToken: true,
+      safetyTimerRef.current = setTimeout(async () => {
+        if (rzpInstanceRef.current) {
+          try {
+            await cancelPayment();
+            rzpInstanceRef.current.close();
+            toast.error("Payment timed out, please try again");
+            setPlacing(false);
+          } catch (err) {
+            toast.error(`Something went wrong: ${err.message}`);
           }
-        );
-
-          }
-      rzpInstanceRef.current.close();
-      toast.error("Payment timed out, please try again");
-
-
-    }   catch(err) {toast.error(`something went wrong ${err.message}`)}
-        
-      }
-}, 12 * 60 * 1000); // 12 minutes
+        }
+      }, 12 * 60 * 1000); // 12 minutes
     } catch (err) {
       if (err?.response?.status === 401) {
         toast.error("Session expired, please login again");
@@ -707,6 +713,76 @@ useEffect(() => {
               </div>
             </div>
 
+            {/* ── Payment method ── */}
+            <div className="bg-white rounded-2xl border border-[#EDE3D3] p-5 sm:p-6">
+              <h2 className="text-xs font-semibold text-[#8A7F73] uppercase tracking-[0.12em] mb-4">
+                Payment method
+              </h2>
+
+              <div className="space-y-2.5">
+                {/* ONLINE */}
+                <label
+                  className={`flex items-start gap-3 rounded-xl border p-3.5 cursor-pointer transition-colors ${
+                    paymentMethod === "ONLINE"
+                      ? "border-[#B8862E] bg-[#FBF3E0]"
+                      : "border-[#EDE3D3] bg-white"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    checked={paymentMethod === "ONLINE"}
+                    onChange={() => setPaymentMethod("ONLINE")}
+                    className="mt-1 accent-[#4A0E1C]"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-[#2B2422]">Pay online</p>
+                      <span className="text-sm font-semibold text-[#2B2422]">
+                        {currency(total)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#8A7F73] mt-0.5">
+                      UPI, cards & net banking via Razorpay · Pay in full now
+                    </p>
+                  </div>
+                </label>
+
+                {/* Cash on delivery */}
+                <label
+                  className={`flex items-start gap-3 rounded-xl border p-3.5 cursor-pointer transition-colors ${
+                    paymentMethod === "COD"
+                      ? "border-[#B8862E] bg-[#FBF3E0]"
+                      : "border-[#EDE3D3] bg-white"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    checked={paymentMethod === "COD"}
+                    onChange={() => setPaymentMethod("COD")}
+                    className="mt-1 accent-[#4A0E1C]"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-[#2B2422] flex items-center gap-1.5">
+                        <Banknote size={15} className="text-[#3F7D58]" />
+                        Cash on delivery
+                      </p>
+                      <span className="text-sm font-semibold text-[#2B2422]">
+                        {currency(COD_ADVANCE)} now
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#8A7F73] mt-0.5">
+                      Pay a {currency(COD_ADVANCE)} advance online now, balance{" "}
+                      <span className="font-medium text-[#4A0E1C]">{currency(codBalance)}</span>{" "}
+                      in cash/UPI when your order arrives.
+                    </p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
             {/* Items */}
             <div className="bg-white rounded-2xl border border-[#EDE3D3] p-5 sm:p-6">
               <h2 className="text-xs font-semibold text-[#8A7F73] uppercase tracking-[0.12em] mb-5">
@@ -847,6 +923,16 @@ useEffect(() => {
                   </span>
                   <span>{currency(shipping)}</span>
                 </div>
+
+                {paymentMethod === "COD" && (
+                  <div className="flex justify-between text-[#8A6A15]">
+                    <span className="flex items-center gap-1.5">
+                      <Banknote size={13} />
+                      Balance on delivery
+                    </span>
+                    <span>{currency(codBalance)}</span>
+                  </div>
+                )}
               </div>
 
               <div className="h-px bg-[#F0E9DD] my-5" />
@@ -865,6 +951,13 @@ useEffect(() => {
                   {currency(total)}
                 </span>
               </div>
+
+              {paymentMethod === "COD" && (
+                <p className="text-[11px] text-[#8A6A15] mb-2">
+                  Pay {currency(COD_ADVANCE)} advance now · {currency(codBalance)} on delivery
+                </p>
+              )}
+
               <p className="text-[11px] text-[#B0A48F] mb-6">Inclusive of all taxes</p>
 
               <button
@@ -873,7 +966,11 @@ useEffect(() => {
                 type="button"
                 className="w-full py-3.5 rounded-xl bg-[#4A0E1C] text-[#FFFDF9] text-sm font-semibold tracking-wide hover:bg-[#3A0B16] active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-70"
               >
-                {placing ? "Placing order…" : `Proceed to pay ${currency(total)}`}
+                {placing
+                  ? "Placing order…"
+                  : paymentMethod === "COD"
+                  ? `Pay ${currency(COD_ADVANCE)} advance`
+                  : `Proceed to pay ${currency(total)}`}
                 {!placing && <ChevronRight size={16} />}
               </button>
 
@@ -887,10 +984,12 @@ useEffect(() => {
               By placing this order you agree to SS Garments'{" "}
               <span className="text-[#8A7F73] underline underline-offset-2" onClick={() => navigate("/terms")}>
                 terms
-              </span> and{" "}
+              </span>{" "}
+              and{" "}
               <span className="text-[#8A7F73] underline underline-offset-2" onClick={() => navigate("/returns")}>
                 return policy
-              </span>.
+              </span>
+              .
             </p>
           </div>
         </div>

@@ -1711,6 +1711,7 @@ def create_order(request):
 
         # buynow (frontend items bhejega) vs cart (signed cookie)
         buynow_items = request.data.get("items")
+        payment_method = request.data.get("payment_method", "ONLINE")
         if buynow_items:
             print(1)
             cart_items = buynow_items
@@ -1759,16 +1760,16 @@ def create_order(request):
             else:
                 raise Exception('Coupon not found')
 
-        delivery_charge = 0
+      
         print(coupon_discount)
         print(total)
         flat_discount = total * Decimal('0.1')
         print(4, flat_discount)
 
         coupon_discount_dec = Decimal(str(coupon_discount)) if coupon_discount else Decimal('0')
-        delivery_charge_dec = Decimal(str(delivery_charge))
+        
         print(coupon_discount)
-        total_price = round(total - flat_discount + delivery_charge_dec - coupon_discount_dec)
+        total_price = round(total - flat_discount -  coupon_discount_dec)
         print(5)
         print(total_price)
         # if total_price < 100:
@@ -1777,7 +1778,7 @@ def create_order(request):
         print(settings.RAZORPAY_KEY_ID)
         print(settings.RAZORPAY_KEY_SECRET)
         razorpay_order = client.order.create({
-            "amount": total_price*100,
+            "amount": total_price * 100 if payment_method == 'ONLINE' else 99 * 100,
             "currency": "INR",
             "receipt": f"rcpt_{user.id}",
         })
@@ -1803,7 +1804,7 @@ def create_order(request):
 },
             amount=total,
             total_price = total_price,
-            delivery_charge=delivery_charge,
+            payment_mode = payment_method,
             discount=round(flat_discount + (coupon_discount if coupon_discount else 0)),
             couponCode=coupon.code if coupon else None,
             couponDiscount = coupon_discount if coupon_discount != None else None,
@@ -1822,7 +1823,6 @@ def create_order(request):
         response = Response({
             "order_id": razorpay_order["id"],
             "amount": razorpay_order["amount"],
-
             **userJson
         }, status=200)
 
@@ -1945,8 +1945,8 @@ def razorpay_webhook(request):
                     couponDiscount=payment.couponDiscount,
                     address=payment.address,
                     mobile_no=payment.mobile_no,
-                    delivery_charge=payment.delivery_charge,
                     discount=payment.discount,
+                    payment_mode=payment.payment_mode,
                     total_price=payment.total_price,
                     amount = payment.amount,
                     statusID=Order.StatusChoices.PENDING,
@@ -2107,7 +2107,26 @@ def cancel_order(request, order_id):
             response = Response({"error": "Invalid order item data", **userJson}, status=400)
             product_total = None
 
-        if product_total is not None:
+        if order.payment_mode == "COD":
+            # COD orders ke liye refund nahi hai, bas order cancel karo
+            for item in order.productID.get('product_ids', []):
+                try:
+                    variant_size = VariantSize.objects.get(id=item['product_id'])
+                    variant_size.stock = F('stock') + item['qty']
+                    variant_size.save(update_fields=['stock'])
+                except VariantSize.DoesNotExist:
+                    continue
+
+            order.statusID = 'CANCELLED'
+            order.save()
+
+            response = Response({
+                "message": "Order cancelled successfully",
+                **userJson
+            }, status=200)
+        
+
+        elif product_total is not None:
             refund_response = None
             refund_failed = False
 

@@ -287,6 +287,9 @@ class Payment(models.Model):
         PENDING = "PENDING", "Pending"
         SUCCESS = "SUCCESS", "Success"
         FAILED = "FAILED", "Failed"
+    class PaymentMode(models.TextChoices):
+            COD = "COD", "Cash on Delivery"
+            ONLINE = "ONLINE", "Online Payment"
 
     id = ObjectIdAutoField(primary_key=True)
     customerID = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="payments")
@@ -295,8 +298,8 @@ class Payment(models.Model):
     productID = models.JSONField(default=dict)          # cart snapshot
     amount = models.PositiveIntegerField(default=0)      # final subtotal amount (paise)
     total_price = models.PositiveIntegerField(default=0)  # final total amount (paise)
-
-    delivery_charge = models.PositiveIntegerField(default=0)
+    payment_mode = models.CharField(max_length=10, choices=PaymentMode.choices, default=PaymentMode.ONLINE)
+    
 
     discount = models.PositiveIntegerField(default=0)
         # flat 10% + coupon discount, combined
@@ -329,6 +332,9 @@ class Order(models.Model):
         SHIPPED = "SHIPPED", "Shipped"
         DELIVERED = "DELIVERED", "Delivered"
         CANCELLED = "CANCELLED", "Cancelled"
+    class PaymentMode(models.TextChoices):
+        COD = "COD", "Cash on Delivery"
+        ONLINE = "ONLINE", "Online Payment"
     id = ObjectIdAutoField(primary_key=True)
     paymentID = models.OneToOneField(Payment, on_delete=models.CASCADE, related_name="order", default=None, null=True, blank=True)
     customerID = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name="orders")
@@ -345,7 +351,7 @@ class Order(models.Model):
             max_length=10,
         )  
     statusID = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.PENDING)
-    delivery_charge= models.PositiveIntegerField(default=0)
+    payment_mode = models.CharField(max_length=10, choices=PaymentMode.choices, default=PaymentMode.ONLINE)
     discount = models.PositiveIntegerField(default = 0)
     couponDiscount = models.PositiveIntegerField(null=True, blank=True)
     couponCode = models.CharField(max_length= 100, null=True, blank= True)

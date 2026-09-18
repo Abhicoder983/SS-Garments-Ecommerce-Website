@@ -27,6 +27,7 @@ import {
   RotateCcw,
   AlertCircle,
   ShieldCheck,
+  Banknote,
 } from "lucide-react";
 
 const apiUrl = import.meta.env.VITE_API_URL;
@@ -44,7 +45,7 @@ export default function Account() {
   const [pageName, setPageName] = useState("ADD");
   const [editAddressIndex, setEditAddressIndex] = useState(null);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
-  
+
   // New states for shopkeeper modal
   const [shopkeeperModal, setShopkeeperModal] = useState(false);
   const [modalAction, setModalAction] = useState(null); // 'cancel' or 'return'
@@ -74,10 +75,10 @@ export default function Account() {
       try {
         const res = await axios.get(`${apiUrl}/account/`, {
           headers: { Authorization: `Bearer ${token}` },
-         withCredentials: true,
-        xsrfCookieName: 'csrftoken',
-        xsrfHeaderName: 'X-CSRFToken',
-        withXSRFToken: true,
+          withCredentials: true,
+          xsrfCookieName: "csrftoken",
+          xsrfHeaderName: "X-CSRFToken",
+          withXSRFToken: true,
         });
 
         setLogin(res.data.userData);
@@ -94,20 +95,20 @@ export default function Account() {
   }, []);
 
   const validateMobile = (value) => {
-  if (value === "") return true; // optional field
-  const regex = /^[6-9]\d{9}$/;
-  return regex.test(value);
-};
+    if (value === "") return true; // optional field
+    const regex = /^[6-9]\d{9}$/;
+    return regex.test(value);
+  };
 
   const handleMobileChange = (e) => {
-  const value = e.target.value.replace(/\D/g, "").slice(0, 10);
-  setProfileMobile(value);
-  if (value && !validateMobile(value)) {
-    setMobileError("Enter a valid 10-digit mobile number");
-  } else {
-    setMobileError("");
-  }
-};
+    const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+    setProfileMobile(value);
+    if (value && !validateMobile(value)) {
+      setMobileError("Enter a valid 10-digit mobile number");
+    } else {
+      setMobileError("");
+    }
+  };
 
   // Fetch orders
   const fetchOrder = async () => {
@@ -116,8 +117,8 @@ export default function Account() {
       const res = await axios.get(`${apiUrl}/orderdetails/`, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
-        xsrfCookieName: 'csrftoken',
-        xsrfHeaderName: 'X-CSRFToken',
+        xsrfCookieName: "csrftoken",
+        xsrfHeaderName: "X-CSRFToken",
         withXSRFToken: true,
       });
 
@@ -143,9 +144,9 @@ export default function Account() {
         {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
-        xsrfCookieName: 'csrftoken',
-        xsrfHeaderName: 'X-CSRFToken',
-        withXSRFToken: true,
+          xsrfCookieName: "csrftoken",
+          xsrfHeaderName: "X-CSRFToken",
+          withXSRFToken: true,
         }
       );
       setLogin(res.data.userData);
@@ -161,54 +162,54 @@ export default function Account() {
   };
 
   const handleProfileSave = async () => {
-  if (!profileName.trim() && profileImage == undefined && !profileMobile.trim()) {
-    toast.error("Please enter a name, mobile number, or select an image");
-    return;
-  }
-  if (profileMobile && !validateMobile(profileMobile)) {
-    toast.error("Please enter a valid 10-digit mobile number");
-    return;
-  }
-  const formData = new FormData();
-  if (profileImage != undefined) formData.append("profile_image", profileImage);
-  if (profileName != "") formData.append("name", profileName);
-  if (profileMobile != "") formData.append("mobile_no", profileMobile);
+    if (!profileName.trim() && profileImage == undefined && !profileMobile.trim()) {
+      toast.error("Please enter a name, mobile number, or select an image");
+      return;
+    }
+    if (profileMobile && !validateMobile(profileMobile)) {
+      toast.error("Please enter a valid 10-digit mobile number");
+      return;
+    }
+    const formData = new FormData();
+    if (profileImage != undefined) formData.append("profile_image", profileImage);
+    if (profileName != "") formData.append("name", profileName);
+    if (profileMobile != "") formData.append("mobile_no", profileMobile);
 
-  try {
-    const res = await axios.patch(`${apiUrl}/account/`, formData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-      },
-      withCredentials: true,
-      xsrfCookieName: 'csrftoken',
-      xsrfHeaderName: 'X-CSRFToken',
-      withXSRFToken: true,
-    });
-    setLogin(res.data.userData);
-    setToken(res.data.access_Token);
-    toast.success("Profile updated successfully");
-    setEditProfile(false);
-    setProfileImage(null);
-    setProfileName("");
-    setProfileMobile("");
-    setMobileError("");
-  } catch {
-    setLogin(null);
-    setToken(null);
-    toast.error("Update failed. Please try logging out and back in.");
-    setEditProfile(false);
-    navigate("/login");
-  }
-};
+    try {
+      const res = await axios.patch(`${apiUrl}/account/`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true,
+        xsrfCookieName: "csrftoken",
+        xsrfHeaderName: "X-CSRFToken",
+        withXSRFToken: true,
+      });
+      setLogin(res.data.userData);
+      setToken(res.data.access_Token);
+      toast.success("Profile updated successfully");
+      setEditProfile(false);
+      setProfileImage(null);
+      setProfileName("");
+      setProfileMobile("");
+      setMobileError("");
+    } catch {
+      setLogin(null);
+      setToken(null);
+      toast.error("Update failed. Please try logging out and back in.");
+      setEditProfile(false);
+      navigate("/login");
+    }
+  };
 
   const logout = async () => {
     try {
       await axios.get(`${apiUrl}/logout/`, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
-        xsrfCookieName: 'csrftoken',
-        xsrfHeaderName: 'X-CSRFToken',
+        xsrfCookieName: "csrftoken",
+        xsrfHeaderName: "X-CSRFToken",
         withXSRFToken: true,
       });
       toast.success("Successfully logged out");
@@ -226,7 +227,6 @@ export default function Account() {
     setModalAction(action);
     setShopkeeperModal(true);
   };
-
 
   const getStatusConfig = (status) => {
     const configs = {
@@ -270,6 +270,22 @@ export default function Account() {
     );
   };
 
+  // 🔹 Payment mode chip config
+  const getPaymentConfig = (order) => {
+    const isCOD = order?.payment_mode === "COD";
+    return {
+      isCOD,
+      chip: isCOD
+        ? { color: "bg-amber-50 text-amber-700 border-amber-200", label: "Cash on Delivery" }
+        : { color: "bg-emerald-50 text-emerald-700 border-emerald-200", label: "Paid Online" },
+      // backend may send advance_amount / remaining_amount; fall back to ₹99 split
+      advancePaid: isCOD ? Number(order?.advance_amount ?? 99) : 0,
+      remainingAmount: isCOD
+        ? Number(order?.remaining_amount ?? Math.max(0, (order?.total_price ?? 0) - 99))
+        : 0,
+    };
+  };
+
   // Shopkeeper data - in production this should come from order data
   const getShopkeeperInfo = () => {
     // Fallback data - replace with actual order.shopkeeper data when available
@@ -277,32 +293,36 @@ export default function Account() {
       name: "SS Garment",
       location: "Mishalgarhi, Govindpuram,Ghaziabad, Uttar Pradesh - 201013",
       phone: "+91 87009 93207 ",
-      whatsapp:"+91 87009 93207",
+      whatsapp: "+91 87009 93207",
     };
   };
-  const handleCancelOrder = async(order)=>{
-    try{
-      const orderID= order?.order_id
-      const res = await axios.post(`${apiUrl}/cancel-order/${orderID}/`, { order_id: order.order_id }, {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
-        xsrfCookieName: 'csrftoken',
-        xsrfHeaderName: 'X-CSRFToken',
-        withXSRFToken: true,}
-    );
-    
-    setLogin(res.data.userData);
-    setToken(res.data.access_Token);
-    setModalAction(null);
-    setSelectedOrder(null);
-    setShopkeeperModal(false);
-    toast.success(`${res.data.message}. Refunding amount ${res.data.refund_amount}`);
-    fetchOrder()
-    }catch(err){
+
+  const handleCancelOrder = async (order) => {
+    try {
+      const orderID = order?.order_id;
+      const res = await axios.post(
+        `${apiUrl}/cancel-order/${orderID}/`,
+        { order_id: order.order_id },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+          xsrfCookieName: "csrftoken",
+          xsrfHeaderName: "X-CSRFToken",
+          withXSRFToken: true,
+        }
+      );
+
+      setLogin(res.data.userData);
+      setToken(res.data.access_Token);
+      setModalAction(null);
+      setSelectedOrder(null);
+      setShopkeeperModal(false);
+      toast.success(`${res.data.message}. ${order.payment_mode=="COD"?"":`Refunding amount ${res.data.refund_amount}`}`);
+      fetchOrder();
+    } catch (err) {
       toast.error(err.response?.data?.userorderData || "Failed to load orders");
-      
     }
-  }
+  };
 
   if (!login) {
     return (
@@ -328,12 +348,11 @@ export default function Account() {
         style={{ fontFamily: "'Inter', sans-serif" }}
       >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
-          
           {/* ===== USER INFO CARD ===== */}
           <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-[#EDE8E0] p-6 sm:p-8 mb-8 relative overflow-hidden">
             {/* Subtle decorative gradient */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#4A0E1C]/[0.03] to-transparent rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-            
+
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 relative z-10">
               {/* Avatar */}
               <div className="relative shrink-0 group">
@@ -371,7 +390,7 @@ export default function Account() {
                     <Phone size={12} className="text-[#9A9187]" />
                     <p className="text-sm text-[#9A9187] font-medium">{login.mobile_no}</p>
                   </div>
-)}
+                )}
                 <div className="flex items-center justify-center sm:justify-start gap-4 mt-3 text-xs text-[#9A9187]">
                   <span className="flex items-center gap-1">
                     <ShieldCheck size={12} className="text-emerald-500" />
@@ -554,15 +573,21 @@ export default function Account() {
                 </div>
               ) : orders.length > 0 ? (
                 orders.map((order, orderIndex) => {
+                  /* 🔹 total_price = payable grand total (after discounts + delivery);
+                     amount = product subtotal before discount */
                   const finalTotal =
-                    order.amount - order.discount + order.delivery_charge;
-                  
+                    order.total_price ??
+                    order.amount - order.discount + (order.delivery_charge || 0);
+
+                  const payment = getPaymentConfig(order);
+
                   // Logic for buttons
-                  const canCancel = order.statusID === "CONFIRMED" || order.statusID === "PENDING";
+                  const canCancel =
+                    order.statusID === "CONFIRMED" || order.statusID === "PENDING";
                   const canReturn = order.statusID === "DELIVERED";
                   const isCancelled = order.statusID === "CANCELLED";
                   const isReturned = order.statusID === "RETURNED";
-                  
+
                   const statusConfig = getStatusConfig(order.statusID);
 
                   return (
@@ -590,6 +615,17 @@ export default function Account() {
                                 {statusConfig.icon}
                                 {statusConfig.label}
                               </span>
+                              {/* 🔹 Payment mode chip */}
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold border ${payment.chip.color} shadow-sm`}
+                              >
+                                {payment.isCOD ? (
+                                  <Banknote size={13} />
+                                ) : (
+                                  <CheckCircle2 size={13} />
+                                )}
+                                {payment.chip.label}
+                              </span>
                             </div>
                             <p className="text-xs text-[#9A9187] mt-1.5 font-medium">
                               {new Date(order.order_date).toLocaleDateString("en-IN", {
@@ -607,7 +643,9 @@ export default function Account() {
                           </div>
                         </div>
                         <div className="text-left sm:text-right">
-                          <p className="text-[11px] text-[#9A9187] mb-0.5 uppercase tracking-wider font-bold">Total Amount</p>
+                          <p className="text-[11px] text-[#9A9187] mb-0.5 uppercase tracking-wider font-bold">
+                            Total Amount
+                          </p>
                           <p className="text-xl font-bold text-[#2B2422] tracking-tight">
                             ₹{finalTotal}
                           </p>
@@ -661,14 +699,55 @@ export default function Account() {
                             <span className="font-medium">Subtotal</span>
                             <span className="font-bold">₹{order.amount}</span>
                           </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-emerald-700 font-medium">Discount</span>
-                            <span className="font-bold text-emerald-700">− ₹{order.discount}</span>
-                          </div>
-                          <div className="flex justify-between text-sm text-[#6B6560]">
-                            <span className="font-medium">Delivery</span>
-                            <span className="font-bold">₹{order.delivery_charge}</span>
-                          </div>
+                          {Number(order.discount) > 0 && (
+                            <div className="flex justify-between text-sm">
+                              <span className="text-emerald-700 font-medium">Discount</span>
+                              <span className="font-bold text-emerald-700">
+                                − ₹{order.discount}
+                              </span>
+                            </div>
+                          )}
+                          {Number(order.couponDiscount) > 0 && (
+                            <div className="flex justify-between text-sm">
+                              <span className="text-emerald-700 font-medium">
+                                Coupon {order.couponCode ? `(${order.couponCode})` : ""}
+                              </span>
+                              <span className="font-bold text-emerald-700">
+                                − ₹{order.couponDiscount}
+                              </span>
+                            </div>
+                          )}
+                          {Number(order.delivery_charge) > 0 && (
+                            <div className="flex justify-between text-sm text-[#6B6560]">
+                              <span className="font-medium">Delivery</span>
+                              <span className="font-bold">₹{order.delivery_charge}</span>
+                            </div>
+                          )}
+
+                          {/* 🔹 COD split rows */}
+                          {payment.isCOD && (
+                            <>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-emerald-700 font-medium flex items-center gap-1.5">
+                                  <CheckCircle2 size={13} />
+                                  Advance paid online
+                                </span>
+                                <span className="font-bold text-emerald-700">
+                                  − ₹{payment.advancePaid}
+                                </span>
+                              </div>
+                              <div className="flex justify-between text-sm bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 -mx-2.5">
+                                <span className="text-amber-700 font-bold flex items-center gap-1.5">
+                                  <Banknote size={13} />
+                                  Due on delivery
+                                </span>
+                                <span className="font-bold text-amber-700">
+                                  ₹{payment.remainingAmount}
+                                </span>
+                              </div>
+                            </>
+                          )}
+
                           <div className="flex justify-between text-[15px] font-bold text-[#2B2422] pt-3 border-t-2 border-[#E8E2DA] border-dashed">
                             <span>Total</span>
                             <span>₹{finalTotal}</span>
@@ -679,6 +758,16 @@ export default function Account() {
                       {/* Footer Info & Actions */}
                       <div className="px-6 sm:px-8 py-5 border-t border-[#F5F0E8] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white">
                         <div className="text-xs text-[#9A9187] space-y-1.5">
+                          {payment.isCOD && order.statusID !== "CANCELLED" && (
+                            <p className="flex items-center gap-1.5 font-medium text-amber-700">
+                              <Banknote size={13} />
+                              Keep{" "}
+                              <span className="font-bold">
+                                ₹{payment.remainingAmount}
+                              </span>{" "}
+                              ready in cash/UPI at delivery
+                            </p>
+                          )}
                           {order.delivered_at && (
                             <p className="flex items-center gap-1.5 font-medium">
                               <CheckCircle2 size={13} className="text-emerald-500" />
@@ -712,7 +801,7 @@ export default function Account() {
                               Return
                             </button>
                           )}
-                          
+
                           {/* Cancel Button - Disabled when shipped/delivered/cancelled/returned */}
                           {!isCancelled && !isReturned && (
                             <button
@@ -728,14 +817,14 @@ export default function Account() {
                               {canCancel ? "Cancel Order" : "Cannot Cancel"}
                             </button>
                           )}
-                          
+
                           {isCancelled && (
                             <span className="px-6 py-2.5 rounded-xl text-sm font-bold text-[#B24444] bg-[#FDF2F2] border border-[#F5D5D5] flex items-center gap-2">
                               <XCircle size={15} />
                               Cancelled
                             </span>
                           )}
-                          
+
                           {isReturned && (
                             <span className="px-6 py-2.5 rounded-xl text-sm font-bold text-[#7C3AED] bg-[#F3E8FF] border border-[#DDD6FE] flex items-center gap-2">
                               <RotateCcw size={15} />
@@ -863,8 +952,6 @@ export default function Account() {
                   </p>
                 )}
               </div>
-
-
             </div>
 
             <div className="flex gap-3 mt-8">
@@ -894,10 +981,14 @@ export default function Account() {
           />
           <div className="relative bg-white rounded-3xl w-full max-w-lg p-6 sm:p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
             {/* Decorative top bar */}
-            <div className={`absolute top-0 left-0 right-0 h-1.5 ${
-              modalAction === "cancel" ? "bg-gradient-to-r from-[#B24444] to-[#D47575]" : "bg-gradient-to-r from-[#7C3AED] to-[#A78BFA]"
-            }`} />
-            
+            <div
+              className={`absolute top-0 left-0 right-0 h-1.5 ${
+                modalAction === "cancel"
+                  ? "bg-gradient-to-r from-[#B24444] to-[#D47575]"
+                  : "bg-gradient-to-r from-[#7C3AED] to-[#A78BFA]"
+              }`}
+            />
+
             <button
               onClick={() => setShopkeeperModal(false)}
               className="absolute top-5 right-5 w-9 h-9 rounded-full flex items-center justify-center text-[#9A9187] hover:text-[#2B2422] hover:bg-[#F5F0E8] transition-all"
@@ -906,12 +997,18 @@ export default function Account() {
             </button>
 
             <div className="text-center mb-6 pt-2">
-              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg ${
-                modalAction === "cancel" 
-                  ? "bg-gradient-to-br from-[#FDF2F2] to-[#FCE0E0] text-[#B24444]" 
-                  : "bg-gradient-to-br from-[#F3E8FF] to-[#E9D5FF] text-[#7C3AED]"
-              }`}>
-                {modalAction === "cancel" ? <AlertCircle size={28} /> : <RotateCcw size={28} />}
+              <div
+                className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg ${
+                  modalAction === "cancel"
+                    ? "bg-gradient-to-br from-[#FDF2F2] to-[#FCE0E0] text-[#B24444]"
+                    : "bg-gradient-to-br from-[#F3E8FF] to-[#E9D5FF] text-[#7C3AED]"
+                }`}
+              >
+                {modalAction === "cancel" ? (
+                  <AlertCircle size={28} />
+                ) : (
+                  <RotateCcw size={28} />
+                )}
               </div>
               <h2
                 className="text-xl text-[#2B2422]"
@@ -920,8 +1017,8 @@ export default function Account() {
                 {modalAction === "cancel" ? "Cancel Order" : "Return Order"}
               </h2>
               <p className="text-sm text-[#9A9187] mt-1.5 max-w-sm mx-auto leading-relaxed">
-                {modalAction === "cancel" 
-                  ? "Please contact the shopkeeper to proceed with cancellation" 
+                {modalAction === "cancel"
+                  ? "A ₹99 cancellation fee applies to all cancelled orders with online payment. For COD orders, the advance amount collected at booking is non-refundable."
                   : "Please contact the shopkeeper to initiate your return request"}
               </p>
             </div>
@@ -947,7 +1044,9 @@ export default function Account() {
                     <MapPin size={15} />
                   </div>
                   <div>
-                    <p className="text-[11px] font-bold text-[#6B6560] uppercase tracking-wider mb-0.5">Location</p>
+                    <p className="text-[11px] font-bold text-[#6B6560] uppercase tracking-wider mb-0.5">
+                      Location
+                    </p>
                     <p className="text-sm text-[#2B2422] font-medium leading-relaxed">
                       {getShopkeeperInfo(selectedOrder).location}
                     </p>
@@ -960,8 +1059,10 @@ export default function Account() {
                     <Phone size={15} />
                   </div>
                   <div className="flex-1">
-                    <p className="text-[11px] font-bold text-[#6B6560] uppercase tracking-wider mb-0.5">Phone</p>
-                    <a 
+                    <p className="text-[11px] font-bold text-[#6B6560] uppercase tracking-wider mb-0.5">
+                      Phone
+                    </p>
+                    <a
                       href={`tel:${getShopkeeperInfo(selectedOrder).phone}`}
                       className="text-sm text-[#2B2422] font-bold hover:text-[#4A0E1C] transition-colors"
                     >
@@ -976,8 +1077,10 @@ export default function Account() {
                     <MessageCircle size={15} />
                   </div>
                   <div className="flex-1">
-                    <p className="text-[11px] font-bold text-[#6B6560] uppercase tracking-wider mb-0.5">WhatsApp</p>
-                    <a 
+                    <p className="text-[11px] font-bold text-[#6B6560] uppercase tracking-wider mb-0.5">
+                      WhatsApp
+                    </p>
+                    <a
                       href={`https://wa.me/${getShopkeeperInfo(selectedOrder).whatsapp.replace(/\D/g, "")}`}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -999,7 +1102,9 @@ export default function Account() {
                 Close
               </button>
               <button
-                onClick={()=>{modalAction === "cancel" ? handleCancelOrder(selectedOrder) :""}}
+                onClick={() => {
+                  modalAction === "cancel" ? handleCancelOrder(selectedOrder) : "";
+                }}
                 className={`flex-1 px-4 py-3.5 rounded-xl text-sm font-bold text-white shadow-xl transition-all active:scale-95 ${
                   modalAction === "cancel"
                     ? "bg-gradient-to-r from-[#B24444] to-[#D47575] hover:from-[#A33D3D] hover:to-[#C46A6A] shadow-[#B24444]/25"

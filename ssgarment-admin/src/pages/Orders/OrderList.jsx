@@ -6,6 +6,8 @@ import toast from 'react-hot-toast';
 import api from '../../services/api';
 
 const STATUS_OPTIONS = ['ALL', 'PENDING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
+const COD_ADVANCE = 99;
+
 export default function OrderList() {
   const [searchParams] = useSearchParams();
   const initialStatus = searchParams.get('status');
@@ -78,6 +80,19 @@ export default function OrderList() {
     };
     return colors[status] || 'bg-slate-500';
   };
+
+  /* 🔹 Payment mode helpers */
+  const isCOD = (order) => order?.payment_mode === 'COD';
+
+  const getPaymentBadge = (order) => {
+    if (isCOD(order)) return 'bg-amber-50 text-amber-700 border-amber-200';
+    return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+  };
+
+  const getPaymentLabel = (order) => (isCOD(order) ? 'COD' : 'Paid Online');
+
+  const getCodBalance = (order) =>
+    Math.max(0, (order?.total_price || 0) - COD_ADVANCE);
 
   const getPageNumbers = () => {
     const pages = [];
@@ -196,6 +211,30 @@ export default function OrderList() {
                   {order.status}
                 </span>
               </div>
+
+              {/* 🔹 Payment mode row */}
+              <div className="flex items-center justify-between mb-3">
+                <span
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${getPaymentBadge(order)}`}
+                >
+                  {isCOD(order) ? (
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  )}
+                  {getPaymentLabel(order)}
+                </span>
+                {isCOD(order) && (
+                  <span className="text-xs text-amber-700 font-medium">
+                    Adv ₹{COD_ADVANCE} · Due ₹{getCodBalance(order)}
+                  </span>
+                )}
+              </div>
+
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-500">
                   {new Date(order.order_date).toLocaleDateString('en-IN', {
@@ -215,7 +254,7 @@ export default function OrderList() {
       {!loading && orders.length > 0 && (
         <div className="hidden md:block bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden mb-6">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[700px]">
+            <table className="w-full text-sm min-w-[820px]">
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-100">
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Order ID</th>
@@ -223,6 +262,7 @@ export default function OrderList() {
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">AWB</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Total</th>
+                  <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Payment</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -260,7 +300,21 @@ export default function OrderList() {
                     <td className="px-6 py-4 text-slate-800 font-bold whitespace-nowrap">
                       ₹{order.total_price?.toLocaleString('en-IN')}
                     </td>
-                    
+
+                    {/* 🔹 Payment mode column */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${getPaymentBadge(order)}`}
+                      >
+                        {getPaymentLabel(order)}
+                      </span>
+                      {isCOD(order) && (
+                        <p className="text-[11px] text-amber-700 font-medium mt-1">
+                          Adv ₹{COD_ADVANCE} · Due ₹{getCodBalance(order)}
+                        </p>
+                      )}
+                    </td>
+
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(order.status)}`}

@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import api from '../../services/api';
 
 const STATUS_OPTIONS = ['ALL', 'PENDING', 'SUCCESS', 'FAILED'];
+const COD_ADVANCE_AMOUNT = 99;
 
 export default function PaymentList() {
   const [payments, setPayments] = useState([]);
@@ -71,6 +72,15 @@ export default function PaymentList() {
     };
     return colors[status] || 'bg-slate-500';
   };
+
+  // Payment mode is ONLINE or COD. Advance is only ever collected on COD
+  // orders, and it's a fixed ₹99 — not derived from the payment amount.
+  const isCOD = (payment) => (payment.payment_mode || 'COD').toUpperCase() !== 'ONLINE';
+
+  const getModeBadge = (payment) =>
+    isCOD(payment)
+      ? 'bg-violet-50 text-violet-700 border-violet-200'
+      : 'bg-sky-50 text-sky-700 border-sky-200';
 
   const getPageNumbers = () => {
     const pages = [];
@@ -198,6 +208,18 @@ export default function PaymentList() {
                   </p>
                 )}
               </div>
+              <div className="flex items-center gap-2 mb-3">
+                <span
+                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getModeBadge(payment)}`}
+                >
+                  {isCOD(payment) ? 'COD' : 'ONLINE'}
+                </span>
+                {isCOD(payment) && (
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border bg-slate-50 text-slate-600 border-slate-200">
+                    Advance {formatCurrency(COD_ADVANCE_AMOUNT)}
+                  </span>
+                )}
+              </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-500">
                   {new Date(payment.created_at).toLocaleDateString('en-IN', {
@@ -224,11 +246,13 @@ export default function PaymentList() {
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider min-w-[200px]">Razorpay Order</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider min-w-[200px]">Razorpay Payment</th>
+                  <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Mode</th>
+                  <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Advance</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Amount</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Total</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</th>
-        
+
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -259,6 +283,18 @@ export default function PaymentList() {
                         <span className="text-xs text-slate-400 italic">—</span>
                       )}
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getModeBadge(payment)}`}
+                      >
+                        {isCOD(payment) ? 'COD' : 'ONLINE'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-slate-600 whitespace-nowrap">
+                      {isCOD(payment) ? formatCurrency(COD_ADVANCE_AMOUNT) : (
+                        <span className="text-xs text-slate-400 italic">—</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4 text-slate-600 whitespace-nowrap">
                       {formatCurrency(payment.amount)}
                     </td>
@@ -280,7 +316,7 @@ export default function PaymentList() {
                         year: 'numeric',
                       })}
                     </td>
-                    
+
                   </tr>
                 ))}
               </tbody>

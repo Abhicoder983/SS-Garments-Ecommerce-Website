@@ -62,7 +62,7 @@ class OrderListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'customer_name', 'order_date', 'total_price', 'status','awb_id']
+        fields = ['id', 'customer_name', 'order_date', 'total_price', 'status','awb_id',"payment_mode"]
 
     def get_id(self, obj):
         return str(obj.id)
@@ -81,7 +81,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             'id', 'customer_name', 'customer_email', 'order_date',
-            'total_price', 'status', 'awb_id', 'items'
+            'total_price', 'status', 'awb_id', 'items', "payment_mode"
         ]
 
     def get_id(self, obj):
@@ -254,8 +254,8 @@ class PaymentListSerializer(serializers.ModelSerializer):
         model = Payment
         fields = [
             'id', 'customer_name', 'razorpay_order_id', 'razorpay_payment_id',
-            'amount', 'total_price', 'delivery_charge', 'discount',
-            'couponCode', 'couponDiscount', 'statusID', 'created_at',
+            'amount', 'total_price', 'discount',
+            'couponCode', 'couponDiscount', 'statusID', 'created_at',"payment_mode"
         ]
 
     def get_id(self, obj):
@@ -264,10 +264,9 @@ class PaymentListSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         # Convert paise to rupees for display
-        data['amount'] = instance.amount / 100
-        data['total_price'] = instance.total_price / 100
-        data['delivery_charge'] = instance.delivery_charge / 100
-        data['discount'] = instance.discount / 100
+        data['amount'] = instance.amount 
+        data['total_price'] = instance.total_price 
+        data['discount'] = instance.discount 
         if instance.couponDiscount:
-            data['couponDiscount'] = instance.couponDiscount / 100
+            data['couponDiscount'] = instance.couponDiscount 
         return data
