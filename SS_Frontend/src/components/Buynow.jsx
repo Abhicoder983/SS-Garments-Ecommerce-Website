@@ -242,8 +242,8 @@ export default function Buynow() {
   /* ── Pricing (default 10 % + optional coupon) ── */
   const defaultDiscount = Math.round(subtotal * DISCOUNT_RATE);
   const couponDiscount = appliedCoupon ? Number(appliedCoupon.discount_amount) : 0;
-  const shipping = subtotal > 0 ? 99 : 0;
-  const total = Math.max(0, subtotal - defaultDiscount - couponDiscount + shipping);
+ 
+  const total = Math.max(0, subtotal - defaultDiscount - couponDiscount);
 
   /* ── COD split: ₹99 advance now, rest on delivery ── */
   const payableNow = paymentMethod === "COD" ? Math.min(COD_ADVANCE, total) : total;
@@ -271,15 +271,26 @@ export default function Buynow() {
           withXSRFToken: true,
         }
       );
-      if (res.data.error) {
-        toast.error(res.data.error);
-      } else {
+      
         setAppliedCoupon(res.data);
+        if(res.data.user_error){
+          console.log('abhishek')
+          setToken(null);
+          setLogin(null);
+        }
         if (res.data.userData) setLogin(res.data.userData);
         if (res.data.access_Token) setToken(res.data.access_Token);
         toast.success(`Coupon ${res.data.code} applied!`);
-      }
+      
     } catch (err) {
+       if(err?.response?.data.user_error){
+        console.log('abhishek')
+          setToken(null);
+          setLogin(null);
+        }
+        if (err?.response?.data?.userData) setLogin(err.response.data.userData);
+        if (err?.response?.data?.access_Token) setToken(err.response.data.access_Token);
+
       toast.error(err?.response?.data?.error || "Failed to apply coupon");
     } finally {
       setCouponLoading(false);
@@ -299,16 +310,25 @@ export default function Buynow() {
           withXSRFToken: true,
         }
       );
-      if (res.data.error) {
-        toast.error(res.data.error);
-      } else {
+      
         setAppliedCoupon(null);
         setCouponCode("");
+        if(res.data.user_error){
+          console.log('abhishek')
+          setLogin(null)
+          setToken(null)
+        }
         if (res.data.userData) setLogin(res.data.userData);
         if (res.data.access_Token) setToken(res.data.access_Token);
         toast.success("Coupon removed");
-      }
+      
     } catch (err) {
+      if(err?.response?.data?.user_error){
+        setLogin(null)
+        setToken(null)
+      }
+      if (err?.response?.data?.userData) setLogin(err.response.data.userData);
+      if (err?.response?.data?.access_Token) setToken(err.response.data.access_Token);
       toast.error(err?.response?.data?.error || "Failed to remove coupon");
     }
   };
@@ -916,13 +936,7 @@ export default function Buynow() {
                   </div>
                 )}
 
-                <div className="flex justify-between">
-                  <span className="flex items-center gap-1.5">
-                    <Truck size={13} className="text-[#9C9082]" />
-                    Delivery
-                  </span>
-                  <span>{currency(shipping)}</span>
-                </div>
+                
 
                 {paymentMethod === "COD" && (
                   <div className="flex justify-between text-[#8A6A15]">

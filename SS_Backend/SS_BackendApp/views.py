@@ -1503,16 +1503,10 @@ def apply_coupon(request):
             'access_Token': accessToken
         }
     else:
-        userJson = {'error': 'token invalid'}
-        response = Response(userJson, status=401)
-        response.set_cookie(
-            key="refresh_token",
-            value=None,
-            httponly=True,
-            secure=False,
-            samesite="Lax",
-        )
-        return response
+        userJson = {'user_error': 'token invalid'}
+        refreshToken=None
+        
+        
 
     try:
         code = request.data.get("code")
@@ -1560,7 +1554,7 @@ def apply_coupon(request):
         }, status=200)
 
     except Exception as e:
-        response = Response({**userJson, 'error': str(e)}, status=200)
+        response = Response({**userJson, 'error': str(e)}, status=400)
 
     if refreshToken is not None:
         response.set_cookie(
@@ -1587,22 +1581,14 @@ def remove_coupon(request):
             'access_Token': accessToken
         }
     else:
-        userJson = {'error': 'token invalid'}
-        response = Response(userJson, status=401)
-        response.set_cookie(
-            key="refresh_token",
-            value=None,
-            httponly=True,
-            secure=False,
-            samesite="Lax",
-        )
-        return response
+        userJson = {'user_error': 'token invalid'}
+        refreshToken=None
 
     try:
         request.session.pop('couponId', None)
         response = Response({**userJson, 'removed': True}, status=200)
     except Exception as e:
-        response = Response({**userJson, 'error': str(e)}, status=200)
+        response = Response({**userJson, 'error': str(e)}, status=400)
 
     if refreshToken is not None:
         response.set_cookie(
