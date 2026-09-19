@@ -71,7 +71,7 @@ export default function Footer() {
                 <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-[#4A0E1C] transition-colors">
                   <Phone size={14} />
                 </div>
-                +91 87962 10760
+                +91 87009 93207
               </a>
               <div className="flex items-start gap-3 text-sm text-[#C4B8A8]">
                 <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0 mt-0.5">

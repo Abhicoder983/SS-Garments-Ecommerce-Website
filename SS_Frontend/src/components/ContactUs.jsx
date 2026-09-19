@@ -136,7 +136,7 @@ export default function ContactUs() {
             <Phone className="text-green-600"/>
             <div>
               <h3 className="font-bold">Phone</h3>
-              <p className="text-slate-600">+91 8700993207</p>
+              <p className="text-slate-600">+91 87009 93207 </p>
             </div>
           </div>
 

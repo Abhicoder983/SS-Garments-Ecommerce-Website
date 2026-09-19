@@ -49,6 +49,7 @@ const ProductCard = ({ item, layout = "grid", navigate }) => (
       hover:shadow-[0_8px_30px_rgb(0,0,0,0.07)]
       ${layout === "scroll" ? "md:w-[320px] w-[280px] shrink-0" : "flex flex-col"}
     `}
+    onClick={()=> navigate(`/checkout?id=${item?.variant_id}`)}
   >
     <div className={`relative overflow-hidden bg-[#FAF6EF] ${layout === "scroll" ? "h-52" : "aspect-[4/5]"}`}>
       <img
@@ -78,18 +79,6 @@ const ProductCard = ({ item, layout = "grid", navigate }) => (
           ₹{item?.price}
         </span>
       </div>
-
-      <button
-        className="mt-4 w-full bg-[#4A0E1C] text-white px-4 py-2.5 text-sm font-medium rounded-xl 
-        hover:bg-[#3A0B16] active:scale-[0.98] transition-all duration-300 
-        flex items-center justify-center gap-2 group/btn
-        focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#B8862E]"
-        onClick={() => navigate(`/checkout?id=${item?.variant_id}`)}
-      >
-        <ShoppingBag size={15} />
-        Checkout
-        <ArrowRight size={14} className="transition-transform duration-300 group-hover/btn:translate-x-1" />
-      </button>
     </div>
   </div>
 );
@@ -114,6 +103,63 @@ const GridSection = ({ categoryIndex, product, imgArray, navigate }) => (
     ))}
   </div>
 );
+
+// ─── Category banner card ───
+// Pulls the first product's image from that category as the banner
+// photo, so the visuals stay in sync with whatever the backend sends
+// back — no hardcoded category list or static images.
+const CategoryCard = ({ categoryName, product, navigate }) => {
+  const items = product[categoryName] || [];
+  const bannerImage = items[0]?.image;
+
+  return (
+    <button
+      onClick={() => navigate(`/products?search=${encodeURIComponent(categoryName)}`)}
+      className="group relative w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-md
+      hover:shadow-[0_8px_30px_rgb(0,0,0,0.15)] transition-shadow duration-500 text-left
+      focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#B8862E]"
+    >
+      <div className="absolute inset-0 bg-[#FAF6EF]">
+        <img
+          src={bannerImage}
+          alt={categoryName}
+          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+        />
+      </div>
+      <div className="absolute inset-0 bg-gradient-to-t from-[#1C1512]/85 via-[#1C1512]/20 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+        <span className="block text-xs md:text-sm font-medium tracking-widest uppercase text-white/70">
+          Shop
+        </span>
+        <span
+          className="block text-2xl md:text-3xl leading-tight capitalize"
+          style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}
+        >
+          {categoryName}
+        </span>
+      </div>
+    </button>
+  );
+};
+
+const CategorySection = ({ product, imgArray, navigate }) => {
+  if (!imgArray?.length) return null;
+  return (
+    <div className="max-w-5xl mx-auto px-4 mt-10">
+      <SectionTitle icon={Sparkles}>Shop By Category</SectionTitle>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {imgArray.map((categoryName) => (
+          <CategoryCard
+            key={categoryName}
+            categoryName={categoryName}
+            product={product}
+            navigate={navigate}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export default function Homes() {
   const { setLogin, token, setToken } = useContext(AuthContext);
@@ -303,6 +349,9 @@ export default function Homes() {
             </div>
           )}
         </div>
+
+        {/* ─── Category Banners (dynamic, from backend categories) ─── */}
+        <CategorySection product={product} imgArray={imgArray} navigate={Navigate} />
 
         {/* ─── Category 0 ─── */}
         {imgArray[0] && <SectionTitle icon={Sparkles} count={product[imgArray[0]]?.length}>{imgArray[0]}</SectionTitle>}
