@@ -29,6 +29,7 @@ export default function EditAddressModal({address, closeModal ,index, pageName,u
     if (Object.keys(newErrors).length >0) {
       return 
     }
+    console.log(typeof address, address)
     let updatedAddresses = [...address];
 
     if (index !== null && index !== undefined) {

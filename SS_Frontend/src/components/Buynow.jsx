@@ -2,6 +2,7 @@ import { useContext, useEffect, useMemo, useState, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ClipLoader } from "react-spinners";
 import { AuthContext } from "../Context/AuthContext";
 import NavBar from "./NavBar";
 import Footer from "./Footer";
@@ -79,6 +80,11 @@ export default function Buynow() {
   const [selectionPage, setSelectionPage] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [placing, setPlacing] = useState(false);
+  const [mobile_no, setMobile_no] = useState(login?.mobile_no || "");
+
+  /* 🔹 Gates the whole page until we know we have a valid session/account.
+     Starts true whenever we don't already have login+token in context. */
+  const [pageLoading, setPageLoading] = useState(!(login && token));
 
   /* ── Payment method: "ONLINE" (full amount online) | "COD" (₹99 advance) ── */
   const [paymentMethod, setPaymentMethod] = useState("ONLINE");
@@ -86,6 +92,8 @@ export default function Buynow() {
   /* ── Coupon state ── */
   const [couponCode, setCouponCode] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
+  const [editNumber, setEditNumber] = useState(false);
+
   const [appliedCoupon, setAppliedCoupon] = useState(() => {
     try {
       const saved = localStorage.getItem("buynow_coupon");
@@ -96,11 +104,39 @@ export default function Buynow() {
   });
 
   useEffect(() => {
-    if (!login && !token) {
-      setLogin(null);
-      setToken(null);
+    if (login && token) {
+      setPageLoading(false);
+      return;
     }
-  }, [login, token]);
+
+    const fetchAccount = async () => {
+      try {
+        const res = await axios.get(`${apiUrl}/account/`, {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+          xsrfCookieName: "csrftoken",
+          xsrfHeaderName: "X-CSRFToken",
+          withXSRFToken: true,
+        });
+
+        setLogin(res.data.userData);
+        setToken(res.data.access_Token);
+      } catch {
+        toast.error("Login required");
+        setLogin(null);
+        setToken(null);
+        navigate("/login");
+      } finally {
+        setPageLoading(false);
+      }
+    };
+    fetchAccount();
+  }, []);
+
+  // Keep the mobile number field in sync once account data arrives
+  useEffect(() => {
+    setMobile_no(login?.mobile_no || "");
+  }, [login?.mobile_no]);
 
   useEffect(() => {
     const link = document.createElement("link");
@@ -178,12 +214,9 @@ export default function Buynow() {
   }, [token, apiUrl]);
 
   const handleProfileSave = async () => {
-    if (!profileName.trim()) {
-      toast.error("Name is required to save");
-      return;
-    }
     const formData = new FormData();
     if (profileName !== "") formData.append("name", profileName);
+    if (mobile_no !== "") formData.append("mobile_no", mobile_no);
 
     try {
       const res = await axios.patch(`${apiUrl}/account/`, formData, {
@@ -200,6 +233,7 @@ export default function Buynow() {
       setToken(res.data.access_Token);
       toast("Profile updated");
       setEditProfile(false);
+      setEditNumber(false);
     } catch {
       setLogin(null);
       setToken(null);
@@ -242,7 +276,7 @@ export default function Buynow() {
   /* ── Pricing (default 10 % + optional coupon) ── */
   const defaultDiscount = Math.round(subtotal * DISCOUNT_RATE);
   const couponDiscount = appliedCoupon ? Number(appliedCoupon.discount_amount) : 0;
- 
+
   const total = Math.max(0, subtotal - defaultDiscount - couponDiscount);
 
   /* ── COD split: ₹99 advance now, rest on delivery ── */
@@ -250,7 +284,6 @@ export default function Buynow() {
   const codBalance = Math.max(0, total - COD_ADVANCE);
 
   const address = login?.address?.[selectedAddress];
-  const mobile_no = login?.mobile_no;
 
   /* ── Coupon handlers ── */
   const handleApplyCoupon = async () => {
@@ -271,25 +304,22 @@ export default function Buynow() {
           withXSRFToken: true,
         }
       );
-      
-        setAppliedCoupon(res.data);
-        if(res.data.user_error){
-          console.log('abhishek')
-          setToken(null);
-          setLogin(null);
-        }
-        if (res.data.userData) setLogin(res.data.userData);
-        if (res.data.access_Token) setToken(res.data.access_Token);
-        toast.success(`Coupon ${res.data.code} applied!`);
-      
+
+      setAppliedCoupon(res.data);
+      if (res.data.user_error) {
+        setToken(null);
+        setLogin(null);
+      }
+      if (res.data.userData) setLogin(res.data.userData);
+      if (res.data.access_Token) setToken(res.data.access_Token);
+      toast.success(`Coupon ${res.data.code} applied!`);
     } catch (err) {
-       if(err?.response?.data.user_error){
-        console.log('abhishek')
-          setToken(null);
-          setLogin(null);
-        }
-        if (err?.response?.data?.userData) setLogin(err.response.data.userData);
-        if (err?.response?.data?.access_Token) setToken(err.response.data.access_Token);
+      if (err?.response?.data.user_error) {
+        setToken(null);
+        setLogin(null);
+      }
+      if (err?.response?.data?.userData) setLogin(err.response.data.userData);
+      if (err?.response?.data?.access_Token) setToken(err.response.data.access_Token);
 
       toast.error(err?.response?.data?.error || "Failed to apply coupon");
     } finally {
@@ -310,22 +340,20 @@ export default function Buynow() {
           withXSRFToken: true,
         }
       );
-      
-        setAppliedCoupon(null);
-        setCouponCode("");
-        if(res.data.user_error){
-          console.log('abhishek')
-          setLogin(null)
-          setToken(null)
-        }
-        if (res.data.userData) setLogin(res.data.userData);
-        if (res.data.access_Token) setToken(res.data.access_Token);
-        toast.success("Coupon removed");
-      
+
+      setAppliedCoupon(null);
+      setCouponCode("");
+      if (res.data.user_error) {
+        setLogin(null);
+        setToken(null);
+      }
+      if (res.data.userData) setLogin(res.data.userData);
+      if (res.data.access_Token) setToken(res.data.access_Token);
+      toast.success("Coupon removed");
     } catch (err) {
-      if(err?.response?.data?.user_error){
-        setLogin(null)
-        setToken(null)
+      if (err?.response?.data?.user_error) {
+        setLogin(null);
+        setToken(null);
       }
       if (err?.response?.data?.userData) setLogin(err.response.data.userData);
       if (err?.response?.data?.access_Token) setToken(err.response.data.access_Token);
@@ -353,7 +381,8 @@ export default function Buynow() {
         address_index: selectedAddress,
         payment_method: paymentMethod, // 🔹 "ONLINE" | "cod"
       };
-      if (couponCode) payload.couponId = couponCode;
+      // 🔧 use the confirmed applied coupon, not the (possibly stale/edited) input text
+      if (appliedCoupon?.code) payload.couponId = appliedCoupon.code;
 
       // buynow flow (single product, no cart cookie) → send items explicitly
       // cart flow → backend reads the signed cart cookie itself
@@ -480,6 +509,20 @@ export default function Buynow() {
     }
   };
 
+  /* ── 🆕 Full-page loader while account/session is being resolved ── */
+  if (pageLoading) {
+    return (
+      <div className="bg-[#FAF6EF] min-h-screen" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <NavBar />
+        <div className="flex flex-col items-center justify-center gap-4 py-32">
+          <ClipLoader color="#4A0E1C" size={38} />
+          <p className="text-sm text-[#8A7F73]">Loading your checkout…</p>
+        </div>
+        <Footer className="max-w-screen" />
+      </div>
+    );
+  }
+
   if (items.length === 0) {
     return (
       <div className="bg-[#FAF6EF] min-h-screen" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -534,7 +577,59 @@ export default function Buynow() {
                 Cancel
               </button>
               <button
-                onClick={handleProfileSave}
+                onClick={() => {
+                  // 🔧 was `!profileName.trim` (always truthy, method ref) — now actually calls trim()
+                  if (!profileName.trim()) {
+                    toast.error("Enter the valid Name");
+                    return;
+                  }
+                  handleProfileSave();
+                }}
+                className="px-4 py-2 rounded-xl text-sm font-semibold bg-[#4A0E1C] text-[#FFFDF9]"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {editNumber && (
+        <div className="fixed inset-0 bg-[#2B2422]/60 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-6 relative">
+            <button
+              onClick={() => setEditNumber(false)}
+              className="absolute top-4 right-4 text-[#B0A48F] hover:text-[#2B2422]"
+            >
+              <X size={18} />
+            </button>
+            <h2
+              className="text-lg text-[#2B2422] mb-5"
+              style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}
+            >
+              {login?.mobile_no ? "Edit your phone number" : "Add your phone number"}
+            </h2>
+            <input
+              name="mobile_no"
+              value={mobile_no}
+              onChange={(e) => setMobile_no(e.target.value)}
+              placeholder="Your phone number"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDE3D3] text-sm focus:outline-none focus:border-[#B8862E] mb-5"
+            />
+            <div className="flex justify-end gap-2.5">
+              <button
+                onClick={() => setEditNumber(false)}
+                className="px-4 py-2 rounded-xl text-sm font-medium text-[#8A7F73] border border-[#EDE3D3]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (!/^\d{10}$/.test(mobile_no)) {
+                    toast.error("Please enter a valid 10-digit mobile number");
+                    return;
+                  }
+                  handleProfileSave();
+                }}
                 className="px-4 py-2 rounded-xl text-sm font-semibold bg-[#4A0E1C] text-[#FFFDF9]"
               >
                 Save
@@ -682,6 +777,38 @@ export default function Buynow() {
                       setEditProfile(true);
                     }}
                   />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#8A7F73] uppercase tracking-[0.12em]">
+                  Mobile No.
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-[#2B2422]">
+                    {login?.mobile_no ? login.mobile_no : null}
+                  </span>
+                  {login?.mobile_no ? (
+                    <img
+                      src={edit}
+                      className="h-4 w-4 cursor-pointer opacity-70 hover:opacity-100"
+                      alt="edit"
+                      onClick={() => {
+                        setMobile_no(login?.mobile_no || "");
+                        setEditNumber(true);
+                      }}
+                    />
+                  ) : (
+                    <div
+                      className="text-xs font-semibold text-[#FFFDF9] bg-[#4A0E1C] px-3 py-1.5 rounded-full shrink-0 cursor-pointer"
+                      onClick={() => {
+                        setMobile_no(login?.mobile_no || "");
+                        setEditNumber(true);
+                      }}
+                    >
+                      ADD Mobile No.
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -880,8 +1007,9 @@ export default function Buynow() {
                     <button
                       onClick={handleApplyCoupon}
                       disabled={couponLoading || !couponCode.trim()}
-                      className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#4A0E1C] text-[#FFFDF9] disabled:opacity-60 transition-all"
+                      className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#4A0E1C] text-[#FFFDF9] disabled:opacity-60 transition-all flex items-center gap-2"
                     >
+                      {couponLoading && <ClipLoader color="#FFFDF9" size={12} />}
                       {couponLoading ? "Applying…" : "Apply"}
                     </button>
                   </div>
@@ -936,8 +1064,6 @@ export default function Buynow() {
                   </div>
                 )}
 
-                
-
                 {paymentMethod === "COD" && (
                   <div className="flex justify-between text-[#8A6A15]">
                     <span className="flex items-center gap-1.5">
@@ -980,6 +1106,7 @@ export default function Buynow() {
                 type="button"
                 className="w-full py-3.5 rounded-xl bg-[#4A0E1C] text-[#FFFDF9] text-sm font-semibold tracking-wide hover:bg-[#3A0B16] active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-70"
               >
+                {placing && <ClipLoader color="#FFFDF9" size={14} />}
                 {placing
                   ? "Placing order…"
                   : paymentMethod === "COD"

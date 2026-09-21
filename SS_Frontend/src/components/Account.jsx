@@ -67,7 +67,7 @@ export default function Account() {
   // Fetch account
   useEffect(() => {
     if (login && token && !reload) {
-      setAddresses(login.address);
+      setAddresses(login.address?.length > 0 ? login.address : []);
       return;
     }
 
@@ -433,7 +433,7 @@ export default function Account() {
             >
               <MapPin size={17} strokeWidth={option === "address" ? 2.5 : 2} />
               Addresses
-              {addresses.length > 0 && (
+              {addresses?.length > 0 && (
                 <span
                   className={`ml-1 text-[11px] px-2.5 py-0.5 rounded-full font-bold ${
                     option === "address"
@@ -441,7 +441,7 @@ export default function Account() {
                       : "bg-[#F5F0E8] text-[#8A7F73]"
                   }`}
                 >
-                  {addresses.length}
+                  {addresses?.length}
                 </span>
               )}
             </button>
@@ -459,7 +459,7 @@ export default function Account() {
             >
               <Package size={17} strokeWidth={option === "orders" ? 2.5 : 2} />
               Orders
-              {orders.length > 0 && (
+              {orders?.length > 0 && (
                 <span
                   className={`ml-1 text-[11px] px-2.5 py-0.5 rounded-full font-bold ${
                     option === "orders"
@@ -490,7 +490,7 @@ export default function Account() {
           {/* ===== ADDRESS LIST ===== */}
           {option === "address" && (
             <div className="space-y-4">
-              {addresses.length ? (
+              {addresses?.length ? (
                 addresses.map((item, index) => (
                   <div
                     key={index}
