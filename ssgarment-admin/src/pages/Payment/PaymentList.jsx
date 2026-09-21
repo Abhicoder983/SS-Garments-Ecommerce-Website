@@ -269,6 +269,9 @@ export default function PaymentList() {
                     <td className="px-6 py-4 text-slate-800 font-semibold whitespace-nowrap">
                       {payment.customer_name}
                     </td>
+                    <td className="px-6 py-4 text-slate-800 font-semibold whitespace-nowrap">
+                      {payment.mobile_no}
+                    </td>
                     <td className="px-6 py-4">
                       <span className="font-mono text-xs text-slate-600 bg-slate-50 px-2 py-1 rounded-md border border-slate-100 break-all">
                         {payment.razorpay_order_id}

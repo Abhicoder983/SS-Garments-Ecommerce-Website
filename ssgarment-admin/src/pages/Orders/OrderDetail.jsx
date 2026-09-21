@@ -366,6 +366,7 @@ export default function OrderDetail() {
             <div className="min-w-0">
               <p className="text-sm font-semibold text-slate-800 truncate">{order.customer_name}</p>
               <p className="text-xs text-slate-500 truncate">{order.customer_email}</p>
+              <p className="text-xs text-slate-500 truncate">{order.mobile_no}</p>
             </div>
           </div>
         </div>

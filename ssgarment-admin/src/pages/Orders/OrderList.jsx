@@ -53,7 +53,7 @@ export default function OrderList() {
         setTotalPages(res.data.total_pages);
         setTotalCount(res.data.count);
         setStatusCounts(res.data.status_counts);
-      } catch (err) {
+      } catch {
         toast.error('Failed to load orders');
       } finally {
         setLoading(false);
@@ -260,6 +260,7 @@ export default function OrderList() {
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Order ID</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">AWB</th>
+                  <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Mobile No</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Total</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Payment</th>
@@ -285,6 +286,15 @@ export default function OrderList() {
                       {order.awb_id ? (
                         <span className="font-mono text-xs text-slate-600 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
                           {order.awb_id}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-slate-400 italic">—</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {order.mobile_no ? (
+                        <span className="font-mono text-xs text-slate-600 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
+                          {order.mobile_no}
                         </span>
                       ) : (
                         <span className="text-xs text-slate-400 italic">—</span>

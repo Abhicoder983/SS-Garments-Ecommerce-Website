@@ -2112,17 +2112,18 @@ def cancel_order(request, order_id):
             }, status=200)
         
 
-        elif product_total is not None:
+        elif order.payment_mode == "ONLINE" and product_total is not None:
             refund_response = None
             refund_failed = False
 
             if payment_id:
                 try:
                     print(1)
+                    amount = int(product_total * 100) - 99
                     refund_response = client.payment.refund(
                         payment_id,
                         {
-                            "amount": int(product_total * 100),  # paise me
+                            "amount": amount,  # paise me
                             "speed": "normal",
                             "notes": {
                                 "reason": "Order cancelled by customer",

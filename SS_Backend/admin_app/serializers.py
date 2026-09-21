@@ -62,7 +62,7 @@ class OrderListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'customer_name', 'order_date', 'total_price', 'status','awb_id',"payment_mode"]
+        fields = ['id', 'customer_name', 'order_date', 'total_price', 'status','awb_id',"payment_mode","mobile_no"]
 
     def get_id(self, obj):
         return str(obj.id)
@@ -73,6 +73,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
     customer_name = serializers.CharField(source='customerID.name')
     customer_email = serializers.CharField(source='customerID.email')
+    mobile_no = serializers.CharField(source = "customerID.mobile_no")
     total_price = serializers.IntegerField()
     status = serializers.CharField(source='statusID')
     items = serializers.SerializerMethodField()
@@ -81,7 +82,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             'id', 'customer_name', 'customer_email', 'order_date',
-            'total_price', 'status', 'awb_id', 'items', "payment_mode"
+            'total_price', 'status', 'awb_id', 'items', "payment_mode","mobile_no"
         ]
 
     def get_id(self, obj):
@@ -249,13 +250,14 @@ class ProductStatusUpdateSerializer(serializers.Serializer):
 class PaymentListSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
     customer_name = serializers.CharField(source='customerID.name', read_only=True)
+    mobile_no = serializers.CharField(source='customerID.mobile_no', read_only=True)
 
     class Meta:
         model = Payment
         fields = [
             'id', 'customer_name', 'razorpay_order_id', 'razorpay_payment_id',
             'amount', 'total_price', 'discount',
-            'couponCode', 'couponDiscount', 'statusID', 'created_at',"payment_mode"
+            'couponCode', 'couponDiscount', 'statusID', 'created_at',"payment_mode","mobile_no"
         ]
 
     def get_id(self, obj):
