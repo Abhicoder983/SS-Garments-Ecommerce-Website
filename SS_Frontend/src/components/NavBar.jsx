@@ -148,20 +148,7 @@ export default function NavBar() {
 
           {/* Right: Icons - NO BOX, WHITE, SMALL */}
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-            <button
-              onClick={() => navigate("/offers")}
-              className="relative group"
-              aria-label="Offers"
-            >
-              <img
-                src={discount}
-                className="w-4 h-4 sm:w-5 sm:h-5 brightness-0 invert opacity-90 group-hover:opacity-100 transition-opacity"
-                alt="offers"
-              />
-              <span className="absolute -top-1.5 -right-2 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] font-bold text-white flex items-center justify-center">
-                %
-              </span>
-            </button>
+            
 
             <Link to="/cart" className="group" aria-label="Cart">
               <img
