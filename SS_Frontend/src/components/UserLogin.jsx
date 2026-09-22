@@ -184,27 +184,27 @@ export default function UserLogin(){
 
     <>
     {loading && <FullPageLoader message="sigin in ..."/>}
-    <div className="h-screen flex flex-col justify-between bg-[#ffffff]">
+    <div className="min-h-screen flex flex-col justify-between bg-[#ffffff]">
   <NavBar />
  
-  <div className="max-w-5xl w-full mx-auto p-4 flex-grow">
-    <h2 className="font-semibold text-2xl text-[#c9a24b] mb-6 tracking-wide">
+  <div className="max-w-5xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex-grow">
+    <h2 className="font-semibold text-xl sm:text-2xl text-[#c9a24b] mb-5 sm:mb-6 tracking-wide">
       Login Required
     </h2>
  
     <div
-      className="w-full min-h-[50vh] rounded-2xl border-2 border-[#3a3a3a] border-dashed
-                 bg-[#ffffff] p-8
+      className="w-full min-h-[45vh] sm:min-h-[50vh] rounded-2xl border-2 border-[#3a3a3a] border-dashed
+                 bg-[#ffffff] p-6 sm:p-8
                  flex flex-col items-center justify-center gap-5 text-center"
     >
-      <div className="w-16 h-16 rounded-full bg-[#c9a24b]/40 border border-black flex items-center justify-center">
-        <span className="text-3xl">🔒</span>
+      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#c9a24b]/40 border border-black flex items-center justify-center shrink-0">
+        <span className="text-2xl sm:text-3xl">🔒</span>
       </div>
  
       <button
         type="submit"
         className="bg-[#c9a24b] hover:bg-[#edaf27]  text-[#1a1a1a] font-semibold
-                   px-6 py-2.5 rounded-full cursor-pointer
+                   px-5 sm:px-6 py-2.5 rounded-full cursor-pointer text-sm sm:text-base
                    transition-all duration-200 active:scale-[0.97]
                    shadow-[0_4px_16px_rgba(201,162,75,0.25)]"
         onClick={() => {
@@ -218,7 +218,7 @@ export default function UserLogin(){
         Login Required
       </button>
  
-      <h3 className="text-lg text-[#222222] max-w-md">
+      <h3 className="text-base sm:text-lg text-[#222222] max-w-md px-2">
         Login with us to continue viewing cart, orders etc
       </h3>
     </div>
@@ -227,32 +227,33 @@ export default function UserLogin(){
   {/* MODAL OVERLAY */}
   <div
     className={`fixed top-0 ${loginOpen ? 'flex' : 'hidden'} inset-0
-                bg-white/80 backdrop-blur-sm h-full w-full z-50 p-5
-                flex-col justify-center items-center`}
+                bg-white/80 backdrop-blur-sm h-full w-full z-50 p-4 sm:p-5
+                flex-col justify-center items-center overflow-y-auto`}
     onClick={() => setLoginOpen(false)}
   >
     <div
-      className="max-w-md w-full py-8 px-6 rounded-2xl mx-auto
-                 bg-white/60 border border-[#333]
-                 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+      className="max-w-md w-full my-auto py-6 px-5 sm:py-8 sm:px-6 rounded-2xl mx-auto
+                 bg-white/95 sm:bg-white/60 border border-[#333]
+                 shadow-[0_8px_32px_rgba(0,0,0,0.5)]
+                 max-h-[92vh] overflow-y-auto"
       onClick={(e) => e.stopPropagation()}
     >
-      <h2 className="text-gray-900 text-xl font-semibold mb-3">
+      <h2 className="text-gray-900 text-lg sm:text-xl font-semibold mb-3">
         Login / Sign In
       </h2>
       <div className="bg-[#333] h-px w-full mb-6"></div>
  
-      <p className="text-[#030303]  text-lg  ">
+      <p className="text-[#030303]  text-base sm:text-lg  ">
         Enter your Email :
       </p>
  
-      <div className="flex w-full justify-end gap-2 items-center">
+      <div className="flex flex-col xs:flex-row w-full justify-end gap-2 items-stretch xs:items-center mt-1">
         <input
   type="email"
   value={email}
   onChange={(e) => setEmail(e.target.value)}
   placeholder="Enter your email address"
-  className="flex-1 text-[#000000] placeholder-gray-500
+  className="flex-1 min-w-0 text-[#000000] placeholder-gray-500
              bg-transparent border-b-2 border-b-[#444] py-1.5
              focus:outline-none focus:border-b-[#c9a24b] focus:ring-0
              transition-colors duration-200"
@@ -260,7 +261,7 @@ export default function UserLogin(){
 />
         <button
           className="bg-[#c9a24b] hover:bg-transparent text-[#1a1a1a] hover:text-[#c9a24b]
-                     border-2 border-[#c9a24b]
+                     border-2 border-[#c9a24b] shrink-0
                      text-sm font-medium rounded-full px-5 py-1.5
                      transition-all duration-200 active:scale-[0.97]"
           onClick={verify}
@@ -270,21 +271,20 @@ export default function UserLogin(){
       </div>
  
       {otpEnable ? (
-        <div className="mt-4 w-11/12 mr-0 flex items-end gap-3">
+        <div className="mt-4 w-full flex flex-col xs:flex-row xs:items-end gap-2 xs:gap-3">
           <input
             type="text"
             value={otp}
             onChange={(e) => setotp(e.target.value)}
             placeholder="Enter OTP"
-            className="flex-1 text-black placeholder-gray-500
+            className="flex-1 min-w-0 text-black placeholder-gray-500
                        bg-transparent border-b-2 border-b-[#444] py-1.5
                        focus:outline-none focus:border-b-[#c9a24b] focus:ring-0
                        transition-colors duration-200"
             required
           />
-          <p className="text-sm font-medium text-red-400 text-center whitespace-nowrap">
+          <p className="text-sm font-medium text-red-400 xs:text-center whitespace-nowrap shrink-0">
           
-            <br />
             <span className="text-base font-semibold">{minutes}:{seconds}</span>
           </p>
         </div>
@@ -326,7 +326,7 @@ export default function UserLogin(){
           border border-[#3a3a3a] hover:border-[#c9a24b]
           text-black hover:text-white
           rounded-full
-          px-6 py-2.5
+          px-4 sm:px-6 py-2.5
           text-sm font-medium
           transition-all duration-200 ease-in-out
           shadow-[0_2px_8px_rgba(0,0,0,0.3)]
@@ -334,7 +334,7 @@ export default function UserLogin(){
           active:scale-[0.98]
         "
       >
-        <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+        <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
           <path
             fill="#4285F4"
             d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"

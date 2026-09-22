@@ -327,7 +327,7 @@ export default function Account() {
   if (!login) {
     return (
       <div
-        className="min-h-screen flex flex-col items-center justify-center bg-[#FAF8F5]"
+        className="min-h-screen flex flex-col items-center justify-center bg-[#FAF8F5] px-4 text-center"
         style={{ fontFamily: "'Inter', sans-serif" }}
       >
         <div className="relative">
@@ -344,19 +344,19 @@ export default function Account() {
     <>
       <NavBar />
       <div
-        className="min-h-screen bg-[#FAF8F5] pb-20"
+        className="min-h-screen bg-[#FAF8F5] pb-16 sm:pb-20"
         style={{ fontFamily: "'Inter', sans-serif" }}
       >
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+        <div className="max-w-5xl xl:max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-10">
           {/* ===== USER INFO CARD ===== */}
-          <div className="bg-white rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-[#EDE8E0] p-6 sm:p-8 mb-8 relative overflow-hidden">
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-[#EDE8E0] p-5 sm:p-8 mb-6 sm:mb-8 relative overflow-hidden">
             {/* Subtle decorative gradient */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#4A0E1C]/[0.03] to-transparent rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 relative z-10">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 sm:gap-6 relative z-10">
               {/* Avatar */}
               <div className="relative shrink-0 group">
-                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-[3px] border-[#F5F0E8] overflow-hidden bg-[#F5F0E8] shadow-lg shadow-black/5 transition-transform duration-300 group-hover:scale-[1.02]">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-[3px] border-[#F5F0E8] overflow-hidden bg-[#F5F0E8] shadow-lg shadow-black/5 transition-transform duration-300 group-hover:scale-[1.02]">
                   <img
                     src={login?.profile_image_url || userImg}
                     alt="User"
@@ -365,53 +365,53 @@ export default function Account() {
                 </div>
                 <button
                   onClick={() => setEditProfile(true)}
-                  className="absolute bottom-1 right-1 w-9 h-9 bg-white rounded-full shadow-lg flex items-center justify-center text-[#4A0E1C] hover:bg-[#4A0E1C] hover:text-white transition-all duration-200 border border-[#EDE8E0] hover:scale-110"
+                  className="absolute bottom-1 right-1 w-8 h-8 sm:w-9 sm:h-9 bg-white rounded-full shadow-lg flex items-center justify-center text-[#4A0E1C] hover:bg-[#4A0E1C] hover:text-white transition-all duration-200 border border-[#EDE8E0] hover:scale-110"
                 >
                   <Camera size={15} />
                 </button>
               </div>
 
               {/* Info */}
-              <div className="flex-1 text-center sm:text-left pt-2">
+              <div className="flex-1 w-full text-center sm:text-left pt-1 sm:pt-2 min-w-0">
                 <h1
-                  className="text-2xl sm:text-3xl text-[#2B2422] capitalize leading-tight tracking-tight"
+                  className="text-xl sm:text-2xl md:text-3xl text-[#2B2422] capitalize leading-tight tracking-tight break-words"
                   style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}
                 >
                   {login?.name || "Not provided"}
                 </h1>
                 <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-emerald-100" />
-                  <p className="text-sm text-[#9A9187] font-medium">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-emerald-100 shrink-0" />
+                  <p className="text-sm text-[#9A9187] font-medium break-all sm:break-normal">
                     {login?.email || "Not provided"}
                   </p>
                 </div>
                 {login?.mobile_no && (
                   <div className="flex items-center justify-center sm:justify-start gap-2 mt-1">
-                    <Phone size={12} className="text-[#9A9187]" />
+                    <Phone size={12} className="text-[#9A9187] shrink-0" />
                     <p className="text-sm text-[#9A9187] font-medium">{login.mobile_no}</p>
                   </div>
                 )}
-                <div className="flex items-center justify-center sm:justify-start gap-4 mt-3 text-xs text-[#9A9187]">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1 mt-3 text-xs text-[#9A9187]">
                   <span className="flex items-center gap-1">
                     <ShieldCheck size={12} className="text-emerald-500" />
                     Verified Account
                   </span>
-                  <span>·</span>
+                  <span className="hidden sm:inline">·</span>
                   <span>Member since {new Date().getFullYear()}</span>
                 </div>
               </div>
 
               {/* Actions */}
-              <div className="flex gap-3 shrink-0 sm:pt-3">
+              <div className="flex gap-3 w-full sm:w-auto shrink-0 sm:pt-3">
                 <button
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-[#4A0E1C] bg-[#FDF6ED] hover:bg-[#F5E6D0] border border-[#F0E4D4] transition-all duration-200 hover:shadow-md active:scale-95"
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold text-[#4A0E1C] bg-[#FDF6ED] hover:bg-[#F5E6D0] border border-[#F0E4D4] transition-all duration-200 hover:shadow-md active:scale-95"
                   onClick={() => setEditProfile(true)}
                 >
                   <Pencil size={15} />
                   Edit
                 </button>
                 <button
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-[#B24444] bg-[#FDF2F2] hover:bg-[#FCE0E0] border border-[#F5D5D5] transition-all duration-200 hover:shadow-md active:scale-95"
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold text-[#B24444] bg-[#FDF2F2] hover:bg-[#FCE0E0] border border-[#F5D5D5] transition-all duration-200 hover:shadow-md active:scale-95"
                   onClick={logout}
                 >
                   <LogOut size={15} />
@@ -422,20 +422,21 @@ export default function Account() {
           </div>
 
           {/* ===== TABS ===== */}
-          <div className="flex items-center gap-2 mb-8 sticky top-4 z-30 bg-[#FAF8F5]/80 backdrop-blur-xl py-2 px-1 -mx-1 rounded-2xl">
+          <div className="flex flex-wrap items-center gap-2 mb-6 sm:mb-8 sticky top-0 sm:top-4 z-30 bg-[#FAF8F5]/90 backdrop-blur-xl py-2 px-1 -mx-1 rounded-2xl">
             <button
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 ${
                 option === "address"
                   ? "bg-[#4A0E1C] text-white shadow-lg shadow-[#4A0E1C]/25 scale-105"
                   : "bg-white text-[#6B6560] border border-[#E8E2DA] hover:border-[#D4CCC2] hover:bg-[#FDFBF7] hover:shadow-md"
               }`}
               onClick={() => setOption("address")}
             >
-              <MapPin size={17} strokeWidth={option === "address" ? 2.5 : 2} />
-              Addresses
+              <MapPin size={16} strokeWidth={option === "address" ? 2.5 : 2} />
+              <span className="hidden xs:inline">Addresses</span>
+              <span className="xs:hidden">Address</span>
               {addresses?.length > 0 && (
                 <span
-                  className={`ml-1 text-[11px] px-2.5 py-0.5 rounded-full font-bold ${
+                  className={`ml-0.5 sm:ml-1 text-[10px] sm:text-[11px] px-2 sm:px-2.5 py-0.5 rounded-full font-bold ${
                     option === "address"
                       ? "bg-white/25 text-white"
                       : "bg-[#F5F0E8] text-[#8A7F73]"
@@ -447,7 +448,7 @@ export default function Account() {
             </button>
 
             <button
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 ${
                 option === "orders"
                   ? "bg-[#4A0E1C] text-white shadow-lg shadow-[#4A0E1C]/25 scale-105"
                   : "bg-white text-[#6B6560] border border-[#E8E2DA] hover:border-[#D4CCC2] hover:bg-[#FDFBF7] hover:shadow-md"
@@ -457,11 +458,11 @@ export default function Account() {
                 fetchOrder();
               }}
             >
-              <Package size={17} strokeWidth={option === "orders" ? 2.5 : 2} />
+              <Package size={16} strokeWidth={option === "orders" ? 2.5 : 2} />
               Orders
               {orders?.length > 0 && (
                 <span
-                  className={`ml-1 text-[11px] px-2.5 py-0.5 rounded-full font-bold ${
+                  className={`ml-0.5 sm:ml-1 text-[10px] sm:text-[11px] px-2 sm:px-2.5 py-0.5 rounded-full font-bold ${
                     option === "orders"
                       ? "bg-white/25 text-white"
                       : "bg-[#F5F0E8] text-[#8A7F73]"
@@ -479,10 +480,11 @@ export default function Account() {
                   setPageName("ADD");
                   setIsEditOpen(true);
                 }}
-                className="ml-auto flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-[#2D5A3D] bg-[#EDF7F1] hover:bg-[#DDEEDF] border border-[#C8E6D5] transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
+                className="ml-auto flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold text-[#2D5A3D] bg-[#EDF7F1] hover:bg-[#DDEEDF] border border-[#C8E6D5] transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 shrink-0"
               >
-                <Plus size={17} />
-                Add New
+                <Plus size={16} />
+                <span className="hidden xs:inline">Add New</span>
+                <span className="xs:hidden">Add</span>
               </button>
             )}
           </div>
@@ -494,30 +496,30 @@ export default function Account() {
                 addresses.map((item, index) => (
                   <div
                     key={index}
-                    className="group bg-white rounded-2xl border border-[#EDE8E0] p-5 sm:p-6 flex flex-col sm:flex-row gap-4 justify-between sm:items-center hover:shadow-xl hover:shadow-black/[0.04] hover:border-[#DDD5C8] hover:-translate-y-0.5 transition-all duration-300"
+                    className="group bg-white rounded-2xl border border-[#EDE8E0] p-4 sm:p-6 flex flex-col sm:flex-row gap-4 justify-between sm:items-center hover:shadow-xl hover:shadow-black/[0.04] hover:border-[#DDD5C8] hover:-translate-y-0.5 transition-all duration-300"
                   >
-                    <div className="flex items-start gap-4 flex-1">
-                      <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#FDF6ED] to-[#F5E6D0] flex items-center justify-center text-[#4A0E1C] shrink-0 mt-0.5 shadow-sm">
-                        <MapPin size={19} />
+                    <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                      <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-[#FDF6ED] to-[#F5E6D0] flex items-center justify-center text-[#4A0E1C] shrink-0 mt-0.5 shadow-sm">
+                        <MapPin size={18} />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[15px] text-[#2B2422] leading-relaxed font-semibold">
+                        <p className="text-[15px] text-[#2B2422] leading-relaxed font-semibold break-words">
                           {item.address}
                         </p>
-                        <p className="text-sm text-[#9A9187] mt-1 font-medium">
+                        <p className="text-sm text-[#9A9187] mt-1 font-medium break-words">
                           {item.city}, {item.state} — {item.pincode}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex gap-2.5 shrink-0 pl-[3.75rem] sm:pl-0">
+                    <div className="flex gap-2.5 shrink-0 sm:pl-0">
                       <button
                         onClick={() => {
                           setEditAddressIndex(index);
                           setPageName("EDIT");
                           setIsEditOpen(true);
                         }}
-                        className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-[#8A6A15] bg-[#FDF6ED] hover:bg-[#F5E6D0] border border-[#F0E4D4] transition-all duration-200 hover:shadow-sm active:scale-95"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-[#8A6A15] bg-[#FDF6ED] hover:bg-[#F5E6D0] border border-[#F0E4D4] transition-all duration-200 hover:shadow-sm active:scale-95"
                       >
                         <Pencil size={13} />
                         Edit
@@ -528,7 +530,7 @@ export default function Account() {
                           const updated = addresses.filter((_, i) => i !== index);
                           uploadSetAddress(updated);
                         }}
-                        className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-[#B24444] bg-[#FDF2F2] hover:bg-[#FCE0E0] border border-[#F5D5D5] transition-all duration-200 hover:shadow-sm active:scale-95"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-[#B24444] bg-[#FDF2F2] hover:bg-[#FCE0E0] border border-[#F5D5D5] transition-all duration-200 hover:shadow-sm active:scale-95"
                       >
                         <Trash2 size={13} />
                         Remove
@@ -537,11 +539,11 @@ export default function Account() {
                   </div>
                 ))
               ) : (
-                <div className="bg-white rounded-3xl border border-dashed border-[#D4CCC2] p-16 text-center hover:border-[#C4B8A8] transition-colors duration-300">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#FDFBF7] to-[#F5F0E8] flex items-center justify-center mx-auto mb-5 text-[#C4B8A8] shadow-inner">
-                    <MapPin size={32} />
+                <div className="bg-white rounded-2xl sm:rounded-3xl border border-dashed border-[#D4CCC2] p-8 sm:p-16 text-center hover:border-[#C4B8A8] transition-colors duration-300">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-[#FDFBF7] to-[#F5F0E8] flex items-center justify-center mx-auto mb-5 text-[#C4B8A8] shadow-inner">
+                    <MapPin size={28} />
                   </div>
-                  <h3 className="text-[#2B2422] font-bold text-lg mb-2">
+                  <h3 className="text-[#2B2422] font-bold text-base sm:text-lg mb-2">
                     No addresses saved
                   </h3>
                   <p className="text-sm text-[#9A9187] mb-6 max-w-xs mx-auto">
@@ -565,9 +567,9 @@ export default function Account() {
 
           {/* ===== ORDERS ===== */}
           {option === "orders" && (
-            <div className="space-y-6">
+            <div className="space-y-5 sm:space-y-6">
               {isLoadingOrders ? (
-                <div className="bg-white rounded-3xl border border-[#EDE8E0] p-16 text-center">
+                <div className="bg-white rounded-2xl sm:rounded-3xl border border-[#EDE8E0] p-10 sm:p-16 text-center">
                   <div className="w-12 h-12 rounded-full border-3 border-[#4A0E1C] border-t-transparent animate-spin mx-auto mb-4" />
                   <p className="text-sm text-[#9A9187] font-medium">Loading your orders…</p>
                 </div>
@@ -593,31 +595,31 @@ export default function Account() {
                   return (
                     <div
                       key={orderIndex}
-                      className="bg-white rounded-3xl border border-[#EDE8E0] overflow-hidden hover:shadow-xl hover:shadow-black/[0.05] transition-all duration-300 hover:-translate-y-0.5"
+                      className="bg-white rounded-2xl sm:rounded-3xl border border-[#EDE8E0] overflow-hidden hover:shadow-xl hover:shadow-black/[0.05] transition-all duration-300 hover:-translate-y-0.5"
                     >
                       {/* Order Header */}
-                      <div className="px-6 sm:px-8 py-5 border-b border-[#F5F0E8] flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-white to-[#FDFBF7]/50">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FDF6ED] to-[#F5E6D0] flex items-center justify-center text-[#4A0E1C] shadow-sm">
-                            <Package size={20} />
+                      <div className="px-4 sm:px-8 py-4 sm:py-5 border-b border-[#F5F0E8] flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-gradient-to-r from-white to-[#FDFBF7]/50">
+                        <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-[#FDF6ED] to-[#F5E6D0] flex items-center justify-center text-[#4A0E1C] shadow-sm shrink-0">
+                            <Package size={18} />
                           </div>
-                          <div>
-                            <div className="flex items-center gap-3 flex-wrap">
-                              <h3 className="font-bold text-[#2B2422] text-[15px]">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                              <h3 className="font-bold text-[#2B2422] text-sm sm:text-[15px]">
                                 Order #{String(orderIndex + 1).padStart(3, "0")}
                               </h3>
-                              <h3 className="font-bold text-[#2B2422] text-[15px]">
-                                Order ID : {order?.order_id}
+                              <h3 className="font-bold text-[#2B2422] text-sm sm:text-[15px] break-all">
+                                ID : {order?.order_id}
                               </h3>
                               <span
-                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold border ${statusConfig.color} shadow-sm`}
+                                className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-[11px] sm:text-xs font-bold border ${statusConfig.color} shadow-sm`}
                               >
                                 {statusConfig.icon}
                                 {statusConfig.label}
                               </span>
                               {/* 🔹 Payment mode chip */}
                               <span
-                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold border ${payment.chip.color} shadow-sm`}
+                                className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-[11px] sm:text-xs font-bold border ${payment.chip.color} shadow-sm`}
                               >
                                 {payment.isCOD ? (
                                   <Banknote size={13} />
@@ -642,24 +644,24 @@ export default function Account() {
                             </p>
                           </div>
                         </div>
-                        <div className="text-left sm:text-right">
+                        <div className="text-left sm:text-right shrink-0">
                           <p className="text-[11px] text-[#9A9187] mb-0.5 uppercase tracking-wider font-bold">
                             Total Amount
                           </p>
-                          <p className="text-xl font-bold text-[#2B2422] tracking-tight">
+                          <p className="text-lg sm:text-xl font-bold text-[#2B2422] tracking-tight">
                             ₹{finalTotal}
                           </p>
                         </div>
                       </div>
 
                       {/* Products */}
-                      <div className="px-6 sm:px-8 py-5 space-y-4">
+                      <div className="px-4 sm:px-8 py-4 sm:py-5 grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                         {order.productID?.product_ids?.map((item, itemIndex) => (
                           <div
                             key={itemIndex}
-                            className="flex gap-4 p-4 rounded-2xl bg-[#FDFBF7] border border-[#F5F0E8] hover:border-[#EDE8E0] hover:bg-[#FAF8F5] transition-all duration-200 group/item"
+                            className="flex gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl bg-[#FDFBF7] border border-[#F5F0E8] hover:border-[#EDE8E0] hover:bg-[#FAF8F5] transition-all duration-200 group/item"
                           >
-                            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-white shrink-0 border border-[#F5F0E8] shadow-sm group-hover/item:shadow-md transition-shadow">
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-xl overflow-hidden bg-white shrink-0 border border-[#F5F0E8] shadow-sm group-hover/item:shadow-md transition-shadow">
                               <img
                                 src={item.product_image}
                                 alt={item.product_name}
@@ -670,18 +672,18 @@ export default function Account() {
                               <h4 className="font-bold text-sm text-[#2B2422] truncate">
                                 {item.product_name}
                               </h4>
-                              <div className="flex items-center gap-3 mt-3 text-xs">
-                                <span className="px-2.5 py-1 rounded-lg bg-white border border-[#F0EAE3] text-[#6B6560] font-semibold shadow-sm">
+                              <div className="flex items-center gap-2 sm:gap-3 mt-2 sm:mt-3 text-xs flex-wrap">
+                                <span className="px-2 sm:px-2.5 py-1 rounded-lg bg-white border border-[#F0EAE3] text-[#6B6560] font-semibold shadow-sm">
                                   Size {item.size}
                                 </span>
-                                <span className="px-2.5 py-1 rounded-lg bg-white border border-[#F0EAE3] text-[#6B6560] font-semibold shadow-sm">
+                                <span className="px-2 sm:px-2.5 py-1 rounded-lg bg-white border border-[#F0EAE3] text-[#6B6560] font-semibold shadow-sm">
                                   Qty {item.qty}
                                 </span>
                               </div>
-                              <div className="flex items-center justify-between mt-4">
-                                <p className="text-sm text-[#6B6560] font-medium">
+                              <div className="flex items-center justify-between mt-3 sm:mt-4">
+                                <p className="text-xs sm:text-sm text-[#6B6560] font-medium">
                                   ₹{item.price}{" "}
-                                  <span className="text-xs text-[#9A9187]">/ piece</span>
+                                  <span className="text-[10px] sm:text-xs text-[#9A9187]">/ piece</span>
                                 </p>
                                 <p className="text-sm font-bold text-[#2B2422]">
                                   ₹{item.qty * item.price}
@@ -693,8 +695,8 @@ export default function Account() {
                       </div>
 
                       {/* Price Breakdown */}
-                      <div className="px-6 sm:px-8 py-5 bg-gradient-to-r from-[#FDFBF7] to-[#F5F0E8]/30 border-t border-[#F5F0E8]">
-                        <div className="max-w-xs ml-auto space-y-2.5">
+                      <div className="px-4 sm:px-8 py-4 sm:py-5 bg-gradient-to-r from-[#FDFBF7] to-[#F5F0E8]/30 border-t border-[#F5F0E8]">
+                        <div className="w-full sm:max-w-xs sm:ml-auto space-y-2.5">
                           <div className="flex justify-between text-sm text-[#6B6560]">
                             <span className="font-medium">Subtotal</span>
                             <span className="font-bold">₹{order.amount}</span>
@@ -756,10 +758,10 @@ export default function Account() {
                       </div>
 
                       {/* Footer Info & Actions */}
-                      <div className="px-6 sm:px-8 py-5 border-t border-[#F5F0E8] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white">
+                      <div className="px-4 sm:px-8 py-4 sm:py-5 border-t border-[#F5F0E8] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white">
                         <div className="text-xs text-[#9A9187] space-y-1.5">
                           {payment.isCOD && order.statusID !== "CANCELLED" && (
-                            <p className="flex items-center gap-1.5 font-medium text-amber-700">
+                            <p className="flex items-center gap-1.5 font-medium text-amber-700 flex-wrap">
                               <Banknote size={13} />
                               Keep{" "}
                               <span className="font-bold">
@@ -769,7 +771,7 @@ export default function Account() {
                             </p>
                           )}
                           {order.delivered_at && (
-                            <p className="flex items-center gap-1.5 font-medium">
+                            <p className="flex items-center gap-1.5 font-medium flex-wrap">
                               <CheckCircle2 size={13} className="text-emerald-500" />
                               Delivered on{" "}
                               <span className="font-bold text-[#6B6560]">
@@ -795,7 +797,7 @@ export default function Account() {
                           {canReturn && (
                             <button
                               onClick={() => openShopkeeperModal(order, "return")}
-                              className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-sm font-bold text-[#7C3AED] bg-[#F3E8FF] hover:bg-[#E9D5FF] border border-[#DDD6FE] transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 flex items-center justify-center gap-2"
+                              className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-[#7C3AED] bg-[#F3E8FF] hover:bg-[#E9D5FF] border border-[#DDD6FE] transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 flex items-center justify-center gap-2"
                             >
                               <RotateCcw size={15} />
                               Return
@@ -807,7 +809,7 @@ export default function Account() {
                             <button
                               disabled={!canCancel}
                               onClick={() => canCancel && openShopkeeperModal(order, "cancel")}
-                              className={`flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 ${
+                              className={`flex-1 sm:flex-none px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 ${
                                 canCancel
                                   ? "bg-[#4A0E1C] text-white hover:bg-[#3A0B16] shadow-lg shadow-[#4A0E1C]/25 active:scale-95"
                                   : "bg-[#F5F0E8] text-[#B0A89E] cursor-not-allowed"
@@ -819,14 +821,14 @@ export default function Account() {
                           )}
 
                           {isCancelled && (
-                            <span className="px-6 py-2.5 rounded-xl text-sm font-bold text-[#B24444] bg-[#FDF2F2] border border-[#F5D5D5] flex items-center gap-2">
+                            <span className="px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-[#B24444] bg-[#FDF2F2] border border-[#F5D5D5] flex items-center gap-2 w-full sm:w-auto justify-center">
                               <XCircle size={15} />
                               Cancelled
                             </span>
                           )}
 
                           {isReturned && (
-                            <span className="px-6 py-2.5 rounded-xl text-sm font-bold text-[#7C3AED] bg-[#F3E8FF] border border-[#DDD6FE] flex items-center gap-2">
+                            <span className="px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-[#7C3AED] bg-[#F3E8FF] border border-[#DDD6FE] flex items-center gap-2 w-full sm:w-auto justify-center">
                               <RotateCcw size={15} />
                               Returned
                             </span>
@@ -837,11 +839,11 @@ export default function Account() {
                   );
                 })
               ) : (
-                <div className="bg-white rounded-3xl border border-dashed border-[#D4CCC2] p-16 text-center hover:border-[#C4B8A8] transition-colors duration-300">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#FDFBF7] to-[#F5F0E8] flex items-center justify-center mx-auto mb-5 text-[#C4B8A8] shadow-inner">
-                    <Package size={32} />
+                <div className="bg-white rounded-2xl sm:rounded-3xl border border-dashed border-[#D4CCC2] p-8 sm:p-16 text-center hover:border-[#C4B8A8] transition-colors duration-300">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-[#FDFBF7] to-[#F5F0E8] flex items-center justify-center mx-auto mb-5 text-[#C4B8A8] shadow-inner">
+                    <Package size={28} />
                   </div>
-                  <h3 className="text-[#2B2422] font-bold text-lg mb-2">
+                  <h3 className="text-[#2B2422] font-bold text-base sm:text-lg mb-2">
                     No orders yet
                   </h3>
                   <p className="text-sm text-[#9A9187] mb-6 max-w-xs mx-auto">
@@ -864,12 +866,12 @@ export default function Account() {
 
       {/* ===== EDIT PROFILE MODAL ===== */}
       {editProfile && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
           <div
             className="absolute inset-0 bg-[#2B2422]/60 backdrop-blur-sm"
             onClick={() => setEditProfile(false)}
           />
-          <div className="relative bg-white rounded-3xl w-full max-w-md p-6 sm:p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative bg-white rounded-2xl sm:rounded-3xl w-full max-w-md p-5 sm:p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setEditProfile(false)}
               className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center text-[#9A9187] hover:text-[#2B2422] hover:bg-[#F5F0E8] transition-all"
@@ -974,12 +976,12 @@ export default function Account() {
 
       {/* ===== SHOPKEEPER CONTACT MODAL (Cancel/Return) ===== */}
       {shopkeeperModal && selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
           <div
             className="absolute inset-0 bg-[#2B2422]/60 backdrop-blur-sm"
             onClick={() => setShopkeeperModal(false)}
           />
-          <div className="relative bg-white rounded-3xl w-full max-w-lg p-6 sm:p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+          <div className="relative bg-white rounded-2xl sm:rounded-3xl w-full max-w-lg p-5 sm:p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden max-h-[90vh] overflow-y-auto">
             {/* Decorative top bar */}
             <div
               className={`absolute top-0 left-0 right-0 h-1.5 ${
@@ -1024,12 +1026,12 @@ export default function Account() {
             </div>
 
             {/* Shopkeeper Info Card */}
-            <div className="bg-gradient-to-br from-[#FDFBF7] to-[#F5F0E8] rounded-2xl p-5 border border-[#EDE8E0] mb-6">
+            <div className="bg-gradient-to-br from-[#FDFBF7] to-[#F5F0E8] rounded-2xl p-4 sm:p-5 border border-[#EDE8E0] mb-6">
               <div className="flex items-center gap-3 mb-4 pb-4 border-b border-[#E8E2DA]">
-                <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center text-[#4A0E1C] shadow-sm">
+                <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center text-[#4A0E1C] shadow-sm shrink-0">
                   <Store size={20} />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <h3 className="font-bold text-[#2B2422] text-sm">
                     {getShopkeeperInfo(selectedOrder).name}
                   </h3>
@@ -1043,11 +1045,11 @@ export default function Account() {
                   <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-[#4A0E1C] shrink-0 shadow-sm mt-0.5">
                     <MapPin size={15} />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-[11px] font-bold text-[#6B6560] uppercase tracking-wider mb-0.5">
                       Location
                     </p>
-                    <p className="text-sm text-[#2B2422] font-medium leading-relaxed">
+                    <p className="text-sm text-[#2B2422] font-medium leading-relaxed break-words">
                       {getShopkeeperInfo(selectedOrder).location}
                     </p>
                   </div>
@@ -1058,13 +1060,13 @@ export default function Account() {
                   <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-[#4A0E1C] shrink-0 shadow-sm">
                     <Phone size={15} />
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="text-[11px] font-bold text-[#6B6560] uppercase tracking-wider mb-0.5">
                       Phone
                     </p>
                     <a
                       href={`tel:${getShopkeeperInfo(selectedOrder).phone}`}
-                      className="text-sm text-[#2B2422] font-bold hover:text-[#4A0E1C] transition-colors"
+                      className="text-sm text-[#2B2422] font-bold hover:text-[#4A0E1C] transition-colors break-words"
                     >
                       {getShopkeeperInfo(selectedOrder).phone}
                     </a>
@@ -1076,7 +1078,7 @@ export default function Account() {
                   <div className="w-8 h-8 rounded-lg bg-[#DCFCE7] flex items-center justify-center text-[#16A34A] shrink-0 shadow-sm">
                     <MessageCircle size={15} />
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="text-[11px] font-bold text-[#6B6560] uppercase tracking-wider mb-0.5">
                       WhatsApp
                     </p>
@@ -1084,7 +1086,7 @@ export default function Account() {
                       href={`https://wa.me/${getShopkeeperInfo(selectedOrder).whatsapp.replace(/\D/g, "")}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-[#16A34A] font-bold hover:text-[#15803D] transition-colors"
+                      className="text-sm text-[#16A34A] font-bold hover:text-[#15803D] transition-colors break-words"
                     >
                       {getShopkeeperInfo(selectedOrder).whatsapp}
                     </a>
