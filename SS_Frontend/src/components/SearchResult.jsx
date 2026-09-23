@@ -45,6 +45,7 @@ export default function SearchResults() {
   const genderOptions = [
     { value: "male", label: "Men" },
     { value: "female", label: "Women" },
+    { value: "unisex", label: "Unisex" }
   ];
 
   const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL"];
