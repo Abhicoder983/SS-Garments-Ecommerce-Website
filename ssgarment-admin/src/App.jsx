@@ -13,7 +13,6 @@ import CustomerDetail from './pages/Customers/CustomerDetail';
 import Inventory from './pages/Inventory/Inventory';
 import CouponList from './pages/Coupons/CouponList';
 import AddCoupon from './pages/Coupons/AddCoupon';
-import Notifications from './pages/Notifications/Notifications';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import PaymentList from './pages/Payment/PaymentList';
@@ -52,7 +51,7 @@ export default function App() {
           <Route path="/coupons" element={<CouponList />} />
           <Route path="/coupons/add" element={<AddCoupon />} />
           <Route path="/payment" element={<PaymentList />} />
-          <Route path="/notifications" element={<Notifications />} />
+          
         </Route>
 
         {/* Default redirect */}
