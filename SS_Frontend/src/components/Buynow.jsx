@@ -43,6 +43,7 @@ export default function Buynow() {
   const product = location.state?.product;
   const variant = location.state?.variant;
   const selectedSize = location.state?.selectedSize;
+  const qty = location.state?.qty
 
   const items = useMemo(() => {
     if (cartItems && cartItems.length) {
@@ -67,7 +68,7 @@ export default function Buynow() {
           size: sizeObj?.size,
           color: v?.color,
           price: sizeObj?.price,
-          qty: 1,
+          qty: qty,
         },
       ];
     }
