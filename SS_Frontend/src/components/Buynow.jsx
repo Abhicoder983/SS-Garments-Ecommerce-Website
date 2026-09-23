@@ -514,7 +514,7 @@ export default function Buynow() {
     return (
       <div className="bg-[#FAF6EF] min-h-screen" style={{ fontFamily: "'Inter', sans-serif" }}>
         <NavBar />
-        <div className="flex flex-col items-center justify-center gap-4 py-32">
+        <div className="flex flex-col items-center justify-center gap-4 py-24 sm:py-32">
           <ClipLoader color="#4A0E1C" size={38} />
           <p className="text-sm text-[#8A7F73]">Loading your checkout…</p>
         </div>
@@ -527,7 +527,7 @@ export default function Buynow() {
     return (
       <div className="bg-[#FAF6EF] min-h-screen" style={{ fontFamily: "'Inter', sans-serif" }}>
         <NavBar />
-        <div className="max-w-md mx-auto text-center py-24 px-6">
+        <div className="max-w-md mx-auto text-center py-16 sm:py-24 px-4 sm:px-6">
           <p className="text-[#2B2422] font-medium mb-2">There's nothing to check out yet</p>
           <p className="text-sm text-[#8A7F73] mb-6">Add something to your bag first.</p>
           <Link
@@ -543,21 +543,21 @@ export default function Buynow() {
   }
 
   return (
-    <div className="bg-[#FAF6EF] min-h-screen" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="bg-[#FAF6EF] min-h-screen overflow-x-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
       <NavBar />
 
       {/* Edit profile modal */}
       {editProfile && (
         <div className="fixed inset-0 bg-[#2B2422]/60 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6 relative">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-5 sm:p-6 relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setEditProfile(false)}
-              className="absolute top-4 right-4 text-[#B0A48F] hover:text-[#2B2422]"
+              className="absolute top-4 right-4 text-[#B0A48F] hover:text-[#2B2422] p-1"
             >
               <X size={18} />
             </button>
             <h2
-              className="text-lg text-[#2B2422] mb-5"
+              className="text-lg text-[#2B2422] mb-5 pr-6"
               style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}
             >
               Edit your name
@@ -569,7 +569,7 @@ export default function Buynow() {
               placeholder="Your name"
               className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDE3D3] text-sm focus:outline-none focus:border-[#B8862E] mb-5"
             />
-            <div className="flex justify-end gap-2.5">
+            <div className="flex flex-wrap justify-end gap-2.5">
               <button
                 onClick={() => setEditProfile(false)}
                 className="px-4 py-2 rounded-xl text-sm font-medium text-[#8A7F73] border border-[#EDE3D3]"
@@ -595,15 +595,15 @@ export default function Buynow() {
       )}
       {editNumber && (
         <div className="fixed inset-0 bg-[#2B2422]/60 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6 relative">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-5 sm:p-6 relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setEditNumber(false)}
-              className="absolute top-4 right-4 text-[#B0A48F] hover:text-[#2B2422]"
+              className="absolute top-4 right-4 text-[#B0A48F] hover:text-[#2B2422] p-1"
             >
               <X size={18} />
             </button>
             <h2
-              className="text-lg text-[#2B2422] mb-5"
+              className="text-lg text-[#2B2422] mb-5 pr-6"
               style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}
             >
               {login?.mobile_no ? "Edit your phone number" : "Add your phone number"}
@@ -615,7 +615,7 @@ export default function Buynow() {
               placeholder="Your phone number"
               className="w-full px-3.5 py-2.5 rounded-xl border border-[#EDE3D3] text-sm focus:outline-none focus:border-[#B8862E] mb-5"
             />
-            <div className="flex justify-end gap-2.5">
+            <div className="flex flex-wrap justify-end gap-2.5">
               <button
                 onClick={() => setEditNumber(false)}
                 className="px-4 py-2 rounded-xl text-sm font-medium text-[#8A7F73] border border-[#EDE3D3]"
@@ -653,7 +653,7 @@ export default function Buynow() {
       {/* Select address modal */}
       {selectionPage && (
         <div className="fixed inset-0 bg-[#2B2422]/60 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg p-6 max-h-[80vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl w-full max-w-lg p-5 sm:p-6 max-h-[85vh] sm:max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
               <h2
                 className="text-lg text-[#2B2422]"
@@ -663,7 +663,7 @@ export default function Buynow() {
               </h2>
               <button
                 onClick={() => setSelectionPage(false)}
-                className="text-[#B0A48F] hover:text-[#2B2422]"
+                className="text-[#B0A48F] hover:text-[#2B2422] p-1"
               >
                 <X size={18} />
               </button>
@@ -680,8 +680,8 @@ export default function Buynow() {
                       : "border-[#EDE3D3] bg-white"
                   }`}
                 >
-                  <p>{item.address}</p>
-                  <p className="text-[#8A7F73] mt-0.5">
+                  <p className="break-words">{item.address}</p>
+                  <p className="text-[#8A7F73] mt-0.5 break-words">
                     {item.city}, {item.state} - {item.pincode}
                   </p>
                   {selectedAddress === key && (
@@ -697,7 +697,7 @@ export default function Buynow() {
             <div className="flex justify-end mt-5">
               <button
                 onClick={() => setSelectionPage(false)}
-                className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-[#4A0E1C] text-[#FFFDF9]"
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-sm font-semibold bg-[#4A0E1C] text-[#FFFDF9]"
               >
                 Use this address
               </button>
@@ -706,15 +706,15 @@ export default function Buynow() {
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-8 pb-16">
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-16">
         {/* Stepper */}
-        <div className="flex items-center mb-9 max-w-md">
+        <div className="flex items-center mb-7 sm:mb-9 w-full sm:max-w-md overflow-x-auto">
           {STEPS.map((label, i) => {
             const isActive = i === 1;
             const isDone = i < 1;
             return (
-              <div key={label} className="flex items-center flex-1 last:flex-none">
-                <div className="flex items-center gap-2.5">
+              <div key={label} className="flex items-center flex-1 last:flex-none min-w-fit">
+                <div className="flex items-center gap-2 sm:gap-2.5">
                   <div
                     className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-semibold shrink-0"
                     style={{
@@ -726,23 +726,23 @@ export default function Buynow() {
                     {isDone ? <Check size={13} /> : i + 1}
                   </div>
                   <span
-                    className="text-xs whitespace-nowrap"
+                    className="text-[11px] sm:text-xs whitespace-nowrap"
                     style={{ color: isActive ? "#2B2422" : "#B0A48F", fontWeight: isActive ? 600 : 400 }}
                   >
                     {label}
                   </span>
                 </div>
-                {i < STEPS.length - 1 && <div className="flex-1 h-px bg-[#DCD0B8] mx-3 min-w-[24px]" />}
+                {i < STEPS.length - 1 && <div className="flex-1 h-px bg-[#DCD0B8] mx-2 sm:mx-3 min-w-[16px] sm:min-w-[24px]" />}
               </div>
             );
           })}
         </div>
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6 sm:mb-8">
           <div>
             <h1
-              className="text-[28px] sm:text-[32px] leading-tight text-[#2B2422]"
+              className="text-2xl sm:text-[28px] lg:text-[32px] leading-tight text-[#2B2422]"
               style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}
             >
               Review your order
@@ -757,31 +757,35 @@ export default function Buynow() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_300px] lg:grid-cols-[1fr_360px] gap-5 sm:gap-6 items-start">
           {/* Left column */}
-          <div className="space-y-5">
+          <div className="space-y-4 sm:space-y-5 min-w-0">
             {/* Name + address */}
-            <div className="bg-white rounded-2xl border border-[#EDE3D3] p-5 sm:p-6 space-y-4">
-              <div className="flex items-center justify-between">
+            <div className="bg-white rounded-2xl border border-[#EDE3D3] p-4 sm:p-5 lg:p-6 space-y-4">
+              <div className="flex items-center justify-between gap-3">
                 <span className="text-xs font-semibold text-[#8A7F73] uppercase tracking-[0.12em]">
                   Name
                 </span>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-[#2B2422]">{login?.name}</span>
-                  <img
-                    src={edit}
-                    className="h-4 w-4 cursor-pointer opacity-70 hover:opacity-100"
-                    alt="edit"
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-sm font-medium text-[#2B2422] truncate max-w-[160px] sm:max-w-none">{login?.name}</span>
+                  <button
+                    className="p-1.5 -m-1.5 shrink-0"
                     onClick={() => {
                       setProfileName(login?.name || "");
                       setEditProfile(true);
                     }}
-                  />
+                  >
+                    <img
+                      src={edit}
+                      className="h-4 w-4 cursor-pointer opacity-70 hover:opacity-100"
+                      alt="edit"
+                    />
+                  </button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#8A7F73] uppercase tracking-[0.12em]">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs font-semibold text-[#8A7F73] uppercase tracking-[0.12em] shrink-0">
                   Mobile No.
                 </span>
                 <div className="flex items-center gap-2">
@@ -789,18 +793,22 @@ export default function Buynow() {
                     {login?.mobile_no ? login.mobile_no : null}
                   </span>
                   {login?.mobile_no ? (
-                    <img
-                      src={edit}
-                      className="h-4 w-4 cursor-pointer opacity-70 hover:opacity-100"
-                      alt="edit"
+                    <button
+                      className="p-1.5 -m-1.5 shrink-0"
                       onClick={() => {
                         setMobile_no(login?.mobile_no || "");
                         setEditNumber(true);
                       }}
-                    />
+                    >
+                      <img
+                        src={edit}
+                        className="h-4 w-4 cursor-pointer opacity-70 hover:opacity-100"
+                        alt="edit"
+                      />
+                    </button>
                   ) : (
                     <div
-                      className="text-xs font-semibold text-[#FFFDF9] bg-[#4A0E1C] px-3 py-1.5 rounded-full shrink-0 cursor-pointer"
+                      className="text-xs font-semibold text-[#FFFDF9] bg-[#4A0E1C] px-3 py-1.5 rounded-full shrink-0 cursor-pointer whitespace-nowrap"
                       onClick={() => {
                         setMobile_no(login?.mobile_no || "");
                         setEditNumber(true);
@@ -814,17 +822,17 @@ export default function Buynow() {
 
               <div className="h-px bg-[#F3EDE0]" />
 
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
+                <div className="flex gap-3 min-w-0">
                   <div className="w-9 h-9 rounded-full bg-[#FBF3E0] flex items-center justify-center shrink-0">
                     <MapPin size={16} className="text-[#B8862E]" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-xs font-semibold text-[#8A7F73] uppercase tracking-[0.12em] mb-1">
                       Delivering to
                     </p>
                     {address ? (
-                      <p className="text-sm text-[#2B2422] leading-relaxed max-w-md">
+                      <p className="text-sm text-[#2B2422] leading-relaxed break-words">
                         {address.address}, {address.city}, {address.state} - {address.pincode}
                       </p>
                     ) : (
@@ -834,16 +842,17 @@ export default function Buynow() {
                 </div>
 
                 {address ? (
-                  <div className="flex items-center gap-3 shrink-0">
-                    <img
-                      src={edit}
-                      className="h-4 w-4 cursor-pointer opacity-70 hover:opacity-100"
-                      alt="edit"
-                      onClick={() => setIsEditOpen(true)}
-                    />
+                  <div className="flex items-center gap-3 shrink-0 pl-12 sm:pl-0">
+                    <button className="p-1.5 -m-1.5" onClick={() => setIsEditOpen(true)}>
+                      <img
+                        src={edit}
+                        className="h-4 w-4 cursor-pointer opacity-70 hover:opacity-100"
+                        alt="edit"
+                      />
+                    </button>
                     <button
                       onClick={() => setSelectionPage(true)}
-                      className="text-xs font-medium text-[#4A0E1C] flex items-center gap-0.5 hover:underline"
+                      className="text-xs font-medium text-[#4A0E1C] flex items-center gap-0.5 hover:underline whitespace-nowrap"
                     >
                       Change
                       <ChevronRight size={13} />
@@ -852,7 +861,7 @@ export default function Buynow() {
                 ) : (
                   <Link
                     to="/account"
-                    className="text-xs font-semibold text-[#FFFDF9] bg-[#4A0E1C] px-3 py-1.5 rounded-full shrink-0"
+                    className="text-xs font-semibold text-[#FFFDF9] bg-[#4A0E1C] px-3 py-1.5 rounded-full shrink-0 w-fit"
                   >
                     Add address
                   </Link>
@@ -861,7 +870,7 @@ export default function Buynow() {
             </div>
 
             {/* ── Payment method ── */}
-            <div className="bg-white rounded-2xl border border-[#EDE3D3] p-5 sm:p-6">
+            <div className="bg-white rounded-2xl border border-[#EDE3D3] p-4 sm:p-5 lg:p-6">
               <h2 className="text-xs font-semibold text-[#8A7F73] uppercase tracking-[0.12em] mb-4">
                 Payment method
               </h2>
@@ -880,12 +889,12 @@ export default function Buynow() {
                     name="paymentMethod"
                     checked={paymentMethod === "ONLINE"}
                     onChange={() => setPaymentMethod("ONLINE")}
-                    className="mt-1 accent-[#4A0E1C]"
+                    className="mt-1 accent-[#4A0E1C] shrink-0"
                   />
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
                       <p className="text-sm font-semibold text-[#2B2422]">Pay online</p>
-                      <span className="text-sm font-semibold text-[#2B2422]">
+                      <span className="text-sm font-semibold text-[#2B2422] whitespace-nowrap">
                         {currency(total)}
                       </span>
                     </div>
@@ -908,15 +917,15 @@ export default function Buynow() {
                     name="paymentMethod"
                     checked={paymentMethod === "COD"}
                     onChange={() => setPaymentMethod("COD")}
-                    className="mt-1 accent-[#4A0E1C]"
+                    className="mt-1 accent-[#4A0E1C] shrink-0"
                   />
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-sm font-semibold text-[#2B2422] flex items-center gap-1.5">
-                        <Banknote size={15} className="text-[#3F7D58]" />
+                        <Banknote size={15} className="text-[#3F7D58] shrink-0" />
                         Cash on delivery
                       </p>
-                      <span className="text-sm font-semibold text-[#2B2422]">
+                      <span className="text-sm font-semibold text-[#2B2422] whitespace-nowrap">
                         {currency(COD_ADVANCE)} now
                       </span>
                     </div>
@@ -931,25 +940,33 @@ export default function Buynow() {
             </div>
 
             {/* Items */}
-            <div className="bg-white rounded-2xl border border-[#EDE3D3] p-5 sm:p-6">
+            <div className="bg-white rounded-2xl border border-[#EDE3D3] p-4 sm:p-5 lg:p-6">
               <h2 className="text-xs font-semibold text-[#8A7F73] uppercase tracking-[0.12em] mb-5">
                 Order items
               </h2>
 
               <div className="divide-y divide-[#F3EDE0]">
                 {items.map((item, idx) => (
-                  <div key={item.product_id || idx} className="flex items-center gap-4 py-5 first:pt-0 last:pb-0">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-[72px] h-[88px] rounded-xl object-cover shrink-0 border border-[#EDE3D3]"
-                    />
+                  <div key={item.product_id || idx} className="flex items-center gap-3 sm:gap-4 py-4 sm:py-5 first:pt-0 last:pb-0">
+                    <div className="w-14 h-[70px] sm:w-[72px] sm:h-[88px] rounded-xl shrink-0 border border-[#EDE3D3] bg-[#F3EDE0] overflow-hidden">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.style.visibility = "hidden";
+                        }}
+                      />
+                    </div>
 
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-[14.5px] font-medium text-[#2B2422] leading-snug">
+                      <h3 className="text-sm sm:text-[14.5px] font-medium text-[#2B2422] leading-snug line-clamp-2">
                         {item.name}
                       </h3>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-[#9C9082]">
+                      <div className="flex flex-wrap gap-x-3 sm:gap-x-4 gap-y-1 mt-2 text-xs text-[#9C9082]">
                         <span>Size {item.size}</span>
                         {item.color && <span>Color {item.color}</span>}
                         <span>Qty {item.qty}</span>
@@ -960,7 +977,7 @@ export default function Buynow() {
                       <p className="text-sm font-semibold text-[#2B2422]">
                         {currency(item.price * item.qty)}
                       </p>
-                      <p className="text-[11px] text-[#B0A48F] mt-0.5">{currency(item.price)} / piece</p>
+                      <p className="text-[11px] text-[#B0A48F] mt-0.5 whitespace-nowrap">{currency(item.price)} / piece</p>
                     </div>
                   </div>
                 ))}
@@ -968,7 +985,7 @@ export default function Buynow() {
             </div>
 
             {/* Trust strip */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               {[
                 { icon: ShieldCheck, label: "Secure payments" },
                 { icon: RotateCcw, label: "6-hours easy returns" },
@@ -976,18 +993,18 @@ export default function Buynow() {
               ].map(({ icon: Icon, label }) => (
                 <div
                   key={label}
-                  className="bg-white border border-[#EDE3D3] rounded-xl px-3 py-3.5 flex flex-col items-center text-center gap-1.5"
+                  className="bg-white border border-[#EDE3D3] rounded-xl px-2 sm:px-3 py-3 sm:py-3.5 flex flex-col items-center text-center gap-1.5"
                 >
                   <Icon size={17} className="text-[#B8862E]" />
-                  <span className="text-[11px] text-[#8A7F73] leading-tight">{label}</span>
+                  <span className="text-[10px] sm:text-[11px] text-[#8A7F73] leading-tight">{label}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Right column — summary */}
-          <div className="lg:sticky lg:top-6 space-y-4">
-            <div className="bg-white rounded-2xl border border-[#EDE3D3] p-6">
+          <div className="md:sticky md:top-6 space-y-4 min-w-0">
+            <div className="bg-white rounded-2xl border border-[#EDE3D3] p-4 sm:p-5 lg:p-6">
               <h2 className="text-xs font-semibold text-[#8A7F73] uppercase tracking-[0.12em] mb-5">
                 Payment summary
               </h2>
@@ -995,42 +1012,42 @@ export default function Buynow() {
               {/* ── Coupon section ── */}
               <div className="mb-5">
                 {!appliedCoupon ? (
-                  <div className="flex gap-2">
+                  <div className="flex flex-col xs:flex-row sm:flex-row gap-2">
                     <input
                       type="text"
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                       placeholder="COUPON CODE"
-                      className="flex-1 px-3.5 py-2.5 rounded-xl border border-[#EDE3D3] text-sm focus:outline-none focus:border-[#B8862E] uppercase tracking-wide"
+                      className="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl border border-[#EDE3D3] text-sm focus:outline-none focus:border-[#B8862E] uppercase tracking-wide"
                       onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
                     />
                     <button
                       onClick={handleApplyCoupon}
                       disabled={couponLoading || !couponCode.trim()}
-                      className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#4A0E1C] text-[#FFFDF9] disabled:opacity-60 transition-all flex items-center gap-2"
+                      className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#4A0E1C] text-[#FFFDF9] disabled:opacity-60 transition-all flex items-center justify-center gap-2 shrink-0"
                     >
                       {couponLoading && <ClipLoader color="#FFFDF9" size={12} />}
                       {couponLoading ? "Applying…" : "Apply"}
                     </button>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between bg-[#FBF3E0] border border-[#E7D49E] rounded-xl px-3.5 py-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-[#4A0E1C] flex items-center justify-center">
+                  <div className="flex items-center justify-between gap-2 bg-[#FBF3E0] border border-[#E7D49E] rounded-xl px-3 sm:px-3.5 py-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-7 h-7 rounded-full bg-[#4A0E1C] flex items-center justify-center shrink-0">
                         <Tag size={13} className="text-[#FFFDF9]" />
                       </div>
-                      <div>
-                        <p className="text-sm font-semibold text-[#2B2422] uppercase tracking-wide">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[#2B2422] uppercase tracking-wide truncate">
                           {appliedCoupon.code}
                         </p>
-                        <p className="text-xs text-[#3F7D58] font-medium">
+                        <p className="text-xs text-[#3F7D58] font-medium whitespace-nowrap">
                           −{currency(appliedCoupon.discount_amount)} saved
                         </p>
                       </div>
                     </div>
                     <button
                       onClick={handleRemoveCoupon}
-                      className="text-xs font-semibold text-[#8A7F73] hover:text-[#4A0E1C] px-2 py-1 rounded-lg hover:bg-[#F5E9C8] transition-colors"
+                      className="text-xs font-semibold text-[#8A7F73] hover:text-[#4A0E1C] px-2 py-1 rounded-lg hover:bg-[#F5E9C8] transition-colors shrink-0"
                     >
                       Remove
                     </button>
@@ -1039,45 +1056,45 @@ export default function Buynow() {
               </div>
 
               <div className="space-y-3 text-sm text-[#4A413A]">
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-2">
                   <span>
                     Subtotal <span className="text-[#B0A48F]">({totalItems} items)</span>
                   </span>
-                  <span>{currency(subtotal)}</span>
+                  <span className="whitespace-nowrap">{currency(subtotal)}</span>
                 </div>
 
-                <div className="flex justify-between text-[#3F7D58]">
+                <div className="flex justify-between text-[#3F7D58] gap-2">
                   <span className="flex items-center gap-1.5">
                     <Tag size={13} />
                     Discount (10%)
                   </span>
-                  <span>−{currency(defaultDiscount)}</span>
+                  <span className="whitespace-nowrap">−{currency(defaultDiscount)}</span>
                 </div>
 
                 {appliedCoupon && (
-                  <div className="flex justify-between text-[#3F7D58]">
-                    <span className="flex items-center gap-1.5">
-                      <Tag size={13} />
+                  <div className="flex justify-between text-[#3F7D58] gap-2">
+                    <span className="flex items-center gap-1.5 min-w-0 truncate">
+                      <Tag size={13} className="shrink-0" />
                       Coupon ({appliedCoupon.code})
                     </span>
-                    <span>−{currency(appliedCoupon.discount_amount)}</span>
+                    <span className="whitespace-nowrap">−{currency(appliedCoupon.discount_amount)}</span>
                   </div>
                 )}
 
                 {paymentMethod === "COD" && (
-                  <div className="flex justify-between text-[#8A6A15]">
+                  <div className="flex justify-between text-[#8A6A15] gap-2">
                     <span className="flex items-center gap-1.5">
                       <Banknote size={13} />
                       Balance on delivery
                     </span>
-                    <span>{currency(codBalance)}</span>
+                    <span className="whitespace-nowrap">{currency(codBalance)}</span>
                   </div>
                 )}
               </div>
 
               <div className="h-px bg-[#F0E9DD] my-5" />
 
-              <div className="flex justify-between items-baseline mb-1">
+              <div className="flex justify-between items-baseline mb-1 gap-2">
                 <span
                   className="text-base text-[#2B2422]"
                   style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}
@@ -1085,7 +1102,7 @@ export default function Buynow() {
                   Total
                 </span>
                 <span
-                  className="text-2xl text-[#4A0E1C]"
+                  className="text-xl sm:text-2xl text-[#4A0E1C] whitespace-nowrap"
                   style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}
                 >
                   {currency(total)}
@@ -1123,11 +1140,11 @@ export default function Buynow() {
 
             <p className="text-[11px] text-[#B0A48F] text-center px-4 leading-relaxed">
               By placing this order you agree to SS Garments'{" "}
-              <span className="text-[#8A7F73] underline underline-offset-2" onClick={() => navigate("/terms")}>
+              <span className="text-[#8A7F73] underline underline-offset-2 cursor-pointer" onClick={() => navigate("/terms")}>
                 terms
               </span>{" "}
               and{" "}
-              <span className="text-[#8A7F73] underline underline-offset-2" onClick={() => navigate("/returns")}>
+              <span className="text-[#8A7F73] underline underline-offset-2 cursor-pointer" onClick={() => navigate("/returns")}>
                 return policy
               </span>
               .
