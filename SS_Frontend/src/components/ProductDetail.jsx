@@ -427,6 +427,7 @@ export default function ProductDetail() {
                 <span className="truncate">
                   {sizes?.[selectedSize]?.stock === 0?"Out of Stock for buying":"Buy Now"}
                 </span>
+                
               </button>
             </div>
           </div>
