@@ -146,8 +146,8 @@ export default function CartPage() {
     [cartItems]
   );
 
-  const shipping = subtotal > 0 ? 99 : 0;
-  const total = subtotal + shipping;
+  
+  const total = subtotal 
 
   /* 🔹 Send the current cart items to the BuyNow page */
   const handleCheckout = () => {
@@ -331,13 +331,7 @@ export default function CartPage() {
                     </span>
                     <span>{currency(subtotal)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="flex items-center gap-1.5">
-                      <Truck size={13} className="text-[#9C9082]" />
-                      Shipping
-                    </span>
-                    <span>{currency(shipping)}</span>
-                  </div>
+                  
                 </div>
 
                 <div className="h-px bg-[#F0E9DD] my-5" />
