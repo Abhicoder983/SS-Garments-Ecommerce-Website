@@ -481,7 +481,7 @@ export default function SearchResults() {
               <div
                 key={item.variant_id}
                 className="group bg-white rounded-2xl border border-[#EDE8E0] overflow-hidden hover:shadow-lg hover:shadow-black/[0.05] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
-                onClick={() => navigate(`/checkout?id=${item.variant_id}`)}
+                onClick={() => navigate(`/checkout?id=${item.variant_id}&size=${item.size}`)}
               >
                 <div className="relative aspect-[3/4] bg-[#FDFBF7] overflow-hidden">
                   <img
@@ -494,11 +494,19 @@ export default function SearchResults() {
                       {item.brand}
                     </span>
                   </div>
+                  <div className="flex">
                   <div className="absolute bottom-2.5 left-2.5">
                     <span className="px-2 py-0.5 rounded-md bg-[#2B2422]/80 backdrop-blur-sm text-[10px] font-bold text-white">
                       {item.color}
                     </span>
                   </div>
+                  <div className="absolute bottom-2.5 right-2.5">
+                    <span className="px-2 py-0.5 rounded-md bg-[#2B2422]/80 backdrop-blur-sm text-[10px] font-bold text-white">
+                      {item.size.replace("_", " ").toUpperCase()}
+                    </span>
+                  </div>
+                  </div>
+                   
                 </div>
 
                 <div className="p-3.5 sm:p-4">

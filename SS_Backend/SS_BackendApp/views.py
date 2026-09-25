@@ -1066,6 +1066,7 @@ def product_list(request):
                 "image": vs.variant.image.url if vs.variant.image else None,
                 "variant_id": str(vs.variant.id),
                 "color": vs.variant.color,
+                "size":vs.size
             }
  
     all_products = list(products_map.values())
