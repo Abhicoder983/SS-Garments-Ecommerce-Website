@@ -481,7 +481,7 @@ export default function SearchResults() {
               <div
                 key={item.variant_id}
                 className="group bg-white rounded-2xl border border-[#EDE8E0] overflow-hidden hover:shadow-lg hover:shadow-black/[0.05] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
-                onClick={() => navigate(`/checkout?id=${item.variant_id}&size=${item.size}`)}
+                onClick={() => navigate(`/checkout?id=${item.variant_id}`, { state: { sizename: item.size } })}
               >
                 <div className="relative aspect-[3/4] bg-[#FDFBF7] overflow-hidden">
                   <img

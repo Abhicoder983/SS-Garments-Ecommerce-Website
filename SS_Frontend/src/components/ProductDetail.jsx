@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import NavBar from "./NavBar";
 import Footer from "./Footer";
@@ -26,7 +26,8 @@ export default function ProductDetail() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const variantId = searchParams.get("id");
-  const sizename = searchParams.get("size");
+  const { state } = useLocation();
+  const {sizename} = state;
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
