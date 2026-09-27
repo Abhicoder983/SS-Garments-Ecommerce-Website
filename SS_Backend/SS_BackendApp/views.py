@@ -988,6 +988,7 @@ def product_list(request):
     search = (request.GET.get("search") or "").strip()
     if search:
         keywords = search.split()
+        print(keywords)
         search_q = Q()
  
         for word in keywords:
