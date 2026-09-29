@@ -201,6 +201,7 @@ export default function CustomerList() {
                       {customer.name || '—'}
                     </p>
                     <p className="text-xs text-slate-500 truncate">{customer.email}</p>
+                    <p className="text-xs text-slate-500 truncate">{customer.moble_no || "—"}</p>
                   </div>
                 </div>
                 <span
@@ -269,6 +270,7 @@ export default function CustomerList() {
                 <tr className="bg-slate-50/80 border-b border-slate-100">
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Mobile No.</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Orders</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
@@ -299,6 +301,7 @@ export default function CustomerList() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-slate-600 whitespace-nowrap">{customer.email}</td>
+                    <td className="px-6 py-4 text-slate-600 whitespace-nowrap">{customer.mobile_no || '—'}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-xs font-semibold">
                         {customer.total_order ?? 0}

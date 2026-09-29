@@ -17,7 +17,7 @@ class CustomerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserModel
-        fields = ['id', 'name', 'email', 'total_order', 'is_active', 'address']
+        fields = ['id', 'name', "profile_image",'email', 'total_order', 'is_active', 'address',"mobile_no"]
 
     def get_id(self, obj):
         return str(obj.id)
@@ -33,7 +33,7 @@ class CustomerDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserModel
-        fields = ['id', 'name', 'email', 'profile_image', 'total_order', 'is_active', 'address']
+        fields = ['id', 'name', "mobile_no",'email', 'profile_image', 'total_order', 'is_active', 'address']
 
     def get_id(self, obj):
         return str(obj.id)
