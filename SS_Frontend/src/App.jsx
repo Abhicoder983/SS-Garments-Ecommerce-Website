@@ -15,12 +15,11 @@ import PolicyPage from './components/PolicyPage';
 import TermsAndConditions from "./components/TermsAndConditions";
 import PaymentCheckout from "./components/PaymentCheckout.jsx";
 import OrderProcessing from "./components/OrderProcessing";
-import BackgroundMusic from './components/BackgroundMusic.jsx';
 
 function App() {
   return (
     <>
-    <BackgroundMusic />
+    
     <ToastContainer />
 
     <GoogleSignInDropdown />
