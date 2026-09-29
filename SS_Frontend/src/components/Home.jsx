@@ -1,13 +1,9 @@
 import NavBar from "./NavBar"
 import Footer from "./Footer"
-import latest1 from "../assets/homeAssests/latest/latest1.jpg"
-import latest2 from "../assets/homeAssests/latest/latest2.jpg"
 import india from "../assets/homeAssests/policy/india.png"
 import returnDelivery from "../assets/homeAssests/policy/returnDelivery.png"
 import GoogleSignInButton from "./auth/GoogleSignInButton";
 import axios from "axios";
-import offer1 from "../assets/homeAssests/extraOffer/offer1.jpg"
-import offer2 from "../assets/homeAssests/extraOffer/offer2.jpg"
 import { useEffect, useState, useContext, useMemo, useRef } from "react"
 import { StoreContext } from "../Context/StoreContext.jsx";
 import { AuthContext } from "../Context/AuthContext.jsx"
@@ -19,85 +15,125 @@ const apiUrl = import.meta.env.VITE_API_URL;
 const shortText = (text, limit = 120) =>
   text?.length > limit ? text.slice(0, limit) + "..." : text;
 
-// These were previously declared inside Homes() and recreated on every
-// render, which React warns about ("Cannot create components during
-// render") since it resets their internal state each time. Declaring
-// them at module scope fixes that; the data they need (product,
-// imgArray, navigate) is passed in as props instead of closed over.
+const serif = { fontFamily: "'Fraunces', serif", fontWeight: 600 };
 
-const SectionTitle = ({ children, icon: Icon, count }) => (
-  <div className="flex items-center gap-4 w-full max-w-5xl mx-auto px-4 py-5">
-    {Icon && <Icon size={20} className="text-[#B8862E] shrink-0" />}
-    <p
-      className="text-lg md:text-2xl text-[#2B2422] capitalize whitespace-nowrap tracking-tight"
-      style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}
-    >
-      {children}
-    </p>
-    <div className="h-px grow bg-gradient-to-r from-[#DCD0B8] to-transparent" />
-    {typeof count === "number" && (
-      <span className="text-xs text-[#9C9082] shrink-0">{count} styles</span>
-    )}
-  </div>
-);
+// Components live at module scope so React doesn't remount them on every
+// render of Homes(). Data they need is passed in as props.
 
-const ProductCard = ({ item, layout = "grid", navigate }) => (
-  <div
-    className={`
-      group relative border border-[#EDE3D3] bg-white rounded-2xl overflow-hidden
-      transition-shadow duration-500 ease-out
-      hover:shadow-[0_8px_30px_rgb(0,0,0,0.07)]
-      ${layout === "scroll" ? "md:w-[320px] w-[280px] shrink-0" : "flex flex-col"}
-    `}
-    onClick={()=> navigate(`/checkout?id=${item?.variant_id}`)}
-  >
-    <div className={`relative overflow-hidden bg-[#FAF6EF] ${layout === "scroll" ? "h-52" : "aspect-[4/5]"}`}>
-      <img
-        src={item?.image}
-        className="w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105"
-        alt={item?.product_name || "Product photo"}
-      />
-    </div>
-
-    <div className="p-4 flex flex-col grow">
-      <h2 className="md:text-lg text-base capitalize font-semibold text-[#2B2422] leading-snug">
-        {item?.product_name}
-      </h2>
-
-      <p className="text-sm mt-1.5 text-[#8A7F73] line-clamp-2 leading-relaxed">
-        {shortText(item?.description)}
-      </p>
-
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#F5EFE3]">
-        <span className="text-xs font-medium text-[#9C9082] uppercase tracking-wider">
-          {item?.brand}
-        </span>
-        <span
-          className="text-lg md:text-xl text-[#4A0E1C]"
-          style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}
+const SectionTitle = ({ children, icon: Icon, count, onViewAll }) => (
+  <div className="flex items-end justify-between gap-4 w-full max-w-5xl mx-auto px-4 pt-12 pb-5">
+    <div className="min-w-0">
+      <div className="flex items-center gap-2.5">
+        {Icon && <Icon size={18} className="text-[#B8862E] shrink-0" />}
+        <h2
+          className="text-2xl md:text-3xl text-[#2B2422] capitalize tracking-tight leading-none truncate"
+          style={serif}
         >
-          ₹{item?.price}
-        </span>
+          {children}
+        </h2>
       </div>
+      <div className="mt-3 h-[3px] w-12 rounded-full bg-[#B8862E]" />
+    </div>
+
+    <div className="flex items-center gap-4 shrink-0">
+      {typeof count === "number" && (
+        <span className="hidden sm:inline text-sm text-[#9C9082]">{count} styles</span>
+      )}
+      {onViewAll && (
+        <button
+          onClick={onViewAll}
+          className="group inline-flex items-center gap-1.5 text-sm font-semibold text-[#4A0E1C]
+          hover:text-[#B8862E] transition-colors duration-300 rounded
+          focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#B8862E]"
+        >
+          View all
+          <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-1" />
+        </button>
+      )}
     </div>
   </div>
 );
 
-const ScrollSection = ({ categoryIndex, product, imgArray, navigate }) => (
-  <div className="max-w-5xl mx-auto px-4">
-    <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide"
-      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-      {product[imgArray?.[categoryIndex]]?.map((item, i) => (
-        <div key={i} className="snap-start">
-          <ProductCard item={item} layout="scroll" navigate={navigate} />
+const ProductCard = ({ item, layout = "grid", navigate }) => {
+  const go = () => navigate(`/checkout?id=${item?.variant_id}`);
+
+  return (
+    <article
+      role="link"
+      tabIndex={0}
+      aria-label={`${item?.product_name || "Product"}, ₹${item?.price}`}
+      className={`
+        group relative bg-white rounded-xl overflow-hidden cursor-pointer
+        ring-1 ring-[#EDE3D3] transition-all duration-500 ease-out
+        hover:ring-[#DCD0B8] hover:-translate-y-1 hover:shadow-[0_14px_34px_-12px_rgba(74,14,28,0.25)]
+        focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#B8862E]
+        ${layout === "scroll" ? "md:w-[320px] w-[280px] shrink-0" : "flex flex-col"}
+      `}
+      onClick={go}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          go();
+        }
+      }}
+    >
+      <div className={`relative overflow-hidden bg-[#F5EFE3] ${layout === "scroll" ? "h-52" : "aspect-[4/5]"}`}>
+        <img
+          src={item?.image}
+          loading="lazy"
+          className="w-full h-full object-contain p-2 transition-transform duration-700 ease-out group-hover:scale-105"
+          alt={item?.product_name || "Product photo"}
+        />
+
+        {/* Buy cue slides up on hover (desktop); always visible on touch via the price row */}
+        <div
+          className="hidden md:flex absolute inset-x-3 bottom-3 items-center justify-center gap-2
+          rounded-full bg-[#4A0E1C] text-[#F5E9C8] text-sm font-semibold py-2.5
+          translate-y-[140%] group-hover:translate-y-0 transition-transform duration-500 ease-out"
+        >
+          <ShoppingBag size={15} />
+          Buy now
         </div>
-      ))}
-    </div>
-  </div>
-);
+      </div>
+
+      <div className="p-4 flex flex-col grow">
+        {item?.brand && (
+          <span className="text-xs font-medium text-[#B8862E] mb-1">{item.brand}</span>
+        )}
+
+        <h3 className="text-base capitalize font-semibold text-[#2B2422] leading-snug line-clamp-2">
+          {item?.product_name}
+        </h3>
+
+        <p className="text-sm mt-1.5 text-[#8A7F73] line-clamp-2 leading-relaxed">
+          {shortText(item?.description)}
+        </p>
+
+        <div className="mt-auto pt-4">
+          <span className="text-xl md:text-2xl text-[#4A0E1C]" style={serif}>
+            ₹{item?.price}
+          </span>
+        </div>
+      </div>
+    </article>
+  );
+};
+
+// const ScrollSection = ({ categoryIndex, product, imgArray, navigate }) => (
+//   <div className="max-w-5xl mx-auto px-4">
+//     <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide"
+//       style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+//       {product[imgArray?.[categoryIndex]]?.map((item, i) => (
+//         <div key={i} className="snap-start">
+//           <ProductCard item={item} layout="scroll" navigate={navigate} />
+//         </div>
+//       ))}
+//     </div>
+//   </div>
+// );
 
 const GridSection = ({ categoryIndex, product, imgArray, navigate }) => (
-  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full max-w-5xl mx-auto px-4">
+  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5 w-full max-w-5xl mx-auto px-4">
     {product[imgArray?.[categoryIndex]]?.map((item, i) => (
       <ProductCard key={i} item={item} layout="grid" navigate={navigate} />
     ))}
@@ -108,34 +144,46 @@ const GridSection = ({ categoryIndex, product, imgArray, navigate }) => (
 // Pulls the first product's image from that category as the banner
 // photo, so the visuals stay in sync with whatever the backend sends
 // back — no hardcoded category list or static images.
-const CategoryCard = ({ categoryName, product, navigate }) => {
+const CategoryCard = ({ categoryName, product, navigate, featured = false }) => {
   const items = product[categoryName] || [];
   const bannerImage = items[0]?.image;
 
   return (
     <button
       onClick={() => navigate(`/products?search=${encodeURIComponent(categoryName)}`)}
-      className="group relative w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-md
-      hover:shadow-[0_8px_30px_rgb(0,0,0,0.15)] transition-shadow duration-500 text-left
-      focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#B8862E]"
+      className={`group relative w-full h-full rounded-2xl overflow-hidden text-left
+      ring-1 ring-[#EDE3D3] transition-shadow duration-500
+      hover:shadow-[0_14px_34px_-12px_rgba(28,21,18,0.45)]
+      focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#B8862E]
+      ${featured ? "col-span-2 row-span-2" : ""}`}
     >
-      <div className="absolute inset-0 bg-[#FAF6EF]">
+      <div className="absolute inset-0 bg-[#F5EFE3]">
         <img
           src={bannerImage}
-          alt={categoryName}
+          alt=""
+          loading="lazy"
           className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         />
       </div>
-      <div className="absolute inset-0 bg-gradient-to-t from-[#1C1512]/85 via-[#1C1512]/20 to-transparent" />
-      <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-        <span className="block text-xs md:text-sm font-medium tracking-widest uppercase text-white/70">
-          Shop
-        </span>
+      <div className="absolute inset-0 bg-gradient-to-t from-[#1C1512]/80 via-[#1C1512]/10 to-transparent" />
+
+      <div className="absolute bottom-0 left-0 right-0 p-4 md:p-5 flex items-end justify-between gap-3 text-white">
+        <div className="min-w-0">
+          <span
+            className={`block capitalize leading-tight truncate ${featured ? "text-3xl md:text-4xl" : "text-xl md:text-2xl"}`}
+            style={serif}
+          >
+            {categoryName}
+          </span>
+          <span className="block text-xs md:text-sm text-white/70 mt-1">
+            {items.length} {items.length === 1 ? "style" : "styles"}
+          </span>
+        </div>
         <span
-          className="block text-2xl md:text-3xl leading-tight capitalize"
-          style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}
+          className="shrink-0 grid place-items-center w-9 h-9 rounded-full bg-[#FAF6EF] text-[#4A0E1C]
+          transition-transform duration-300 group-hover:translate-x-1"
         >
-          {categoryName}
+          <ArrowRight size={16} />
         </span>
       </div>
     </button>
@@ -145,21 +193,41 @@ const CategoryCard = ({ categoryName, product, navigate }) => {
 const CategorySection = ({ product, imgArray, navigate }) => {
   if (!imgArray?.length) return null;
   return (
-    <div className="max-w-5xl mx-auto px-4 mt-10">
-      <SectionTitle icon={Sparkles}>Shop By Category</SectionTitle>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {imgArray.map((categoryName) => (
+    <div className="max-w-5xl mx-auto px-4 pt-6">
+      <div className="pb-5">
+        <h2 className="text-2xl md:text-3xl text-[#2B2422] tracking-tight leading-none" style={serif}>
+          Shop by category
+        </h2>
+        <div className="mt-3 h-[3px] w-12 rounded-full bg-[#B8862E]" />
+      </div>
+
+      {/* First category gets the large tile; the rest fill around it */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 auto-rows-[190px] md:auto-rows-[230px]">
+        {imgArray.map((categoryName, i) => (
           <CategoryCard
             key={categoryName}
             categoryName={categoryName}
             product={product}
             navigate={navigate}
+            featured={i === 0 && imgArray.length > 2}
           />
         ))}
       </div>
     </div>
   );
 };
+
+const ProductSkeleton = () => (
+  <div className="rounded-xl bg-white ring-1 ring-[#EDE3D3] overflow-hidden animate-pulse">
+    <div className="aspect-[4/5] bg-[#F5EFE3]" />
+    <div className="p-4 space-y-2.5">
+      <div className="h-3 w-1/3 bg-[#EDE3D3] rounded" />
+      <div className="h-4 w-4/5 bg-[#EDE3D3] rounded" />
+      <div className="h-3 w-full bg-[#F5EFE3] rounded" />
+      <div className="h-6 w-1/3 bg-[#EDE3D3] rounded mt-4" />
+    </div>
+  </div>
+);
 
 export default function Homes() {
   const { setLogin, token, setToken } = useContext(AuthContext);
@@ -188,8 +256,13 @@ export default function Homes() {
         to { opacity: 1; transform: scale(1); }
       }
       .hero-slide { animation: heroReveal 900ms ease both; }
+      @keyframes pageIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .page-in { animation: pageIn 600ms ease both; }
       @media (prefers-reduced-motion: reduce) {
-        .hero-slide { animation: none; }
+        .hero-slide, .page-in { animation: none; }
       }
     `;
     document.head.appendChild(style);
@@ -244,10 +317,19 @@ export default function Homes() {
     return (
       <>
         <NavBar />
-        <div className="h-screen bg-[#FAF6EF] flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-10 h-10 border-3 border-[#DCD0B8] border-t-[#4A0E1C] rounded-full animate-spin" />
-            <p className="text-[#8A7F73] text-sm font-medium tracking-wide">Loading your experience...</p>
+        <div className="min-h-screen bg-[#FAF6EF] pt-10" style={{ fontFamily: "'Inter', sans-serif" }}>
+          <div className="max-w-5xl mx-auto px-4">
+            <div className="h-8 w-56 rounded bg-[#EDE3D3] animate-pulse mb-6" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 auto-rows-[190px] md:auto-rows-[230px]">
+              <div className="col-span-2 row-span-2 rounded-2xl bg-[#EDE3D3] animate-pulse" />
+              <div className="rounded-2xl bg-[#EDE3D3] animate-pulse" />
+              <div className="rounded-2xl bg-[#EDE3D3] animate-pulse" />
+              <div className="rounded-2xl bg-[#EDE3D3] animate-pulse" />
+              <div className="rounded-2xl bg-[#EDE3D3] animate-pulse" />
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 mt-14">
+              {[0, 1, 2, 3].map((n) => <ProductSkeleton key={n} />)}
+            </div>
           </div>
         </div>
       </>
@@ -263,8 +345,8 @@ export default function Homes() {
       <div className={openMenu ? 'h-[75vh] overflow-y-clip w-auto bg-[#FAF6EF]' : 'bg-[#FAF6EF]'} style={{ fontFamily: "'Inter', sans-serif" }}>
 
         {/* ─── Hero Slider ─── */}
-        <div className="max-w-5xl mt-1 mx-auto px-4">
-          <div className="relative w-full h-[70vh] md:h-[75vh] overflow-hidden bg-[#1C1512] rounded-b-3xl shadow-2xl">
+        {/* <div className="max-w-5xl mt-1 mx-auto px-4"> */}
+          {/* <div className="relative w-full h-[70vh] md:h-[75vh] overflow-hidden bg-[#1C1512] rounded-b-3xl shadow-2xl">
             <img
               key={index}
               src={heroItem?.image}
@@ -300,9 +382,9 @@ export default function Homes() {
                   </button>
                 </div>
               </div>
-            </div>
+            </div> */}
 
-            {/* Prev / next controls, shown once there's something to move between */}
+            {/* Prev / next controls, shown once there's something to move between
             {imgArray.length > 1 && (
               <>
                 <button
@@ -328,7 +410,7 @@ export default function Homes() {
           </div>
 
           {/* Numbered slide rail — a real sequence, so numerals earn their place here */}
-          {imgArray.length > 1 && (
+          {/* {imgArray.length > 1 && (
             <div className="flex justify-center items-center gap-1 my-4">
               {imgArray.map((_, i) => (
                 <button
@@ -347,124 +429,124 @@ export default function Homes() {
                 </button>
               ))}
             </div>
-          )}
-        </div>
+          )} */} 
+        {/* </div> */}
 
+        <div className="page-in">
         {/* ─── Category Banners (dynamic, from backend categories) ─── */}
         <CategorySection product={product} imgArray={imgArray} navigate={Navigate} />
 
         {/* ─── Category 0 ─── */}
-        {imgArray[0] && <SectionTitle icon={Sparkles} count={product[imgArray[0]]?.length}>{imgArray[0]}</SectionTitle>}
+        {imgArray[0] && (
+          <SectionTitle
+            icon={Sparkles}
+            count={product[imgArray[0]]?.length}
+            onViewAll={() => Navigate(`/products?search=${encodeURIComponent(imgArray[0])}`)}
+          >
+            {imgArray[0]}
+          </SectionTitle>
+        )}
         {imgArray[0] && <GridSection categoryIndex={0} product={product} imgArray={imgArray} navigate={Navigate} />}
 
         {/* ─── Category 1 ─── */}
-        {imgArray[1] && <SectionTitle count={product[imgArray[1]]?.length}>{imgArray[1]}</SectionTitle>}
-        {imgArray[1] && <ScrollSection categoryIndex={1} product={product} imgArray={imgArray} navigate={Navigate} />}
+        {imgArray[1] && (
+          <SectionTitle
+            count={product[imgArray[1]]?.length}
+            onViewAll={() => Navigate(`/products?search=${encodeURIComponent(imgArray[1])}`)}
+          >
+            {imgArray[1]}
+          </SectionTitle>
+        )}
+        {imgArray[1] && <GridSection categoryIndex={1} product={product} imgArray={imgArray} navigate={Navigate} />}
 
-        {/* ─── Latest Banner ─── */}
-        <div className="w-full max-w-5xl mx-auto mt-14 px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-1 rounded-3xl overflow-hidden shadow-lg">
-            <div className="relative h-64 md:h-80 group overflow-hidden">
-              <img src={latest1} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Latest arrivals, look one" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-            </div>
-            <div className="relative h-64 md:h-80 group overflow-hidden">
-              <img src={latest2} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Latest arrivals, look two" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-            </div>
-          </div>
-        </div>
+       
+
 
         {/* ─── Made in India Banner ─── */}
-        <div className="mt-14 py-5 bg-[#4A0E1C] text-[#F5E9C8] relative overflow-hidden">
+        <div className="mt-16 py-8 bg-[#4A0E1C] text-[#F5E9C8] relative overflow-hidden">
           <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==')]" />
-          <div className="max-w-5xl mx-auto flex justify-around items-center relative z-10">
-            {['MADE', 'WITH', 'LOVE', 'IN', 'INDIA'].map((word, i) => (
-              <span key={i} className="tracking-[0.5em] text-sm md:text-lg font-medium">{word}</span>
-            ))}
+          <div className="max-w-5xl mx-auto px-4 relative z-10 flex items-center justify-center gap-5">
+            <span className="hidden sm:block h-px w-16 bg-[#B8862E]/60" />
+            <p className="text-xl md:text-3xl text-center leading-snug" style={serif}>
+              Made with love in India
+            </p>
+            <span className="hidden sm:block h-px w-16 bg-[#B8862E]/60" />
           </div>
         </div>
 
         {/* ─── Shop The Latest ─── */}
-        <div className="w-full mx-auto max-w-5xl h-56 flex flex-col justify-center items-center bg-[#F5EFE3] relative overflow-hidden">
-          <div className="absolute inset-0 opacity-30 bg-gradient-to-br from-[#DCD0B8]/20 via-transparent to-[#B8862E]/10" />
-          <div className="relative z-10 text-center px-4">
-            <h1 className="text-3xl md:text-4xl text-[#2B2422]" style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}>
-              Shop The Latest
-            </h1>
-            <div className="w-16 h-1 bg-[#B8862E] mx-auto mt-3 rounded-full" />
-            <p className="mt-3 text-[#8A7F73] text-sm">Discover our newest arrivals curated just for you</p>
+        <div className="w-full mx-auto max-w-5xl px-4 mt-12">
+          <div className="rounded-2xl bg-[#F5EFE3] ring-1 ring-[#EDE3D3] px-6 py-10 md:py-14 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#DCD0B8]/25 via-transparent to-[#B8862E]/10" />
+            <div className="relative z-10 max-w-md">
+              <h1 className="text-3xl md:text-5xl text-[#2B2422] leading-tight tracking-tight" style={serif}>
+                Shop the latest
+              </h1>
+              <div className="w-16 h-[3px] bg-[#B8862E] mt-4 rounded-full" />
+              <p className="mt-4 text-[#8A7F73] text-sm md:text-base leading-relaxed">
+                Our newest arrivals, added this season.
+              </p>
+            </div>
           </div>
         </div>
 
         {/* ─── Category 2 ─── */}
-        {imgArray[2] && <SectionTitle count={product[imgArray[2]]?.length}>{imgArray[2]}</SectionTitle>}
+        {imgArray[2] && (
+          <SectionTitle
+            count={product[imgArray[2]]?.length}
+            onViewAll={() => Navigate(`/products?search=${encodeURIComponent(imgArray[2])}`)}
+          >
+            {imgArray[2]}
+          </SectionTitle>
+        )}
         {imgArray[2] && <GridSection categoryIndex={2} product={product} imgArray={imgArray} navigate={Navigate} />}
 
         {/* ─── Category 3 ─── */}
-        {imgArray[3] && <SectionTitle count={product[imgArray[3]]?.length}>{imgArray[3]}</SectionTitle>}
-        {imgArray[3] && <ScrollSection categoryIndex={3} product={product} imgArray={imgArray} navigate={Navigate} />}
+        {imgArray[3] && (
+          <SectionTitle
+            count={product[imgArray[3]]?.length}
+            onViewAll={() => Navigate(`/products?search=${encodeURIComponent(imgArray[3])}`)}
+          >
+            {imgArray[3]}
+          </SectionTitle>
+        )}
+        {imgArray[3] && <GridSection categoryIndex={3} product={product} imgArray={imgArray} navigate={Navigate} />}
 
-        {/* ─── Trust Badges ─── */}
-        <div className="max-w-5xl mx-auto px-4 my-14">
-          <div className="bg-[#1C1512] rounded-3xl p-8 flex flex-col md:flex-row justify-evenly items-center gap-8 shadow-xl">
-            <div className="flex flex-col items-center text-center group">
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 transition-colors duration-300 group-hover:bg-white/10">
-                <img src={india} className="h-14 w-14 object-contain" alt="" />
-              </div>
-              <h3 className="text-white/80 text-sm md:text-base mt-4 font-medium leading-relaxed">
-                HomeGrown<br />Indian Brand
-              </h3>
-            </div>
-            <div className="hidden md:block w-px h-20 bg-white/10" />
-            <div className="flex flex-col items-center text-center group">
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 transition-colors duration-300 group-hover:bg-white/10">
-                <img src={returnDelivery} className="h-14 w-14 object-contain" alt="" />
-              </div>
-              <h3 className="text-white/80 text-sm md:text-base mt-4 font-medium leading-relaxed">
-                7 Day Return<br />Policy
-              </h3>
-            </div>
-          </div>
-        </div>
+        
 
         {/* ─── Category 4 ─── */}
-        {imgArray[4] && <SectionTitle count={product[imgArray[4]]?.length}>{imgArray[4]}</SectionTitle>}
+        {imgArray[4] && (
+          <SectionTitle
+            count={product[imgArray[4]]?.length}
+            onViewAll={() => Navigate(`/products?search=${encodeURIComponent(imgArray[4])}`)}
+          >
+            {imgArray[4]}
+          </SectionTitle>
+        )}
         {imgArray[4] && <GridSection categoryIndex={4} product={product} imgArray={imgArray} navigate={Navigate} />}
 
-        {/* ─── Exciting Offer ─── */}
-        <div className="max-w-5xl bg-[#F5EFE3] mx-auto min-h-36 flex flex-col items-center justify-center rounded-3xl overflow-hidden shadow-sm my-14 mx-4 md:mx-auto">
-          <div className="text-[#2B2422] h-40 flex flex-col justify-center items-center px-4">
-            <h1 className="text-2xl md:text-3xl text-center" style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}>
-              Exciting Offers
-            </h1>
-            <div className="h-1 w-20 bg-[#B8862E] rounded-full mt-2" />
-          </div>
-          <img src={offer1} className="w-full object-center rounded-b-3xl hover:scale-[1.02] transition-transform duration-700" alt="Current offer, one" />
-
-          {/* ─── Category 5 ─── */}
-          {imgArray[5] && <div className="w-full px-4 mt-6"><SectionTitle count={product[imgArray[5]]?.length}>{imgArray[5]}</SectionTitle></div>}
-          {imgArray[5] && <div className="px-4 w-full"><ScrollSection categoryIndex={5} product={product} imgArray={imgArray} navigate={Navigate} /></div>}
-
-          <img src={offer2} className="w-full object-center mt-6 hover:scale-[1.02] transition-transform duration-700" alt="Current offer, two" />
-        </div>
+        
+       
 
         {/* ─── Homegrown Banner ─── */}
-        <div className="max-w-5xl text-center mx-auto px-4">
-          <h1 className="bg-[#4A0E1C] text-white text-xl md:text-2xl text-center p-8 tracking-[0.15em] rounded-3xl shadow-lg" style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}>
-            HOMEGROWN INDIAN BRAND
-          </h1>
+        <div className="max-w-5xl mx-auto">
+          
 
           {/* ─── Category 6 ─── */}
-          {imgArray[6] && <SectionTitle count={product[imgArray[6]]?.length}>{imgArray[6]}</SectionTitle>}
+          {imgArray[6] && (
+            <SectionTitle
+              count={product[imgArray[6]]?.length}
+              onViewAll={() => Navigate(`/products?search=${encodeURIComponent(imgArray[6])}`)}
+            >
+              {imgArray[6]}
+            </SectionTitle>
+          )}
           {imgArray[6] && <GridSection categoryIndex={6} product={product} imgArray={imgArray} navigate={Navigate} />}
 
-          <div className="bg-[#F5EFE3] rounded-3xl py-20 px-4 mt-14 mb-14">
-            <h1 className="text-[#2B2422] text-2xl md:text-3xl" style={{ fontFamily: "'Fraunces', serif", fontWeight: 600 }}>
-              Over <span className="text-[#4A0E1C] font-bold">1 Million</span> Smiles Delivered
-            </h1>
-            <p className="mt-3 text-[#8A7F73] text-sm">Thank you for being part of our journey</p>
-          </div>
+          
+        </div>
+
+        <div className="h-16" />
         </div>
 
         <Footer />
