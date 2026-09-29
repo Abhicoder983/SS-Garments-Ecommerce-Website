@@ -27,7 +27,9 @@ export default function ProductDetail() {
   const [searchParams] = useSearchParams();
   const variantId = searchParams.get("id");
   const { state } = useLocation();
-  const {sizename} = state;
+  console.log(state)
+  const {sizename} = state?state:{sizename:""}
+  console.log(sizename)
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
