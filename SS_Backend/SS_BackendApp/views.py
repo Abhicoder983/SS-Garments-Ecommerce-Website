@@ -1919,6 +1919,9 @@ def razorpay_webhook(request):
             elif payment.statusID == Payment.StatusChoices.SUCCESS:
                 raise(f"webhook: payment {order_id} already processed, skipping (duplicate webhook)")
             else:
+#                 UserModel.objects.filter(pk=payment.customerID_id).update(
+#     total_order=F('total_order') + 1
+# )
                 payment.statusID = Payment.StatusChoices.SUCCESS
                 payment.razorpay_payment_id = payment_id
                 payment.save()

@@ -201,7 +201,7 @@ export default function CustomerList() {
                       {customer.name || '—'}
                     </p>
                     <p className="text-xs text-slate-500 truncate">{customer.email}</p>
-                    <p className="text-xs text-slate-500 truncate">{customer.moble_no || "—"}</p>
+                    <p className="text-xs text-slate-500 truncate">{customer.mobile_no || "—"}</p>
                   </div>
                 </div>
                 <span
