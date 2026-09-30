@@ -474,21 +474,8 @@ export default function Homes() {
           </div>
         </div>
 
-        {/* ─── Shop The Latest ─── */}
-        <div className="w-full mx-auto max-w-5xl px-4 mt-12">
-          <div className="rounded-2xl bg-[#F5EFE3] ring-1 ring-[#EDE3D3] px-6 py-10 md:py-14 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#DCD0B8]/25 via-transparent to-[#B8862E]/10" />
-            <div className="relative z-10 max-w-md">
-              <h1 className="text-3xl md:text-5xl text-[#2B2422] leading-tight tracking-tight" style={serif}>
-                Shop the latest
-              </h1>
-              <div className="w-16 h-[3px] bg-[#B8862E] mt-4 rounded-full" />
-              <p className="mt-4 text-[#8A7F73] text-sm md:text-base leading-relaxed">
-                Our newest arrivals, added this season.
-              </p>
-            </div>
-          </div>
-        </div>
+      
+        
 
         {/* ─── Category 2 ─── */}
         {imgArray[2] && (
