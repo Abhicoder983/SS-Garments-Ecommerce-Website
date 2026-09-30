@@ -571,10 +571,10 @@ export default function OrderDetail() {
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-slate-800 truncate">{item.product_name}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{item.color} · Size {item.size}</p>
+                    <p className="text-sm font-semibold text-slate-800 truncate">{item.product_name || "Product Name not found"}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{item.color || "Color is not found"} · Size {item.size || "Size is not found"}</p>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs text-slate-500">Qty: <span className="font-semibold text-slate-700">{item.qty}</span></span>
+                      <span className="text-xs text-slate-500">Qty: <span className="font-semibold text-slate-700">{item.qty || "Quantity is not found"}</span></span>
                       <span className="text-sm font-bold text-slate-800">₹{(item.price * item.qty).toLocaleString('en-IN')}</span>
                     </div>
                   </div>
@@ -616,12 +616,12 @@ export default function OrderDetail() {
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-slate-800 font-semibold">{item.product_name}</td>
-                      <td className="px-6 py-4 text-slate-600">{item.color}</td>
-                      <td className="px-6 py-4 text-slate-600">{item.qty}</td>
-                      <td className="px-6 py-4 text-slate-600">{item.size}</td>
-                      <td className="px-6 py-4 text-slate-600">₹{item.price?.toLocaleString('en-IN')}</td>
-                      <td className="px-6 py-4 text-slate-800 font-bold text-right">₹{(item.price * item.qty).toLocaleString('en-IN')}</td>
+                      <td className="px-6 py-4 text-slate-800 font-semibold">{item.product_name || "-"}</td>
+                      <td className="px-6 py-4 text-slate-600">{item.color || "-"}</td>
+                      <td className="px-6 py-4 text-slate-600">{item.qty || "-"}</td>
+                      <td className="px-6 py-4 text-slate-600">{item.size || "-"}</td>
+                      <td className="px-6 py-4 text-slate-600">₹{item.price?.toLocaleString('en-IN') || "-"}</td>
+                      <td className="px-6 py-4 text-slate-800 font-bold text-right">₹{(item.price * item.qty).toLocaleString('en-IN') || "-"}</td>
                     </tr>
                   ))}
                 </tbody>

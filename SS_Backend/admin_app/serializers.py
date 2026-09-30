@@ -89,32 +89,18 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         return str(obj.id)
 
     def get_items(self, obj):
-    
-
         items = []
         product_entries = obj.productID.get('product_ids', [])
+        print(product_entries)
 
         for entry in product_entries:
-            variant_size_id = entry.get('product_id')  # actually VariantSize ka id hai
             qty = entry.get('qty', 0)
             price = entry.get('price', 0)
-            product_name = "Unknown Product"
-            color = None
-            size_display = None
-            variant_image = None
-
-            try:
-                variant_size = VariantSize.objects.select_related(
-                    'variant', 'variant__product'
-                ).get(id=ObjectId(variant_size_id))
-                variant_image = variant_size.variant.image.url if variant_size.variant.image else None
-                product_id = str(variant_size.variant.product.id)
-                product_name = variant_size.variant.product.name
-                color = variant_size.variant.color
-                size_display = variant_size.get_size_display()
-            except VariantSize.DoesNotExist:
-                pass
-
+            variant_image = entry.get('product_image',None)
+            product_id = entry.get('product_id',None)
+            product_name = entry.get('product_name',"Unknown Product")
+            color = entry.get('color',None)
+            size_display = entry.get('size',None)
             items.append({
                 "product_id" : product_id,
                 "product_name": product_name,
@@ -124,6 +110,8 @@ class OrderDetailSerializer(serializers.ModelSerializer):
                 "qty": qty,
                 "price": price,
             })
+            
+
         return items
 class OrderStatus_awb_UpdateSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=['PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED'])

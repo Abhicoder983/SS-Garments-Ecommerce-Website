@@ -186,21 +186,21 @@ export default function OrderList() {
         <div className="md:hidden space-y-3 mb-6">
           {orders.map((order) => (
             <div
-              key={order.id}
+              key={order.id || "-"}
               className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-4 cursor-pointer active:scale-[0.98] transition-transform"
               onClick={() => navigate(`/orders/${order.id}`)}
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="min-w-0">
                   <span className="font-mono text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">
-                    #{order.id}
+                    #{order.id || "-"}
                   </span>
                   <p className="text-sm font-semibold text-slate-800 mt-1 truncate">
-                    {order.customer_name}
+                    {order.customer_name || "-"}
                   </p>
                   {order.awb_id && (
                     <p className="text-xs text-slate-500 mt-0.5 font-mono">
-                      AWB: {order.awb_id}
+                      AWB: {order.awb_id || "-"}
                     </p>
                   )}
                 </div>
@@ -208,7 +208,7 @@ export default function OrderList() {
                   className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(order.status)}`}
                 >
                   <span className={`w-1.5 h-1.5 rounded-full ${getStatusDot(order.status)}`} />
-                  {order.status}
+                  {order.status || "-"}
                 </span>
               </div>
 
@@ -243,7 +243,7 @@ export default function OrderList() {
                     year: 'numeric',
                   })}
                 </span>
-                <span className="text-slate-800 font-bold">₹{order.total_price?.toLocaleString('en-IN')}</span>
+                <span className="text-slate-800 font-bold">₹{order.total_price?.toLocaleString('en-IN') || "-"}</span>
               </div>
             </div>
           ))}
@@ -271,21 +271,21 @@ export default function OrderList() {
               <tbody className="divide-y divide-slate-100">
                 {orders.map((order) => (
                   <tr
-                    key={order.id}
+                    key={order.id || "-"}
                     className="group hover:bg-slate-50/50 transition-colors duration-150"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="font-mono text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-1 rounded-md">
-                        #{order.id}
+                        #{order.id || "-"}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-slate-800 font-semibold whitespace-nowrap">
-                      {order.customer_name}
+                      {order.customer_name || "-"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {order.awb_id ? (
                         <span className="font-mono text-xs text-slate-600 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
-                          {order.awb_id}
+                          {order.awb_id || "-"}
                         </span>
                       ) : (
                         <span className="text-xs text-slate-400 italic">—</span>
@@ -294,7 +294,7 @@ export default function OrderList() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       {order.mobile_no ? (
                         <span className="font-mono text-xs text-slate-600 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
-                          {order.mobile_no}
+                          {order.mobile_no || "-"}
                         </span>
                       ) : (
                         <span className="text-xs text-slate-400 italic">—</span>
@@ -308,7 +308,7 @@ export default function OrderList() {
                       })}
                     </td>
                     <td className="px-6 py-4 text-slate-800 font-bold whitespace-nowrap">
-                      ₹{order.total_price?.toLocaleString('en-IN')}
+                      ₹{order.total_price?.toLocaleString('en-IN') ||"-"}
                     </td>
 
                     {/* 🔹 Payment mode column */}
@@ -330,7 +330,7 @@ export default function OrderList() {
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(order.status)}`}
                       >
                         <span className={`w-1.5 h-1.5 rounded-full ${getStatusDot(order.status)}`} />
-                        {order.status}
+                        {order.status || "-"}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right whitespace-nowrap">
