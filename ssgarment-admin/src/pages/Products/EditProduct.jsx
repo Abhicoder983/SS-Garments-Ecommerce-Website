@@ -296,7 +296,7 @@ export default function EditProduct() {
       toast.success('Variant updated');
       cancelEditVariant();
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to update variant');
+      toast.error(err.response?.data?.error || `Failed to update variant ${err}`);
     } finally {
       setSavingVariantId(null);
     }
@@ -367,7 +367,7 @@ export default function EditProduct() {
       closeAddSize();
       toast.success('Sizes added successfully');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to add sizes');
+      toast.error(err.response?.data?.error || `Failed to add sizes ${err}`);
     } finally {
       setSavingNewSizes(false);
     }
