@@ -72,7 +72,11 @@ export default function EditProduct() {
       setVariants(productRes.data.variants);
       setCategories(categoriesRes.data);
     } catch (err) {
-      toast.error('Failed to load product');
+      // toast.error('Failed to load product');
+      toast.error(
+  err.response?.data?.error ||
+  `Failed: ${err.code} | status ${err.response?.status ?? 'none'}`
+);
     } finally {
       setLoading(false);
     }
@@ -96,7 +100,11 @@ export default function EditProduct() {
       });
       toast.success('Product details updated');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to update product');
+      // toast.error(err.response?.data?.error || 'Failed to update product');
+      toast.error(
+  err.response?.data?.error ||
+  `Failed: ${err.code} | status ${err.response?.status ?? 'none'}`
+);
     } finally {
       setSaving(false);
     }
@@ -137,6 +145,10 @@ export default function EditProduct() {
       toast.success('Size updated');
     } catch (err) {
       toast.error('Failed to update size');
+      toast.error(
+  err.response?.data?.error ||
+  `Failed: ${err.code} | status ${err.response?.status ?? 'none'}`
+);
     } finally {
       setSavingSizeId(null);
     }
@@ -178,7 +190,11 @@ export default function EditProduct() {
       toast.success('Size deleted');
       closeDeleteConfirm();
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to delete size');
+      // toast.error(err.response?.data?.error || 'Failed to delete size');
+      toast.error(
+  err.response?.data?.error ||
+  `Failed: ${err.code} | status ${err.response?.status ?? 'none'}`
+);
     } finally {
       setDeletingId(null);
     }
@@ -193,7 +209,11 @@ export default function EditProduct() {
       toast.success('Variant deleted');
       closeDeleteConfirm();
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to delete variant');
+      // toast.error(err.response?.data?.error || 'Failed to delete variant');
+      toast.error(
+  err.response?.data?.error ||
+  `Failed: ${err.code} | status ${err.response?.status ?? 'none'}`
+);
     } finally {
       setDeletingId(null);
     }
@@ -225,7 +245,11 @@ export default function EditProduct() {
       setShowAddVariant(false);
       toast.success('Variant added');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to add variant');
+      // toast.error(err.response?.data?.error || 'Failed to add variant');
+      toast.error(
+  err.response?.data?.error ||
+  `Failed: ${err.code} | status ${err.response?.status ?? 'none'}`
+);
     } finally {
       setAddingVariant(false);
     }
@@ -241,7 +265,11 @@ export default function EditProduct() {
       );
       toast.success(`Variant ${!variant.is_active ? 'activated' : 'deactivated'}`);
     } catch (err) {
-      toast.error('Failed to update variant');
+      // toast.error('Failed to update variant');
+      toast.error(
+  err.response?.data?.error ||
+  `Failed: ${err.code} | status ${err.response?.status ?? 'none'}`
+);
     }
   };
 
@@ -296,7 +324,11 @@ export default function EditProduct() {
       toast.success('Variant updated');
       cancelEditVariant();
     } catch (err) {
-      toast.error(err.response?.data?.error || `Failed to update variant ${err}`);
+      // toast.error(err.response?.data?.error || `Failed to update variant ${err}`)
+      toast.error(
+  err.response?.data?.error ||
+  `Failed: ${err.code} | status ${err.response?.status ?? 'none'}`
+);
     } finally {
       setSavingVariantId(null);
     }
