@@ -244,6 +244,7 @@ export default function PaymentList() {
                 <tr className="bg-slate-50/80 border-b border-slate-100">
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider min-w-[200px]">Payment ID</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</th>
+                  <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Mobile No</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider min-w-[200px]">Razorpay Order</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider min-w-[200px]">Razorpay Payment</th>
                   <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Mode</th>
