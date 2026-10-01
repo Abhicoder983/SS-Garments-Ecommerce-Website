@@ -694,6 +694,7 @@ def product_create(request):
 @api_view(['POST','PATCH',"DELETE"])
 def product_variant_create(request, variant_id = None):
     if request.method=="POST":
+        print('creating variant ')
 
         product_id = request.data.get('product')
         color = request.data.get('color', '').strip()
@@ -705,7 +706,9 @@ def product_variant_create(request, variant_id = None):
 
         try:
             product = Products.objects.get(id=ObjectId(product_id))
+            print('try')
         except Products.DoesNotExist:
+            print('except')
             return Response({"error": "Product not found"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -725,12 +728,12 @@ def product_variant_create(request, variant_id = None):
                 return Response({"error": "All sizes must have a valid price"}, status=status.HTTP_400_BAD_REQUEST)
             if item.get('stock') is None or int(item.get('stock')) < 0:
                 return Response({"error": "All sizes must have valid stock"}, status=status.HTTP_400_BAD_REQUEST)
-
+        print(1)
         if ProductVariant.objects.filter(product=product, color__iexact=color).exists():
             return Response({"error": f"Variant with color '{color}' already exists for this product"}, status=status.HTTP_400_BAD_REQUEST)
 
         variant = ProductVariant.objects.create(product=product, color=color, image=image)
-
+        print(2)
         for item in sizes_list:
             VariantSize.objects.create(
                 variant=variant,
@@ -738,6 +741,7 @@ def product_variant_create(request, variant_id = None):
                 price=item['price'],
                 stock=item['stock'],
             )
+        print(variant)
 
         return Response({
             "id": str(variant.id),
