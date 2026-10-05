@@ -59,7 +59,7 @@ export default function NavBar() {
     }
 
     axios
-      .get(`${import.meta.env.VITE_API_URL}//categorylist/`)
+      .get(`${import.meta.env.VITE_API_URL}/categorylist/`)
       .then((res) => {
         const list = res.data.categories || [];
         setCategories(list);
