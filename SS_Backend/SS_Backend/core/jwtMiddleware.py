@@ -66,7 +66,7 @@ class JWTMiddleware:
             print('2')
             return self.get_response(request)
 
-        elif (request.path in ["/login/", "/signup/","/verify/","/admin-role/send-otp/", "/admin-role/verify-otp/","/webhook-order/"] or request.path.startswith("/admin/")):
+        elif (request.path in ["/login/", "/signup/","/verify/","/admin-role/send-otp/", "/admin-role/verify-otp/","/webhook-order/","/categorylist"] or request.path.startswith("/admin/")):
             print('abhishek')
             return self.get_response(request)
         

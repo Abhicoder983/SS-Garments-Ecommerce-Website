@@ -12,7 +12,7 @@ export default function Footer() {
 
   const footerLinks = {
     support: [
-      { label: "Track Order", href: "/track-order" },
+      { label: "Track Order", href: "https://www.icarry.in/pages/track.html" },
       { label: "Contact Us", href: "/contactus" },
       { label: "Return Policy", href: "/returns" },
       { label: "Delivery Policy", href: "/delivery" },
@@ -111,7 +111,8 @@ export default function Footer() {
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    className="group flex items-center gap-2 text-sm text-[#9A9187] hover:text-[#FDF6ED] transition-colors duration-200"
+                    className="group flex items-center gap-2 text-sm text-[#9A9187] hover:text-[#FDF6ED] transition-colors duration-200" 
+                    target={link.label === 'Track Order' ? '_blank' : '_self'}
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-[#4A0E1C] opacity-0 group-hover:opacity-100 transition-opacity" />
                     {link.label}

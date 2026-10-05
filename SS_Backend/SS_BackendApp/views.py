@@ -1493,6 +1493,12 @@ def contactUsEmail(request):
             return response
 
 
+@api_view(['GET'])
+def category_list(request):
+    data = [{"id": str(c.id), "name": c.name} for c in Category.objects.all()]
+    return JsonResponse({"categories": data})
+
+
 @api_view(['POST'])
 def apply_coupon(request):
     if getattr(request, "id", None):

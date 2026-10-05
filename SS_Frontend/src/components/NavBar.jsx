@@ -1,6 +1,5 @@
 import menu from "../assets/homeAssests/navBar/menu.png";
 import close from "../assets/homeAssests/navBar/close.png";
-import discount from "../assets/homeAssests/navBar/discount.png";
 import account from "../assets/homeAssests/navBar/account.png";
 import searchImage from "../assets/homeAssests/navBar/search.png";
 import cart from "../assets/homeAssests/navBar/cart.png";
@@ -9,6 +8,7 @@ import { StoreContext } from "../Context/StoreContext.jsx";
 import { useContext, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import axios from "axios";
 import {
   Home,
   ShoppingBag,
@@ -30,33 +30,47 @@ export default function NavBar() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [scrolled, setScrolled] = useState(false);
+  const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Scroll shadow
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close sidebar on route change
   useEffect(() => {
     setOpenMenu(false);
   }, [location.pathname, setOpenMenu]);
 
-  const handleSearch = (e) => {
-    if (e.key === "Enter") {
-      if (search.trim()) {
-        const params = new URLSearchParams();
-        params.set("search", search.trim());
-        setSearchParams(params);
-        navigate(`/products?${params.toString()}`);
-      } else {
-        toast.warning("Enter something to search");
+  // Load categories once, on whichever page the user first lands on
+  useEffect(() => {
+    const cached = sessionStorage.getItem("categories");
+    if (cached) {
+      try {
+        setCategories(JSON.parse(cached));
+        return;
+      } catch {
+        sessionStorage.removeItem("categories");
       }
     }
-  };
 
-  const handleSearchClick = () => {
+    axios
+      .get(`${import.meta.env.VITE_API_URL}//categorylist/`)
+      .then((res) => {
+        const list = res.data.categories || [];
+        setCategories(list);
+        sessionStorage.setItem("categories", JSON.stringify(list));
+      })
+      .catch(() => {
+        // Fail silently: the sidebar just won't show the Categories section
+      });
+  }, []);
+
+  const goToSearch = () => {
     if (search.trim()) {
       const params = new URLSearchParams();
       params.set("search", search.trim());
@@ -67,6 +81,12 @@ export default function NavBar() {
     }
   };
 
+  const handleSearch = (e) => {
+    if (e.key === "Enter") goToSearch();
+  };
+
+  const handleSearchClick = () => goToSearch();
+
   const mainLinks = [
     { label: "Home", path: "/", icon: Home },
     { label: "Shop", path: "/products", icon: ShoppingBag },
@@ -74,14 +94,6 @@ export default function NavBar() {
     { label: "Contact", path: "/contactus", icon: Phone },
   ];
 
-  const policyLinks = [
-    { label: "Return Policy", path: "/returns", icon: RotateCcw },
-    { label: "Delivery Policy", path: "/delivery", icon: Truck },
-    { label: "Refund Policy", path: "/refunds", icon: Banknote },
-    { label: "Privacy Policy", path: "/privacy", icon: ShieldCheck },
-    { label: "Shipping Policy", path: "/shipping", icon: Ship },
-    { label: "Cancellation Policy", path: "/cancellation", icon: XCircle },
-  ];
 
   return (
     <>
@@ -146,10 +158,8 @@ export default function NavBar() {
             </div>
           </div>
 
-          {/* Right: Icons - NO BOX, WHITE, SMALL */}
+          {/* Right: Icons */}
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-            
-
             <Link to="/cart" className="group" aria-label="Cart">
               <img
                 src={cart}
@@ -207,6 +217,7 @@ export default function NavBar() {
           </div>
 
           <div className="overflow-y-auto h-[calc(100%-3rem)] p-4 space-y-5">
+            {/* Menu */}
             <div>
               <p className="text-[10px] font-bold text-[#9A9187] uppercase tracking-[0.2em] mb-2 px-1">
                 Menu
@@ -233,61 +244,48 @@ export default function NavBar() {
                 })}
               </ul>
             </div>
-            <div>
 
-            </div>
-              <p className="text-[10px] font-bold text-[#9A9187] uppercase tracking-[0.2em] mb-2 px-1">
-                Terms And Conditions
-              </p>
-              <ul className="space-y-1">
-                <li>
-                  <Link to="/terms" className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${location.pathname === "/terms" ? "bg-[#4A0E1C] text-white" : "text-[#2B2422] hover:bg-[#F5F0E8]"}`}>
-                    <FileText size={16} strokeWidth={location.pathname === "/terms" ? 2.5 : 2} />
-                    Terms and Conditions  
-                  </Link>
-                </li>
-              </ul>
+            {/* Categories */}
+            {categories.length > 0 && (
+              <div>
+                <p className="text-[10px] font-bold text-[#9A9187] uppercase tracking-[0.2em] mb-2 px-1">
+                  Categories
+                </p>
+                <ul className="space-y-1">
+                  {categories.map((cat) => {
+                    const isActive =
+                      location.pathname === "/products" &&
+                      searchParams.get("search") === cat.name;
+                    return (
+                      <li key={cat.id}>
+                        <Link
+                          to={`/products?search=${encodeURIComponent(cat.name)}`}
+                          onClick={() => {
+                            setSearch(cat.name);
+                            setOpenMenu(false);
+                          }}
+                          className={`flex items-center justify-between px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
+                            isActive
+                              ? "bg-[#4A0E1C] text-white"
+                              : "text-[#2B2422] hover:bg-[#F5F0E8]"
+                          }`}
+                        >
+                          {cat.name}
+                          <ChevronRight
+                            size={14}
+                            className={isActive ? "text-white" : "text-[#9A9187]"}
+                          />
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
 
-              <p className="text-[10px] font-bold text-[#9A9187] uppercase tracking-[0.2em] mb-2 px-1">
-               Payment Flow
-              </p>
-              <ul className="space-y-1">
-                <li>
-                  <Link to="/payment-flow" className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${location.pathname === "/payment-flow" ? "bg-[#4A0E1C] text-white" : "text-[#2B2422] hover:bg-[#F5F0E8]"}`}>
-                    <FileText size={16} strokeWidth={location.pathname === "/payment-flow" ? 2.5 : 2} />
-                    Payment Flow
-                  </Link>
-                </li>
-              </ul>
           
 
-            <div>
-              <p className="text-[10px] font-bold text-[#9A9187] uppercase tracking-[0.2em] mb-2 px-1">
-                Policies
-              </p>
-              <ul className="space-y-1">
-                {policyLinks.map((link) => {
-                  const Icon = link.icon;
-                  const isActive = location.pathname === link.path;
-                  return (
-                    <li key={link.path}>
-                      <Link
-                        to={link.path}
-                        className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
-                          isActive
-                            ? "bg-[#4A0E1C] text-white"
-                            : "text-[#2B2422] hover:bg-[#F5F0E8]"
-                        }`}
-                      >
-                        <Icon size={15} strokeWidth={isActive ? 2.5 : 2} />
-                        {link.label}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-
+            {/* Help card */}
             <div className="bg-gradient-to-br from-[#4A0E1C] to-[#6B1B2B] rounded-2xl p-4 text-white">
               <FileText size={16} className="mb-1.5 opacity-80" />
               <h4 className="font-bold text-sm mb-1">Need Help?</h4>

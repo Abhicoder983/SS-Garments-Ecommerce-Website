@@ -15,6 +15,7 @@ urlpatterns = [
     path('products/',product_list),
     path('google-login/', googleAuthentication),
     path('google-oauth2-authentication/',googleOauth2Authentication),
+    path('categorylist/', category_list),
     path('contactusEmail/',contactUsEmail),
     path('create-payment/',create_order),
     path('webhook-order/',razorpay_webhook),
