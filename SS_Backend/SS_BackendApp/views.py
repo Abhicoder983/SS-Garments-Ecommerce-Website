@@ -1495,7 +1495,15 @@ def contactUsEmail(request):
 
 @api_view(['GET'])
 def category_list(request):
-    data = [{"id": str(c.id), "name": c.name} for c in Category.objects.all()]
+    # category ids that have at least one in-stock size
+    category_ids = set(
+        VariantSize.objects
+        .filter(stock__gt=0)
+        .values_list("variant__product__category", flat=True)
+    )
+
+    categories = Category.objects.filter(id__in=category_ids)
+    data = [{"id": str(c.id), "name": c.name} for c in categories]
     return JsonResponse({"categories": data})
 
 
