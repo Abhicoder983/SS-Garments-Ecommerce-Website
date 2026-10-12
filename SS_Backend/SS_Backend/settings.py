@@ -10,9 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import django_mongodb_backend
-from decouple import config
+from decouple import config, Csv
 from pathlib import Path
-from decouple import config
 import os 
 from corsheaders.defaults import default_headers
 
@@ -31,34 +30,9 @@ SECRET_KEY = 'django-insecure-&25lf=o1p9vc9s8twswbylp(prmhfuk6(8@ge4kt()p24jmxor
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-CORS_ALLOWED_ORIGINS = [
-    "https://ssgarment.in",
-    "https://www.ssgarment.in",
-    "http://localhost:5173",
-    "https://api.ssgarment.in",
-    "https://www.admin-abhishek-98375.ssgarment.in",
-    "https://admin-abhishek-98375.ssgarment.in",
-    "https://fountain-arbitrary-paramedic.ngrok-free.dev"
-    
-]
-
-CSRF_TRUSTED_ORIGINS = [
-    "https://ssgarment.in",
-    "https://www.ssgarment.in",
-    "https://api.ssgarment.in",
-    "https://www.api.ssgarment.in",
-    "https://www.admin-abhishek-98375.ssgarment.in",
-    "https://admin-abhishek-98375.ssgarment.in",
-    "http://localhost:5173",
-    "https://fountain-arbitrary-paramedic.ngrok-free.dev",
-    
-
-]
-
-ALLOWED_HOSTS = ['ssgarment.in', 'www.api.ssgarment.in', 'api.ssgarment.in', '13.126.138.14',"127.0.0.1", "localhost","www.api.ssgarment.in",'.ngrok-free.app', '.ngrok-free.dev']
-
-
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
+CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', cast=Csv())
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', cast=Csv())
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SAMESITE = 'Lax'
