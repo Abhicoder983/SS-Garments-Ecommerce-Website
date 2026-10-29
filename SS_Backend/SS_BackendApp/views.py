@@ -118,8 +118,8 @@ def verifyUser(request):
 @api_view(["POST"])
 def signup(request):
     
-    email = request.data.get("email")
-    otp = request.data.get("otp")
+    email = (request.data.get("email") or "").strip().lower()
+    otp = request.data.get("otp").strip()
 
     print(otp)
     print(email)
@@ -596,6 +596,7 @@ def cart(request):
             
 
         except:
+            print(request.id)
             data=models.cart.objects.create(customerId=request.id)
             data.cartItem={
                 'cartData':[],
