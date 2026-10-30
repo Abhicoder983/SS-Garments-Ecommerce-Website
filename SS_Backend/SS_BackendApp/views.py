@@ -46,7 +46,7 @@ client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_S
 def verifyUser(request):
 
 
-    recp_email = request.data.get("email", "").strip()
+    recp_email = request.data.get("email", "").strip().lower()
 
 
 
@@ -586,13 +586,15 @@ def cart(request):
 
         
         cart_item=json.loads(cart_item)
+        print("cart_item", cart_item)
         if(ObjectId(cart_item['customerId'])!=request.id.id):
-        
+            print('error')
             raise Exception("User not authenticated")
         print(2)
     except:
         try:
             data = models.cart.objects.get(customerId=request.id)
+            print('abhishek1')
             
 
         except:
@@ -600,10 +602,12 @@ def cart(request):
             data=models.cart.objects.create(customerId=request.id)
             data.cartItem={
                 'cartData':[],
-                'customerId':str(request.id)
+                'customerId':str(request.id.id)
             }
+            print(str(request.id.id))
             data.save()
         serializer=cartSerializer(data)
+        print(serializer.data['cartItem'])
         cart_item=serializer.data['cartItem']
     
 
@@ -701,7 +705,7 @@ def cart(request):
                     removed_any = True
                     
                     removed_count = removed_count if removed_count is not None else 1
-                    
+                    print('removed')
                     continue
 
                 serializer = variantSizeSerializer(data)
@@ -719,6 +723,8 @@ def cart(request):
                 cart_detail.append(cart_data) 
                 
                 valid_cart_data.append(product_item)
+
+            print(valid_cart_data)
                
 
             if removed_any:

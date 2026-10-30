@@ -33,7 +33,7 @@ class UserModel(models.Model):
     created_At = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{str(self.name)} - {str(self.email)}"
+        return f"{str(self.id)}"
 
 
 # ============================
